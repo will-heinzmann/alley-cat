@@ -14,7 +14,234 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alleys: {
+        Row: {
+          address: string
+          beer_rating: number
+          city: string
+          created_at: string
+          id: string
+          lane_count: number
+          lat: number
+          lng: number
+          name: string
+          oil_pattern: string
+          phone: string | null
+          state: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address: string
+          beer_rating?: number
+          city: string
+          created_at?: string
+          id?: string
+          lane_count?: number
+          lat?: number
+          lng?: number
+          name: string
+          oil_pattern?: string
+          phone?: string | null
+          state: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          beer_rating?: number
+          city?: string
+          created_at?: string
+          id?: string
+          lane_count?: number
+          lat?: number
+          lng?: number
+          name?: string
+          oil_pattern?: string
+          phone?: string | null
+          state?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      game_likes: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_likes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          alley_id: string
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          oil_condition: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          alley_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          oil_condition?: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          alley_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          oil_condition?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "games_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          bowling_average: number
+          created_at: string
+          games_count: number
+          hometown: string | null
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          bowling_average?: number
+          created_at?: string
+          games_count?: number
+          hometown?: string | null
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          bowling_average?: number
+          created_at?: string
+          games_count?: number
+          hometown?: string | null
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          alley_id: string
+          beer_rating: number
+          comment: string | null
+          created_at: string
+          id: string
+          oil_rating: number
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alley_id: string
+          beer_rating: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          oil_rating: number
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alley_id?: string
+          beer_rating?: number
+          comment?: string | null
+          created_at?: string
+          id?: string
+          oil_rating?: number
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

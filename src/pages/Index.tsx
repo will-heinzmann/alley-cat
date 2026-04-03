@@ -1,12 +1,26 @@
-import { useState } from "react";
-import { mockAlleys } from "@/data/mockData";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
 import { Search, MapPin } from "lucide-react";
 
 const HomePage = () => {
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [alleys, setAlleys] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockAlleys.filter(
+  useEffect(() => {
+    fetchAlleys();
+  }, []);
+
+  const fetchAlleys = async () => {
+    const { data } = await supabase.from("alleys").select("*").order("name");
+    setAlleys(data || []);
+    setLoading(false);
+  };
+
+  const filtered = alleys.filter(
     (a) =>
       a.name.toLowerCase().includes(search.toLowerCase()) ||
       a.city.toLowerCase().includes(search.toLowerCase()) ||
@@ -15,7 +29,6 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Header */}
       <header className="border-b-2 border-primary p-4">
         <h1 className="font-pixel text-lg text-primary neon-text text-center animate-flicker">
           ALLEY CAT
@@ -42,12 +55,8 @@ const HomePage = () => {
         </div>
         <div className="text-center z-10">
           <MapPin size={32} className="text-primary mx-auto mb-2 neon-text" />
-          <p className="font-pixel text-[10px] text-muted-foreground">
-            MAP VIEW
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            {mockAlleys.length} alleys loaded
-          </p>
+          <p className="font-pixel text-[10px] text-muted-foreground">MAP VIEW</p>
+          <p className="text-xs text-muted-foreground mt-1">{alleys.length} alleys loaded</p>
         </div>
       </div>
 
@@ -68,19 +77,19 @@ const HomePage = () => {
       {/* Alley List */}
       <div className="px-4 space-y-3">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-pixel text-[10px] text-primary">
-            DIRECTORY [{filtered.length}]
-          </h2>
+          <h2 className="font-pixel text-[10px] text-primary">DIRECTORY [{filtered.length}]</h2>
         </div>
-        {filtered.map((alley) => (
-          <AlleyCard key={alley.id} alley={alley} />
-        ))}
-        {filtered.length === 0 && (
-          <div className="border-2 border-muted p-8 text-center">
-            <p className="font-pixel text-xs text-muted-foreground">
-              NO ALLEYS FOUND
-            </p>
+        {loading ? (
+          <div className="p-8 text-center">
+            <p className="font-pixel text-xs text-muted-foreground animate-pulse-neon">LOADING...</p>
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="border-2 border-muted p-8 text-center">
+            <p className="font-pixel text-xs text-muted-foreground">NO ALLEYS FOUND</p>
+            <p className="text-xs text-muted-foreground mt-2">Alleys will appear here once data is imported</p>
+          </div>
+        ) : (
+          filtered.map((alley) => <AlleyCard key={alley.id} alley={alley} />)
         )}
       </div>
     </div>
