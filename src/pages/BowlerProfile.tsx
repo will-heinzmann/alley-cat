@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 const BowlerProfile = () => {
   const { userId } = useParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -14,6 +15,11 @@ const BowlerProfile = () => {
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [yearStats, setYearStats] = useState({ games: 0, avgScore: 0, highScore: 0, totalPoints: 0 });
+  const [editing, setEditing] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [editHometown, setEditHometown] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
