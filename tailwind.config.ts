@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        pixel: ['"Press Start 2P"', 'cursive'],
+        pixel: ['"Arial Black"', 'Impact', 'Arial', 'sans-serif'],
         mono: ['"Courier New"', 'Courier', 'monospace'],
+        serif: ['"Times New Roman"', 'Times', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -76,21 +77,10 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        "pulse-neon": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.7" },
-        },
-        "flicker": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.8" },
-          "75%": { opacity: "0.95" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-neon": "pulse-neon 2s ease-in-out infinite",
-        "flicker": "flicker 3s ease-in-out infinite",
       },
     },
   },

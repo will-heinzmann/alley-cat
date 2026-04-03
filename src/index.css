@@ -6,47 +6,44 @@
 
 @layer base {
   :root {
-    --background: 228 50% 6%;
-    --foreground: 190 100% 95%;
+    --background: 150 100% 10%;
+    --foreground: 50 20% 90%;
 
-    --card: 225 30% 10%;
-    --card-foreground: 190 100% 95%;
+    --card: 150 60% 14%;
+    --card-foreground: 50 20% 90%;
 
-    --popover: 225 30% 10%;
-    --popover-foreground: 190 100% 95%;
+    --popover: 150 60% 14%;
+    --popover-foreground: 50 20% 90%;
 
-    --primary: 190 100% 50%;
-    --primary-foreground: 228 50% 6%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 150 100% 8%;
 
-    --secondary: 25 100% 55%;
+    --secondary: 25 90% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 225 20% 16%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 150 30% 18%;
+    --muted-foreground: 150 10% 55%;
 
-    --accent: 25 100% 55%;
+    --accent: 25 90% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 190 100% 50%;
-    --input: 225 20% 16%;
-    --ring: 190 100% 50%;
+    --border: 150 40% 30%;
+    --input: 150 40% 16%;
+    --ring: 45 100% 50%;
 
     --radius: 0px;
 
-    --sidebar-background: 225 30% 8%;
-    --sidebar-foreground: 190 100% 95%;
-    --sidebar-primary: 190 100% 50%;
-    --sidebar-primary-foreground: 228 50% 6%;
-    --sidebar-accent: 25 100% 55%;
+    --sidebar-background: 150 60% 12%;
+    --sidebar-foreground: 50 20% 90%;
+    --sidebar-primary: 45 100% 50%;
+    --sidebar-primary-foreground: 150 100% 8%;
+    --sidebar-accent: 25 90% 55%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 190 100% 50%;
-    --sidebar-ring: 190 100% 50%;
-
-    --neon-glow: 0 0 10px hsl(190 100% 50% / 0.5), 0 0 20px hsl(190 100% 50% / 0.3);
-    --orange-glow: 0 0 10px hsl(25 100% 55% / 0.5), 0 0 20px hsl(25 100% 55% / 0.3);
+    --sidebar-border: 150 40% 30%;
+    --sidebar-ring: 45 100% 50%;
   }
 }
 
@@ -56,37 +53,54 @@
   }
 
   body {
-    @apply bg-background text-foreground font-mono;
-    font-family: 'Courier New', Courier, monospace;
+    @apply bg-background text-foreground;
+    font-family: 'Times New Roman', Times, Georgia, serif;
+    font-size: 16px;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Arial Black', 'Impact', Arial, sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  a {
+    color: hsl(45 100% 50%);
+  }
+  a:hover {
+    text-decoration: underline;
   }
 }
 
 @layer utilities {
   .font-pixel {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'Arial Black', 'Impact', Arial, sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .font-heading {
+    font-family: 'Arial Black', 'Impact', Arial, sans-serif;
+    font-weight: 900;
   }
 
   .neon-text {
-    text-shadow: 0 0 10px hsl(190 100% 50% / 0.8), 0 0 20px hsl(190 100% 50% / 0.4);
+    /* simplified - no glow */
   }
 
   .orange-text {
-    text-shadow: 0 0 10px hsl(25 100% 55% / 0.8), 0 0 20px hsl(25 100% 55% / 0.4);
+    /* simplified - no glow */
   }
 
   .neon-border {
-    box-shadow: var(--neon-glow);
+    box-shadow: 0 0 4px hsl(45 100% 50% / 0.3);
   }
 
   .orange-border {
-    box-shadow: var(--orange-glow);
+    box-shadow: 0 0 4px hsl(25 90% 55% / 0.3);
   }
 
   .brutalist-border {
-    border: 2px solid black;
+    border: 2px solid hsl(150 40% 30%);
   }
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Heart, MessageCircle, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
@@ -25,42 +24,27 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchFeed = async () => {
-    // Get games from people the user follows + own games
     let followingIds: string[] = [];
-
     if (user) {
-      const { data: follows } = await supabase
-        .from("follows")
-        .select("following_id")
-        .eq("follower_id", user.id);
+      const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
       followingIds = (follows || []).map((f) => f.following_id);
       followingIds.push(user.id);
     }
 
     const query = supabase
       .from("games")
-      .select(`
-        id, score, date, oil_condition, notes, created_at, user_id,
+      .select(`id, score, date, oil_condition, notes, created_at, user_id,
         profiles!games_user_id_fkey(username, avatar_url),
-        alleys!games_alley_id_fkey(name, city, state)
-      `)
+        alleys!games_alley_id_fkey(name, city, state)`)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (followingIds.length > 0) {
-      query.in("user_id", followingIds);
-    }
+    if (followingIds.length > 0) query.in("user_id", followingIds);
 
     const { data } = await query;
-
     if (data) {
-      // Get likes info
       const gameIds = data.map((g) => g.id);
-      const { data: likesData } = await supabase
-        .from("game_likes")
-        .select("game_id, user_id")
-        .in("game_id", gameIds);
-
+      const { data: likesData } = await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds);
       const processed = data.map((g) => {
         const gameLikes = (likesData || []).filter((l) => l.game_id === g.id);
         return {
@@ -76,9 +60,7 @@ const Feed = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchFeed();
-  }, [user]);
+  useEffect(() => { fetchFeed(); }, [user]);
 
   const toggleLike = async (gameId: string, isLiked: boolean) => {
     if (!user) return;
@@ -92,97 +74,64 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <header className="border-b-2 border-primary p-4">
-        <h1 className="font-pixel text-lg text-primary neon-text text-center animate-flicker">
-          ALLEY CAT
-        </h1>
-        <p className="font-pixel text-[8px] text-secondary text-center mt-1 orange-text">
-          YOUR FEED
-        </p>
+      <header className="border-b border-border p-4 text-center">
+        <h1 className="text-2xl text-primary tracking-wide">🎳 ALLEY CAT 🎳</h1>
+        <p className="text-sm text-secondary mt-1">Your Feed</p>
+        <hr className="border-primary mt-3" />
       </header>
 
       {loading ? (
-        <div className="p-8 text-center">
-          <p className="font-pixel text-xs text-muted-foreground animate-pulse-neon">LOADING...</p>
-        </div>
+        <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
       ) : games.length === 0 ? (
-        <div className="p-8 text-center space-y-3">
-          <p className="font-pixel text-xs text-muted-foreground">NO GAMES IN YOUR FEED</p>
-          <p className="text-sm text-muted-foreground">
-            Follow other bowlers or <Link to="/log" className="text-primary neon-text">log your first game</Link>!
+        <div className="p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-3">No games in your feed yet.</p>
+          <p className="text-sm text-foreground">
+            Follow other bowlers or <Link to="/log" className="text-primary">log your first game</Link>!
           </p>
-          <Link
-            to="/alleys"
-            className="inline-block border-2 border-primary px-4 py-2 font-pixel text-[8px] text-primary hover:bg-primary hover:text-primary-foreground transition-all"
-          >
-            BROWSE ALLEYS
-          </Link>
+          <p className="mt-3">
+            <Link to="/alleys" className="text-primary text-sm">[Browse Alleys]</Link>
+          </p>
         </div>
       ) : (
         <div className="p-4 space-y-3">
           {games.map((game) => (
-            <div key={game.id} className="border-2 border-muted bg-card p-4">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-3">
-                <Link
-                  to={`/bowler/${game.user_id}`}
-                  className="flex items-center gap-2"
-                >
-                  <div className="w-8 h-8 border-2 border-secondary bg-muted flex items-center justify-center">
-                    <span className="font-pixel text-[8px] text-secondary">
-                      {game.profiles?.username?.charAt(0)?.toUpperCase() || "?"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">
-                      {game.profiles?.username || "Unknown"}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(game.created_at), { addSuffix: true })}
-                    </p>
-                  </div>
+            <div key={game.id} className="border border-border bg-card p-3">
+              <div className="flex items-center justify-between mb-2">
+                <Link to={`/bowler/${game.user_id}`} className="text-primary text-sm font-bold hover:underline">
+                  {game.profiles?.username || "Unknown"}
                 </Link>
-                <div className="text-right">
-                  <p className="font-pixel text-2xl text-primary neon-text">{game.score}</p>
-                </div>
+                <span className="text-xl text-primary font-bold">{game.score}</span>
               </div>
-
-              {/* Alley info */}
+              <p className="text-xs text-muted-foreground mb-1">
+                {formatDistanceToNow(new Date(game.created_at), { addSuffix: true })}
+              </p>
               {game.alleys && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-                  <MapPin size={10} />
-                  <span>{game.alleys.name} · {game.alleys.city}, {game.alleys.state}</span>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  📍 {game.alleys.name} — {game.alleys.city}, {game.alleys.state}
+                </p>
               )}
-
-              {/* Oil + notes */}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="border border-primary px-2 py-0.5 font-pixel text-[7px] text-primary">
-                  {game.oil_condition}
-                </span>
-                <span className="text-[10px] text-muted-foreground">{game.date}</span>
+              <div className="flex items-center gap-3 mt-2 text-xs">
+                <span className="text-foreground border border-border px-1">{game.oil_condition}</span>
+                <span className="text-muted-foreground">{game.date}</span>
               </div>
-
-              {game.notes && (
-                <p className="text-xs text-muted-foreground italic mb-3">"{game.notes}"</p>
-              )}
-
-              {/* Actions */}
-              <div className="flex items-center gap-4 border-t border-muted pt-2">
+              {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
+              <div className="border-t border-border mt-2 pt-2">
                 <button
                   onClick={() => toggleLike(game.id, game.is_liked)}
-                  className={`flex items-center gap-1 text-xs transition-all ${
-                    game.is_liked ? "text-secondary" : "text-muted-foreground hover:text-secondary"
-                  }`}
+                  className={`text-xs transition-colors ${game.is_liked ? "text-secondary font-bold" : "text-muted-foreground hover:text-secondary"}`}
                 >
-                  <Heart size={14} fill={game.is_liked ? "currentColor" : "none"} />
-                  <span>{game.likes_count}</span>
+                  {game.is_liked ? "♥" : "♡"} {game.likes_count} likes
                 </button>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      <div className="text-center p-4">
+        <hr className="border-border mb-3" />
+        <p className="text-xs text-muted-foreground">⚡ Alley Cat © {new Date().getFullYear()}</p>
+      </div>
     </div>
   );
 };

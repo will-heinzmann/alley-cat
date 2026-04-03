@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, User, Trophy, Target, TrendingUp, UserPlus, UserMinus } from "lucide-react";
 
 const BowlerProfile = () => {
   const { userId } = useParams();
@@ -27,20 +26,17 @@ const BowlerProfile = () => {
       supabase.from("follows").select("id").eq("following_id", userId!),
       supabase.from("follows").select("id").eq("follower_id", userId!),
     ]);
-
     setProfile(profileRes.data);
     const gamesData = gamesRes.data || [];
     setGames(gamesData);
     setFollowersCount(followersRes.data?.length || 0);
     setFollowingCount(followingRes.data?.length || 0);
 
-    // Check if current user follows this bowler
     if (user && userId !== user.id) {
       const { data } = await supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", userId!);
       setIsFollowing((data?.length || 0) > 0);
     }
 
-    // Year stats
     const thisYear = new Date().getFullYear();
     const yearGames = gamesData.filter((g: any) => new Date(g.date).getFullYear() === thisYear);
     setYearStats({
@@ -49,7 +45,6 @@ const BowlerProfile = () => {
       highScore: yearGames.length > 0 ? Math.max(...yearGames.map((g: any) => g.score)) : 0,
       totalPoints: profileRes.data?.total_points || 0,
     });
-
     setLoading(false);
   };
 
@@ -64,123 +59,98 @@ const BowlerProfile = () => {
     setFollowersCount((c) => isFollowing ? c - 1 : c + 1);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-pixel text-xs text-muted-foreground animate-pulse-neon">LOADING...</p>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="font-pixel text-xs text-muted-foreground">BOWLER NOT FOUND</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Loading...</p></div>;
+  if (!profile) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Bowler not found.</p></div>;
 
   const isOwnProfile = user?.id === userId;
 
   return (
     <div className="min-h-screen pb-20">
-      <header className="border-b-2 border-primary p-4 flex items-center gap-3">
-        <Link to="/" className="text-primary">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="font-pixel text-xs text-primary neon-text">
-          {isOwnProfile ? "MY STATS" : profile.username?.toUpperCase()}
+      <header className="border-b border-border p-4">
+        <Link to="/" className="text-primary text-xs">← Back</Link>
+        <h1 className="text-lg text-primary mt-1">
+          {isOwnProfile ? "👤 My Stats" : `👤 ${profile.username}`}
         </h1>
+        <hr className="border-primary mt-2" />
       </header>
 
       <div className="p-4 space-y-4">
-        {/* Profile Header */}
-        <div className="border-2 border-primary bg-card p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-14 h-14 border-2 border-secondary bg-muted flex items-center justify-center">
-                <User size={24} className="text-secondary" />
-              </div>
-              <div>
-                <h2 className="font-pixel text-sm text-primary neon-text">{profile.username}</h2>
-                <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown"}</p>
-              </div>
+        {/* Profile Info */}
+        <div className="border border-border bg-card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-lg text-primary font-bold">{profile.username}</p>
+              <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
             </div>
             {!isOwnProfile && user && (
               <button
                 onClick={toggleFollow}
-                className={`border-2 px-3 py-1.5 font-pixel text-[7px] flex items-center gap-1 transition-all ${
-                  isFollowing
-                    ? "border-muted text-muted-foreground hover:border-destructive hover:text-destructive"
-                    : "border-secondary bg-secondary text-secondary-foreground hover:orange-border"
+                className={`border border-border px-3 py-1 text-xs transition-colors ${
+                  isFollowing ? "text-muted-foreground hover:text-destructive" : "bg-secondary text-secondary-foreground hover:opacity-80"
                 }`}
               >
-                {isFollowing ? <><UserMinus size={10} /> UNFOLLOW</> : <><UserPlus size={10} /> FOLLOW</>}
+                {isFollowing ? "[Unfollow]" : "[Follow]"}
               </button>
             )}
           </div>
-
-          {/* Follow counts */}
-          <div className="flex gap-4 mb-4 text-xs">
-            <span className="text-foreground"><strong>{followersCount}</strong> <span className="text-muted-foreground">followers</span></span>
-            <span className="text-foreground"><strong>{followingCount}</strong> <span className="text-muted-foreground">following</span></span>
-            <span className="text-foreground"><strong>{profile.games_count}</strong> <span className="text-muted-foreground">games</span></span>
-          </div>
-
-          {profile.bio && <p className="text-xs text-muted-foreground italic">{profile.bio}</p>}
+          <p className="text-xs text-foreground">
+            <strong>{followersCount}</strong> followers · <strong>{followingCount}</strong> following · <strong>{profile.games_count}</strong> games
+          </p>
+          {profile.bio && <p className="text-xs text-muted-foreground italic mt-2">{profile.bio}</p>}
         </div>
 
         {/* Year Stats */}
         <div>
-          <h2 className="font-pixel text-[10px] text-secondary orange-text mb-2">
-            {new Date().getFullYear()} SEASON
-          </h2>
-          <div className="grid grid-cols-4 gap-2">
-            {[
-              { icon: Trophy, value: yearStats.totalPoints, label: "PTS", highlight: true },
-              { icon: Target, value: yearStats.highScore || "-", label: "HIGH", highlight: false },
-              { icon: TrendingUp, value: yearStats.avgScore || "-", label: "AVG", highlight: false },
-              { icon: Target, value: yearStats.games, label: "GAMES", highlight: false },
-            ].map((s, i) => (
-              <div key={i} className="border-2 border-primary bg-muted/30 p-2 text-center">
-                <s.icon size={14} className={s.highlight ? "text-secondary mx-auto mb-1" : "text-primary mx-auto mb-1"} />
-                <p className={`font-pixel text-sm ${s.highlight ? "text-secondary" : "text-foreground"}`}>{s.value}</p>
-                <p className="font-pixel text-[6px] text-muted-foreground mt-1">{s.label}</p>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-sm text-secondary font-bold mb-2">📊 {new Date().getFullYear()} Season</h2>
+          <table className="w-full border-collapse border border-border text-sm">
+            <thead>
+              <tr className="bg-muted">
+                <th className="border border-border p-2 text-xs text-muted-foreground">Points</th>
+                <th className="border border-border p-2 text-xs text-muted-foreground">High</th>
+                <th className="border border-border p-2 text-xs text-muted-foreground">Avg</th>
+                <th className="border border-border p-2 text-xs text-muted-foreground">Games</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-card text-center">
+                <td className="border border-border p-2 text-secondary font-bold">{yearStats.totalPoints}</td>
+                <td className="border border-border p-2 text-foreground">{yearStats.highScore || "-"}</td>
+                <td className="border border-border p-2 text-foreground">{yearStats.avgScore || "-"}</td>
+                <td className="border border-border p-2 text-foreground">{yearStats.games}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         {/* Game History */}
         <div>
-          <h2 className="font-pixel text-[10px] text-primary mb-2">GAME HISTORY</h2>
+          <h2 className="text-sm text-primary font-bold mb-2">🎳 Game History</h2>
           {games.length === 0 ? (
-            <div className="border-2 border-muted p-6 text-center">
-              <p className="font-pixel text-[9px] text-muted-foreground">NO GAMES YET</p>
-            </div>
+            <p className="text-sm text-muted-foreground border border-border p-4 text-center">No games yet.</p>
           ) : (
-            <div className="border-2 border-primary">
-              <div className="grid grid-cols-12 bg-muted border-b-2 border-primary px-3 py-2">
-                <span className="col-span-5 font-pixel text-[7px] text-muted-foreground">ALLEY</span>
-                <span className="col-span-3 font-pixel text-[7px] text-muted-foreground">DATE</span>
-                <span className="col-span-2 font-pixel text-[7px] text-muted-foreground text-right">OIL</span>
-                <span className="col-span-2 font-pixel text-[7px] text-muted-foreground text-right">SCR</span>
-              </div>
-              {games.map((game, i) => {
-                const alley = Array.isArray(game.alleys) ? game.alleys[0] : game.alleys;
-                return (
-                  <div
-                    key={game.id}
-                    className={`grid grid-cols-12 px-3 py-2 items-center ${i % 2 === 0 ? "bg-card" : "bg-muted/30"}`}
-                  >
-                    <span className="col-span-5 text-xs text-foreground truncate">{alley?.name || "Unknown"}</span>
-                    <span className="col-span-3 text-[10px] text-muted-foreground">{game.date?.slice(5)}</span>
-                    <span className="col-span-2 text-[10px] text-muted-foreground text-right">{game.oil_condition?.slice(0, 3)}</span>
-                    <span className="col-span-2 text-xs text-primary text-right font-bold">{game.score}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <table className="w-full border-collapse border border-border text-sm">
+              <thead>
+                <tr className="bg-muted">
+                  <th className="border border-border p-2 text-left text-xs text-muted-foreground">Alley</th>
+                  <th className="border border-border p-2 text-xs text-muted-foreground">Date</th>
+                  <th className="border border-border p-2 text-xs text-muted-foreground">Oil</th>
+                  <th className="border border-border p-2 text-right text-xs text-muted-foreground">Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {games.map((game, i) => {
+                  const alley = Array.isArray(game.alleys) ? game.alleys[0] : game.alleys;
+                  return (
+                    <tr key={game.id} className={i % 2 === 0 ? "bg-card" : "bg-muted/30"}>
+                      <td className="border border-border p-2 text-foreground">{alley?.name || "Unknown"}</td>
+                      <td className="border border-border p-2 text-center text-muted-foreground text-xs">{game.date?.slice(5)}</td>
+                      <td className="border border-border p-2 text-center text-muted-foreground text-xs">{game.oil_condition?.slice(0, 3)}</td>
+                      <td className="border border-border p-2 text-right text-primary font-bold">{game.score}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           )}
         </div>
       </div>
