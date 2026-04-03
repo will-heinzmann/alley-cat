@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+const getAvatarUrl = (path: string | null) => {
+  if (!path) return null;
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  return data.publicUrl;
+};
+
 const BowlerProfile = () => {
   const { userId } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -20,6 +27,7 @@ const BowlerProfile = () => {
   const [editHometown, setEditHometown] = useState("");
   const [editBio, setEditBio] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
