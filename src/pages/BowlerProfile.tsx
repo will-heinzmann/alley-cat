@@ -109,26 +109,64 @@ const BowlerProfile = () => {
       <div className="p-4 space-y-4">
         {/* Profile Info */}
         <div className="border border-border bg-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-lg text-primary font-bold">{profile.username}</p>
-              <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
+          {editing ? (
+            <div className="space-y-2">
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Username:</label>
+                <input value={editUsername} onChange={e => setEditUsername(e.target.value)}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Hometown:</label>
+                <input value={editHometown} onChange={e => setEditHometown(e.target.value)}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" placeholder="e.g. Brooklyn, NY" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Bio:</label>
+                <textarea value={editBio} onChange={e => setEditBio(e.target.value)} rows={2}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none resize-none" placeholder="Tell us about your game..." />
+              </div>
+              <div className="flex gap-2">
+                <button onClick={saveProfile} disabled={savingProfile}
+                  className="border border-border bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 disabled:opacity-50">
+                  {savingProfile ? "Saving..." : "[Save]"}
+                </button>
+                <button onClick={() => setEditing(false)}
+                  className="border border-border px-3 py-1 text-xs text-muted-foreground hover:opacity-80">
+                  [Cancel]
+                </button>
+              </div>
             </div>
-            {!isOwnProfile && user && (
-              <button
-                onClick={toggleFollow}
-                className={`border border-border px-3 py-1 text-xs transition-colors ${
-                  isFollowing ? "text-muted-foreground hover:text-destructive" : "bg-secondary text-secondary-foreground hover:opacity-80"
-                }`}
-              >
-                {isFollowing ? "[Unfollow]" : "[Follow]"}
-              </button>
-            )}
-          </div>
-          <p className="text-xs text-foreground">
-            <strong>{followersCount}</strong> followers · <strong>{followingCount}</strong> following · <strong>{profile.games_count}</strong> games
-          </p>
-          {profile.bio && <p className="text-xs text-muted-foreground italic mt-2">{profile.bio}</p>}
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-lg text-primary font-bold">{profile.username}</p>
+                  <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
+                </div>
+                <div className="flex gap-1">
+                  {isOwnProfile && (
+                    <button onClick={startEditing}
+                      className="border border-border px-3 py-1 text-xs text-muted-foreground hover:text-primary">
+                      [Edit]
+                    </button>
+                  )}
+                  {!isOwnProfile && user && (
+                    <button onClick={toggleFollow}
+                      className={`border border-border px-3 py-1 text-xs transition-colors ${
+                        isFollowing ? "text-muted-foreground hover:text-destructive" : "bg-secondary text-secondary-foreground hover:opacity-80"
+                      }`}>
+                      {isFollowing ? "[Unfollow]" : "[Follow]"}
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-foreground">
+                <strong>{followersCount}</strong> followers · <strong>{followingCount}</strong> following · <strong>{profile.games_count}</strong> games
+              </p>
+              {profile.bio && <p className="text-xs text-muted-foreground italic mt-2">{profile.bio}</p>}
+            </>
+          )}
         </div>
 
         {/* Year Stats */}
