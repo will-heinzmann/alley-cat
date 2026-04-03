@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import FrameByFrameInput from "@/components/FrameByFrameInput";
 
 interface FrameScore {
   roll1: string;
@@ -128,6 +129,8 @@ const ScoreLog = () => {
   const [notes, setNotes] = useState("");
   const [selectedGame, setSelectedGame] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
+  const [frameScore, setFrameScore] = useState<number>(0);
 
   useEffect(() => { fetchData(); }, [user]);
 
@@ -171,11 +174,30 @@ const ScoreLog = () => {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="p-4 border-b border-border bg-card space-y-2">
-          <div>
-            <label className="text-xs text-muted-foreground block mb-1">Score (0-300):</label>
-            <input type="number" min="0" max="300" value={score} onChange={(e) => setScore(e.target.value)}
-              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required />
+          <div className="flex gap-1 mb-2">
+            <button type="button" onClick={() => setEntryMode("total")}
+              className={`text-xs px-2 py-1 border ${entryMode === "total" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [Total Score]
+            </button>
+            <button type="button" onClick={() => setEntryMode("frame")}
+              className={`text-xs px-2 py-1 border ${entryMode === "frame" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [Frame-by-Frame]
+            </button>
           </div>
+
+          {entryMode === "total" ? (
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Score (0-300):</label>
+              <input type="number" min="0" max="300" value={score} onChange={(e) => setScore(e.target.value)}
+                className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required />
+            </div>
+          ) : (
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Enter each roll:</label>
+              <FrameByFrameInput onScoreChange={(total) => { setFrameScore(total); setScore(String(total)); }} />
+              <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
+            </div>
+          )}
           <div>
             <label className="text-xs text-muted-foreground block mb-1">Alley:</label>
             <select value={alleyId} onChange={(e) => setAlleyId(e.target.value)}
