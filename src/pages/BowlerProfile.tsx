@@ -143,6 +143,23 @@ const BowlerProfile = () => {
         <div className="border border-border bg-card p-4">
           {editing ? (
             <div className="space-y-2">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="relative">
+                  {profile.avatar_url ? (
+                    <img src={getAvatarUrl(profile.avatar_url) || ""} alt="avatar"
+                      className="w-14 h-14 border-2 border-border object-cover" />
+                  ) : (
+                    <div className="w-14 h-14 border-2 border-border bg-muted flex items-center justify-center text-2xl">🎳</div>
+                  )}
+                  <button onClick={() => fileInputRef.current?.click()}
+                    className="absolute -bottom-1 -right-1 border border-border bg-card px-1 text-[10px] text-muted-foreground hover:text-primary"
+                    disabled={uploadingAvatar}>
+                    {uploadingAvatar ? "..." : "📷"}
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                </div>
+                <p className="text-xs text-muted-foreground">Tap 📷 to change photo</p>
+              </div>
               <div>
                 <label className="text-xs text-muted-foreground block mb-1">Username:</label>
                 <input value={editUsername} onChange={e => setEditUsername(e.target.value)}
