@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
-import { Search, MapPin } from "lucide-react";
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -29,68 +28,60 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <header className="border-b-2 border-primary p-4">
-        <h1 className="font-pixel text-lg text-primary neon-text text-center animate-flicker">
-          ALLEY CAT
+      <header className="border-b border-border p-4 text-center">
+        <h1 className="text-2xl text-primary tracking-wide">
+          🎳 ALLEY CAT 🎳
         </h1>
-        <p className="font-pixel text-[8px] text-secondary text-center mt-1 orange-text">
-          FIND YOUR LANE
+        <p className="text-sm text-secondary mt-1">
+          Find Your Lane
         </p>
+        <hr className="border-primary mt-3" />
       </header>
-
-      {/* Map Placeholder */}
-      <div className="border-b-2 border-primary bg-muted h-48 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-primary rounded-full animate-pulse-neon"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 2}s`,
-              }}
-            />
-          ))}
-        </div>
-        <div className="text-center z-10">
-          <MapPin size={32} className="text-primary mx-auto mb-2 neon-text" />
-          <p className="font-pixel text-[10px] text-muted-foreground">MAP VIEW</p>
-          <p className="text-xs text-muted-foreground mt-1">{alleys.length} alleys loaded</p>
-        </div>
-      </div>
 
       {/* Search */}
       <div className="p-4">
-        <div className="flex items-center border-2 border-primary bg-input px-3 py-2">
-          <Search size={16} className="text-primary mr-2" />
-          <input
-            type="text"
-            placeholder="Search city, state, or alley..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-foreground text-sm w-full outline-none placeholder:text-muted-foreground"
-          />
-        </div>
+        <table className="w-full border border-border">
+          <tbody>
+            <tr>
+              <td className="border border-border p-2 bg-muted text-sm font-pixel text-xs">Search:</td>
+              <td className="border border-border p-1">
+                <input
+                  type="text"
+                  placeholder="City, state, or alley name..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full bg-input border border-border px-2 py-1 text-foreground text-sm outline-none"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Alley List */}
-      <div className="px-4 space-y-3">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-pixel text-[10px] text-primary">DIRECTORY [{filtered.length}]</h2>
-        </div>
+      <div className="px-4">
+        <h2 className="text-sm text-primary border-b border-primary pb-1 mb-3">
+          📋 DIRECTORY — {filtered.length} alleys
+        </h2>
         {loading ? (
-          <div className="p-8 text-center">
-            <p className="font-pixel text-xs text-muted-foreground animate-pulse-neon">LOADING...</p>
-          </div>
+          <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
         ) : filtered.length === 0 ? (
-          <div className="border-2 border-muted p-8 text-center">
-            <p className="font-pixel text-xs text-muted-foreground">NO ALLEYS FOUND</p>
-            <p className="text-xs text-muted-foreground mt-2">Alleys will appear here once data is imported</p>
+          <div className="border border-border p-6 text-center">
+            <p className="text-sm text-muted-foreground">No alleys found.</p>
+            <p className="text-xs text-muted-foreground mt-1">Alleys will appear here once data is imported.</p>
           </div>
         ) : (
-          filtered.map((alley) => <AlleyCard key={alley.id} alley={alley} />)
+          <div className="space-y-2">
+            {filtered.map((alley) => <AlleyCard key={alley.id} alley={alley} />)}
+          </div>
         )}
+      </div>
+
+      <div className="text-center p-6 mt-4">
+        <hr className="border-border mb-3" />
+        <p className="text-xs text-muted-foreground">
+          ⚡ Alley Cat © {new Date().getFullYear()} — Best viewed at 800x600
+        </p>
       </div>
     </div>
   );
