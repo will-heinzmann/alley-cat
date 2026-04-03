@@ -74,6 +74,30 @@ const BowlerProfile = () => {
     setFollowersCount((c) => isFollowing ? c - 1 : c + 1);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+      setUploadingAvatar(false);
+      return;
+    }
+    
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: filePath }).eq("user_id", user.id);
+    if (updateError) {
+      toast({ title: "Error", description: updateError.message, variant: "destructive" });
+    } else {
+      toast({ title: "Profile picture updated!" });
+      fetchData();
+    }
+    setUploadingAvatar(false);
+  };
+
   const startEditing = () => {
     setEditUsername(profile?.username || "");
     setEditHometown(profile?.hometown || "");
