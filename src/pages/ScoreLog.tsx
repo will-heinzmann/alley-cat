@@ -129,6 +129,8 @@ const ScoreLog = () => {
   const [notes, setNotes] = useState("");
   const [selectedGame, setSelectedGame] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
+  const [frameScore, setFrameScore] = useState<number>(0);
 
   useEffect(() => { fetchData(); }, [user]);
 
