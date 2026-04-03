@@ -3,13 +3,16 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import AlleyDetail from "./pages/AlleyDetail.tsx";
-import ScoreLog from "./pages/ScoreLog.tsx";
-import Leaderboard from "./pages/Leaderboard.tsx";
-import ProfilePage from "./pages/ProfilePage.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import BottomNav from "./components/BottomNav.tsx";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Feed from "./pages/Feed";
+import Index from "./pages/Index";
+import AlleyDetail from "./pages/AlleyDetail";
+import ScoreLog from "./pages/ScoreLog";
+import Leaderboard from "./pages/Leaderboard";
+import BowlerProfile from "./pages/BowlerProfile";
+import AuthPage from "./pages/AuthPage";
+import NotFound from "./pages/NotFound";
+import BottomNav from "./components/BottomNav";
 
 const queryClient = new QueryClient();
 
@@ -19,15 +22,19 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/alley/:id" element={<AlleyDetail />} />
-          <Route path="/log" element={<ScoreLog />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <BottomNav />
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Feed />} />
+            <Route path="/alleys" element={<Index />} />
+            <Route path="/alley/:id" element={<AlleyDetail />} />
+            <Route path="/log" element={<ScoreLog />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/bowler/:userId" element={<BowlerProfile />} />
+            <Route path="/auth" element={<AuthPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <BottomNav />
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
