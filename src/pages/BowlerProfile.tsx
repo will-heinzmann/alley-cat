@@ -66,6 +66,31 @@ const BowlerProfile = () => {
     setFollowersCount((c) => isFollowing ? c - 1 : c + 1);
   };
 
+  const startEditing = () => {
+    setEditUsername(profile?.username || "");
+    setEditHometown(profile?.hometown || "");
+    setEditBio(profile?.bio || "");
+    setEditing(true);
+  };
+
+  const saveProfile = async () => {
+    if (!user || !editUsername.trim()) return;
+    setSavingProfile(true);
+    const { error } = await supabase.from("profiles").update({
+      username: editUsername.trim(),
+      hometown: editHometown.trim() || null,
+      bio: editBio.trim() || null,
+    }).eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Profile updated!" });
+      setEditing(false);
+      fetchData();
+    }
+    setSavingProfile(false);
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Loading...</p></div>;
   if (!profile) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Bowler not found.</p></div>;
 
