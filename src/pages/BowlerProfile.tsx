@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
+const getAvatarUrl = (path: string | null) => {
+  if (!path) return null;
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  return data.publicUrl;
+};
+
 const BowlerProfile = () => {
   const { userId } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -20,6 +27,7 @@ const BowlerProfile = () => {
   const [editHometown, setEditHometown] = useState("");
   const [editBio, setEditBio] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -64,6 +72,30 @@ const BowlerProfile = () => {
     }
     setIsFollowing(!isFollowing);
     setFollowersCount((c) => isFollowing ? c - 1 : c + 1);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+      setUploadingAvatar(false);
+      return;
+    }
+    
+    const { error: updateError } = await supabase.from("profiles").update({ avatar_url: filePath }).eq("user_id", user.id);
+    if (updateError) {
+      toast({ title: "Error", description: updateError.message, variant: "destructive" });
+    } else {
+      toast({ title: "Profile picture updated!" });
+      fetchData();
+    }
+    setUploadingAvatar(false);
   };
 
   const startEditing = () => {
@@ -139,26 +171,48 @@ const BowlerProfile = () => {
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-lg text-primary font-bold">{profile.username}</p>
-                  <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
-                </div>
-                <div className="flex gap-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="relative">
+                  {profile.avatar_url ? (
+                    <img src={getAvatarUrl(profile.avatar_url) || ""} alt="avatar"
+                      className="w-14 h-14 border-2 border-border object-cover" />
+                  ) : (
+                    <div className="w-14 h-14 border-2 border-border bg-muted flex items-center justify-center text-2xl">🎳</div>
+                  )}
                   {isOwnProfile && (
-                    <button onClick={startEditing}
-                      className="border border-border px-3 py-1 text-xs text-muted-foreground hover:text-primary">
-                      [Edit]
-                    </button>
+                    <>
+                      <button onClick={() => fileInputRef.current?.click()}
+                        className="absolute -bottom-1 -right-1 border border-border bg-card px-1 text-[10px] text-muted-foreground hover:text-primary"
+                        disabled={uploadingAvatar}>
+                        {uploadingAvatar ? "..." : "📷"}
+                      </button>
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                    </>
                   )}
-                  {!isOwnProfile && user && (
-                    <button onClick={toggleFollow}
-                      className={`border border-border px-3 py-1 text-xs transition-colors ${
-                        isFollowing ? "text-muted-foreground hover:text-destructive" : "bg-secondary text-secondary-foreground hover:opacity-80"
-                      }`}>
-                      {isFollowing ? "[Unfollow]" : "[Follow]"}
-                    </button>
-                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg text-primary font-bold">{profile.username}</p>
+                      <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      {isOwnProfile && (
+                        <button onClick={startEditing}
+                          className="border border-border px-3 py-1 text-xs text-muted-foreground hover:text-primary">
+                          [Edit]
+                        </button>
+                      )}
+                      {!isOwnProfile && user && (
+                        <button onClick={toggleFollow}
+                          className={`border border-border px-3 py-1 text-xs transition-colors ${
+                            isFollowing ? "text-muted-foreground hover:text-destructive" : "bg-secondary text-secondary-foreground hover:opacity-80"
+                          }`}>
+                          {isFollowing ? "[Unfollow]" : "[Follow]"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
               <p className="text-xs text-foreground">
