@@ -13,6 +13,7 @@ import BowlerProfile from "./pages/BowlerProfile";
 import AuthPage from "./pages/AuthPage";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
+import Header from "./components/Header";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <Header />
           <Routes>
             <Route path="/" element={<Feed />} />
             <Route path="/alleys" element={<Index />} />
