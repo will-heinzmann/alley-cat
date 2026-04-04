@@ -1,36 +1,31 @@
 
 
-# Import Bowling Alley Data
+# Fix Alley Directory to Load All Data
 
-## Summary
-Import 1,430 US bowling alleys from the uploaded CSV into the `alleys` table using a direct `psql COPY` command.
+## Problem
+Supabase has a default limit of 1,000 rows per query. The current `fetchAlleys` call fetches only the first 1,000 alleys, so client-side filtering misses alleys beyond that limit (e.g., Chicago shows only 4 instead of all).
 
-## Data Mapping
-
-| CSV Column | Table Column | Notes |
-|---|---|---|
-| name | name | Direct map |
-| address | address | Direct map |
-| city | city | Direct map |
-| state | state | Direct map |
-| lat | lat | Direct map |
-| lng | lng | Direct map |
-| website | website | Direct map |
-| phone | phone | Direct map |
-| google_rating | — | Not in table (skip) |
-| description | — | Not in table (skip) |
-| image_url | — | Not in table (skip) |
-
-Columns `lane_count`, `oil_pattern`, and `beer_rating` will use their defaults (0, "House", 3).
+## Solution
+Paginate the initial fetch to load ALL alleys from the database, then continue filtering client-side as before. The display will still show paginated results for performance.
 
 ## Steps
 
-### 1. Import CSV data
-- Use a Python script to read the CSV, extract the mapped columns, and insert all ~1,430 rows into the `alleys` table via `psql`
-- Skip rows with missing required fields (name, address, city, state)
+### 1. Update `fetchAlleys` in `src/pages/Index.tsx`
+- Replace the single `.select("*")` call with a loop that fetches in batches of 1,000 using `.range(from, to)` until all rows are retrieved
+- Concatenate all batches into the `alleys` state
+- This ensures filters and search operate on the complete dataset
 
-### 2. Verify import
-- Query the database to confirm row count and spot-check a few entries
+### 2. Add pagination to the displayed results
+- Show only ~50 alleys at a time in the list with "Load More" or page navigation
+- This keeps the UI fast while the full dataset is available for filtering
 
-No schema changes or code changes needed — the existing app will display the imported alleys automatically.
+## Technical Detail
+```text
+Current:  supabase.from("alleys").select("*").order("name")  → max 1000 rows
+
+Fixed:    Loop with .range(0, 999), .range(1000, 1999), etc.
+          until a batch returns fewer than 1000 rows.
+          All rows stored in state → filters work on full dataset.
+          Display paginated (50 per page) for UI performance.
+```
 
