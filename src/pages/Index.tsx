@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
@@ -8,6 +8,9 @@ const HomePage = () => {
   const [search, setSearch] = useState("");
   const [alleys, setAlleys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stateFilter, setStateFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
+  const [minRating, setMinRating] = useState(0);
 
   useEffect(() => {
     fetchAlleys();
@@ -19,12 +22,29 @@ const HomePage = () => {
     setLoading(false);
   };
 
-  const filtered = alleys.filter(
-    (a) =>
+  const states = useMemo(() => {
+    const s = [...new Set(alleys.map((a) => a.state))].sort();
+    return s;
+  }, [alleys]);
+
+  const cities = useMemo(() => {
+    let filtered = alleys;
+    if (stateFilter) filtered = filtered.filter((a) => a.state === stateFilter);
+    return [...new Set(filtered.map((a) => a.city))].sort();
+  }, [alleys, stateFilter]);
+
+  const filtered = alleys.filter((a) => {
+    const matchesSearch =
+      !search ||
       a.name.toLowerCase().includes(search.toLowerCase()) ||
       a.city.toLowerCase().includes(search.toLowerCase()) ||
-      a.state.toLowerCase().includes(search.toLowerCase())
-  );
+      a.state.toLowerCase().includes(search.toLowerCase()) ||
+      a.address.toLowerCase().includes(search.toLowerCase());
+    const matchesState = !stateFilter || a.state === stateFilter;
+    const matchesCity = !cityFilter || a.city === cityFilter;
+    const matchesRating = a.alley_rating >= minRating;
+    return matchesSearch && matchesState && matchesCity && matchesRating;
+  });
 
   return (
     <div className="min-h-screen pb-20">
@@ -38,7 +58,7 @@ const HomePage = () => {
         <hr className="border-primary mt-3" />
       </header>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <div className="p-4">
         <table className="w-full border border-border">
           <tbody>
@@ -52,6 +72,40 @@ const HomePage = () => {
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-input border border-border px-2 py-1 text-foreground text-sm outline-none"
                 />
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-border p-2 bg-muted text-xs">State:</td>
+              <td className="border border-border p-1">
+                <select value={stateFilter} onChange={(e) => { setStateFilter(e.target.value); setCityFilter(""); }}
+                  className="w-full bg-input border border-border px-2 py-1 text-foreground text-sm outline-none">
+                  <option value="">All States</option>
+                  {states.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-border p-2 bg-muted text-xs">City:</td>
+              <td className="border border-border p-1">
+                <select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}
+                  className="w-full bg-input border border-border px-2 py-1 text-foreground text-sm outline-none">
+                  <option value="">All Cities</option>
+                  {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-border p-2 bg-muted text-xs">Min Rating:</td>
+              <td className="border border-border p-1">
+                <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
+                  className="w-full bg-input border border-border px-2 py-1 text-foreground text-sm outline-none">
+                  <option value={0}>Any</option>
+                  <option value={1}>⭐ 1+</option>
+                  <option value={2}>⭐ 2+</option>
+                  <option value={3}>⭐ 3+</option>
+                  <option value={4}>⭐ 4+</option>
+                  <option value={5}>⭐ 5</option>
+                </select>
               </td>
             </tr>
           </tbody>
@@ -68,7 +122,7 @@ const HomePage = () => {
         ) : filtered.length === 0 ? (
           <div className="border border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">No alleys found.</p>
-            <p className="text-xs text-muted-foreground mt-1">Alleys will appear here once data is imported.</p>
+            <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
           </div>
         ) : (
           <div className="space-y-2">

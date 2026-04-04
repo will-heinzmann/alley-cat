@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ const AlleyDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [alley, setAlley] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,14 @@ const AlleyDetail = () => {
       </header>
 
       <div className="p-4 space-y-4">
+        {/* Log Game Button */}
+        <button
+          onClick={() => user ? navigate(`/log?alley=${id}`) : navigate("/auth")}
+          className="w-full border border-border bg-secondary text-secondary-foreground py-2 text-xs hover:opacity-80"
+        >
+          [🎳 Log Game at This Alley]
+        </button>
+
         {/* Info Table */}
         <table className="w-full border-collapse border border-border text-sm">
           <tbody>
@@ -72,6 +81,7 @@ const AlleyDetail = () => {
             )}
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Lanes</td><td className="border border-border p-2 text-primary font-bold">{alley.lane_count}</td></tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Oil</td><td className="border border-border p-2 text-foreground">{alley.oil_pattern}</td></tr>
+            <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Alley Rating</td><td className="border border-border p-2 text-primary">{"⭐".repeat(alley.alley_rating)} ({alley.alley_rating}/5)</td></tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Beer</td><td className="border border-border p-2 text-secondary">{"🍺".repeat(alley.beer_rating)} ({alley.beer_rating}/5)</td></tr>
           </tbody>
         </table>
