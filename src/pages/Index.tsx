@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
 
+const BATCH_SIZE = 1000;
+const PAGE_SIZE = 50;
+
 const HomePage = () => {
   const { user } = useAuth();
   const [search, setSearch] = useState("");
@@ -11,14 +14,27 @@ const HomePage = () => {
   const [stateFilter, setStateFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [minRating, setMinRating] = useState(0);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchAlleys();
   }, []);
 
   const fetchAlleys = async () => {
-    const { data } = await supabase.from("alleys").select("*").order("name");
-    setAlleys(data || []);
+    let all: any[] = [];
+    let from = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("alleys")
+        .select("*")
+        .order("name")
+        .range(from, from + BATCH_SIZE - 1);
+      if (!data || data.length === 0) break;
+      all = all.concat(data);
+      if (data.length < BATCH_SIZE) break;
+      from += BATCH_SIZE;
+    }
+    setAlleys(all);
     setLoading(false);
   };
 
