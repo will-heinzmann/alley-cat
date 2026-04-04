@@ -148,9 +148,32 @@ const HomePage = () => {
             <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filtered.map((alley) => <AlleyCard key={alley.id} alley={alley} />)}
-          </div>
+          <>
+            <div className="space-y-2">
+              {paged.map((alley) => <AlleyCard key={alley.id} alley={alley} />)}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4 text-sm">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="border border-border px-3 py-1 bg-muted text-foreground disabled:opacity-40"
+                >
+                  ◀ Prev
+                </button>
+                <span className="text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="border border-border px-3 py-1 bg-muted text-foreground disabled:opacity-40"
+                >
+                  Next ▶
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
