@@ -4,11 +4,13 @@ interface AlleyCardProps {
   alley: {
     id: string;
     name: string;
+    address: string;
     city: string;
     state: string;
     lane_count: number;
     oil_pattern: string;
     beer_rating: number;
+    alley_rating: number;
   };
 }
 
@@ -21,10 +23,10 @@ const AlleyCard = ({ alley }: AlleyCardProps) => {
           <span className="text-xs text-secondary">{alley.lane_count} lanes</span>
         </div>
         <div className="text-xs text-muted-foreground mb-2">
-          📍 {alley.city}, {alley.state}
+          📍 {alley.address}, {alley.city}, {alley.state}
         </div>
         <div className="flex items-center justify-between text-xs">
-          <span className="text-foreground">Oil: {alley.oil_pattern}</span>
+          <span className="text-foreground">⭐ {alley.alley_rating}/5</span>
           <span className="text-secondary">
             {"🍺".repeat(alley.beer_rating)}{"·".repeat(5 - alley.beer_rating)}
           </span>

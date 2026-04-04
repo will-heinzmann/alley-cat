@@ -17,6 +17,7 @@ export type Database = {
       alleys: {
         Row: {
           address: string
+          alley_rating: number
           beer_rating: number
           city: string
           created_at: string
@@ -33,6 +34,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          alley_rating?: number
           beer_rating?: number
           city: string
           created_at?: string
@@ -49,6 +51,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          alley_rating?: number
           beer_rating?: number
           city?: string
           created_at?: string

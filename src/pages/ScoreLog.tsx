@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
 
@@ -122,6 +122,7 @@ const ScoreLog = () => {
   const [games, setGames] = useState<any[]>([]);
   const [alleys, setAlleys] = useState<any[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [searchParams] = useSearchParams();
   const [score, setScore] = useState("");
   const [alleyId, setAlleyId] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
@@ -131,6 +132,15 @@ const ScoreLog = () => {
   const [saving, setSaving] = useState(false);
   const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
   const [frameScore, setFrameScore] = useState<number>(0);
+
+  // Pre-select alley from query param
+  useEffect(() => {
+    const alleyParam = searchParams.get("alley");
+    if (alleyParam) {
+      setAlleyId(alleyParam);
+      setShowForm(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => { fetchData(); }, [user]);
 

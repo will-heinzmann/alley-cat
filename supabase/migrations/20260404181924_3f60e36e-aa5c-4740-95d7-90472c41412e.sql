@@ -1,0 +1,1 @@
+ALTER TABLE public.alleys ADD COLUMN alley_rating integer NOT NULL DEFAULT 3;
