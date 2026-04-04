@@ -132,6 +132,8 @@ const ScoreLog = () => {
   const [saving, setSaving] = useState(false);
   const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
   const [frameScore, setFrameScore] = useState<number>(0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Pre-select alley from query param
   useEffect(() => {
