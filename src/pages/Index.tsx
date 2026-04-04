@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { Link } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useAuth } from "@/contexts/AuthContext";
+import AlleyCard from "@/components/AlleyCard";
 
 const BATCH_SIZE = 1000;
 const PAGE_SIZE = 50;
