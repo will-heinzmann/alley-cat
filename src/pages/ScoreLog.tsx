@@ -171,6 +171,7 @@ const ScoreLog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
+    if (!alleyId) { toast({ title: "Please select an alley" }); return; }
     setSaving(true);
     let imageUrl: string | null = null;
     if (imageFile) {
