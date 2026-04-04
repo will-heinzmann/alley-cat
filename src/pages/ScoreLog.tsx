@@ -171,6 +171,7 @@ const ScoreLog = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
+    if (!alleyId) { toast({ title: "Please select an alley" }); return; }
     setSaving(true);
     let imageUrl: string | null = null;
     if (imageFile) {
@@ -240,19 +241,43 @@ const ScoreLog = () => {
             <label className="text-xs text-muted-foreground block mb-1">Alley:</label>
             <input
               type="text"
-              placeholder="Search alleys..."
+              placeholder="Type to search alleys..."
               value={alleySearch}
-              onChange={(e) => setAlleySearch(e.target.value)}
-              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none mb-1"
+              onChange={(e) => {
+                setAlleySearch(e.target.value);
+                setAlleyId("");
+              }}
+              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none"
             />
-            <select value={alleyId} onChange={(e) => setAlleyId(e.target.value)}
-              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required>
-              <option value="">Select alley...</option>
-              {alleys
-                .filter((a) => !alleySearch || `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase()))
-                .slice(0, 100)
-                .map((a) => <option key={a.id} value={a.id}>{a.name} — {a.city}, {a.state}</option>)}
-            </select>
+            {alleyId && (
+              <p className="text-xs text-primary mt-1">
+                ✓ {alleys.find((a) => a.id === alleyId)?.name}
+              </p>
+            )}
+            {alleySearch && !alleyId && (
+              <div className="absolute z-10 w-full border border-border bg-card max-h-40 overflow-y-auto mt-0.5">
+                {alleys
+                  .filter((a) => `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase()))
+                  .slice(0, 50)
+                  .map((a) => (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => {
+                        setAlleyId(a.id);
+                        setAlleySearch(a.name);
+                      }}
+                      className="w-full text-left px-2 py-1 text-xs text-foreground hover:bg-muted border-b border-border last:border-0"
+                    >
+                      {a.name} — {a.city}, {a.state}
+                    </button>
+                  ))}
+                {alleys.filter((a) => `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase())).length === 0 && (
+                  <p className="px-2 py-1 text-xs text-muted-foreground">No alleys found</p>
+                )}
+              </div>
+            )}
+            <input type="hidden" value={alleyId} required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

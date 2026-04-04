@@ -2,7 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { Link } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
+// Fix default leaflet marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
 const BATCH_SIZE = 1000;
 const PAGE_SIZE = 50;
 
@@ -15,6 +26,7 @@ const HomePage = () => {
   const [cityFilter, setCityFilter] = useState("");
   const [minRating, setMinRating] = useState(0);
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
     fetchAlleys();
@@ -135,17 +147,55 @@ const HomePage = () => {
         </table>
       </div>
 
-      {/* Alley List */}
+      {/* View Toggle & Alley List/Map */}
       <div className="px-4">
-        <h2 className="text-sm text-primary border-b border-primary pb-1 mb-3">
-          📋 DIRECTORY — {filtered.length} alleys
-        </h2>
+        <div className="flex items-center justify-between border-b border-primary pb-1 mb-3">
+          <h2 className="text-sm text-primary">
+            📋 DIRECTORY — {filtered.length} alleys
+          </h2>
+          <div className="flex gap-1">
+            <button onClick={() => setViewMode("list")}
+              className={`text-xs px-2 py-0.5 border ${viewMode === "list" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [List]
+            </button>
+            <button onClick={() => setViewMode("map")}
+              className={`text-xs px-2 py-0.5 border ${viewMode === "map" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [Map]
+            </button>
+          </div>
+        </div>
         {loading ? (
           <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
         ) : filtered.length === 0 ? (
           <div className="border border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">No alleys found.</p>
             <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
+          </div>
+        ) : viewMode === "map" ? (
+          <div className="border border-border" style={{ height: "500px" }}>
+            <MapContainer
+              center={[39.8, -98.5]}
+              zoom={4}
+              style={{ height: "100%", width: "100%" }}
+              scrollWheelZoom={true}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {filtered.filter((a) => a.lat && a.lng && (a.lat !== 0 || a.lng !== 0)).slice(0, 500).map((alley) => (
+                <Marker key={alley.id} position={[alley.lat, alley.lng]}>
+                  <Popup>
+                    <div className="text-xs">
+                      <strong>{alley.name}</strong><br />
+                      {alley.city}, {alley.state}<br />
+                      ⭐ {alley.alley_rating}/5<br />
+                      <Link to={`/alley/${alley.id}`} className="text-blue-600 underline">View Details</Link>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
           </div>
         ) : (
           <>
