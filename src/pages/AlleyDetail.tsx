@@ -82,7 +82,18 @@ const AlleyDetail = () => {
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Lanes</td><td className="border border-border p-2 text-primary font-bold">{alley.lane_count}</td></tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Oil</td><td className="border border-border p-2 text-foreground">{alley.oil_pattern}</td></tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Alley Rating</td><td className="border border-border p-2 text-primary">{"⭐".repeat(alley.alley_rating)} ({alley.alley_rating}/5)</td></tr>
-            <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Beer</td><td className="border border-border p-2 text-secondary">{"🍺".repeat(alley.beer_rating)} ({alley.beer_rating}/5)</td></tr>
+            <tr>
+              <td className="border border-border p-2 text-muted-foreground bg-muted">
+                Beer Rating
+                <span className="inline-block ml-1 cursor-help" title="Rate the beer selection, quality, and pricing at this alley. This score comes from user reviews — be the first to rate it!">ℹ️</span>
+              </td>
+              <td className="border border-border p-2 text-secondary">
+                {alley.beer_rating === 0
+                  ? <span className="text-muted-foreground italic">No Reviews — be the first!</span>
+                  : <>{" 🍺".repeat(alley.beer_rating)} ({alley.beer_rating}/5)</>
+                }
+              </td>
+            </tr>
           </tbody>
         </table>
 

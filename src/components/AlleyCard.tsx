@@ -28,7 +28,7 @@ const AlleyCard = ({ alley }: AlleyCardProps) => {
         <div className="flex items-center justify-between text-xs">
           <span className="text-foreground">⭐ {alley.alley_rating}/5</span>
           <span className="text-secondary">
-            {"🍺".repeat(alley.beer_rating)}{"·".repeat(5 - alley.beer_rating)}
+            {alley.beer_rating === 0 ? "🍺 No Reviews" : `${"🍺".repeat(alley.beer_rating)} ${alley.beer_rating}/5`}
           </span>
         </div>
       </div>
