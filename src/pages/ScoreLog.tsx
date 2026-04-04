@@ -159,12 +159,25 @@ const ScoreLog = () => {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
     setSaving(true);
-    const { error } = await supabase.from("games").insert({ user_id: user.id, alley_id: alleyId, score: parseInt(score), date, oil_condition: oil, notes: notes || null });
+    let imageUrl: string | null = null;
+    if (imageFile) {
+      const ext = imageFile.name.split(".").pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("game-images").upload(path, imageFile);
+      if (uploadErr) {
+        toast({ title: "Image upload failed", description: uploadErr.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("game-images").getPublicUrl(path);
+      imageUrl = urlData.publicUrl;
+    }
+    const { error } = await supabase.from("games").insert({ user_id: user.id, alley_id: alleyId, score: parseInt(score), date, oil_condition: oil, notes: notes || null, image_url: imageUrl });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Game logged!", description: "+50 AlleyPoints" });
-      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); fetchData();
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); fetchData();
     }
     setSaving(false);
   };
