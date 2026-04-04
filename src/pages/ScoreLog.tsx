@@ -134,6 +134,7 @@ const ScoreLog = () => {
   const [frameScore, setFrameScore] = useState<number>(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [alleySearch, setAlleySearch] = useState("");
 
   // Pre-select alley from query param
   useEffect(() => {
@@ -147,12 +148,24 @@ const ScoreLog = () => {
   useEffect(() => { fetchData(); }, [user]);
 
   const fetchData = async () => {
-    const [gamesRes, alleysRes] = await Promise.all([
-      user ? supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", user.id).order("date", { ascending: false }) : Promise.resolve({ data: [] }),
-      supabase.from("alleys").select("id, name").order("name"),
-    ]);
+    const gamesRes = user
+      ? await supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", user.id).order("date", { ascending: false })
+      : { data: [] };
+
+    // Batch-fetch all alleys to avoid 1000 row limit
+    let allAlleys: any[] = [];
+    const BATCH = 1000;
+    let from = 0;
+    while (true) {
+      const { data: batch } = await supabase.from("alleys").select("id, name, city, state").order("name").range(from, from + BATCH - 1);
+      if (!batch || batch.length === 0) break;
+      allAlleys = [...allAlleys, ...batch];
+      if (batch.length < BATCH) break;
+      from += BATCH;
+    }
+
     setGames(gamesRes.data || []);
-    setAlleys(alleysRes.data || []);
+    setAlleys(allAlleys);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -223,12 +236,22 @@ const ScoreLog = () => {
               <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
             </div>
           )}
-          <div>
+          <div className="relative">
             <label className="text-xs text-muted-foreground block mb-1">Alley:</label>
+            <input
+              type="text"
+              placeholder="Search alleys..."
+              value={alleySearch}
+              onChange={(e) => setAlleySearch(e.target.value)}
+              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none mb-1"
+            />
             <select value={alleyId} onChange={(e) => setAlleyId(e.target.value)}
               className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required>
               <option value="">Select alley...</option>
-              {alleys.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {alleys
+                .filter((a) => !alleySearch || `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase()))
+                .slice(0, 100)
+                .map((a) => <option key={a.id} value={a.id}>{a.name} — {a.city}, {a.state}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-4">

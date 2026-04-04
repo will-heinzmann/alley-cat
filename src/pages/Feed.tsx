@@ -32,27 +32,36 @@ const Feed = () => {
       followingIds = (follows || []).map((f) => f.following_id);
     }
 
+    const userAndFollowing = user ? [...followingIds, user.id] : [];
+
     const query = supabase
       .from("games")
       .select(`id, score, date, oil_condition, notes, image_url, created_at, user_id,
-        profiles!games_user_id_fkey(username, avatar_url),
         alleys!games_alley_id_fkey(name, city, state)`)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    // If logged in with followers, get followers' + own games
-    const userAndFollowing = user ? [...followingIds, user.id] : [];
+    // Show own + followers' games; if not logged in show all
     if (userAndFollowing.length > 0) query.in("user_id", userAndFollowing);
 
     const { data } = await query;
     if (data) {
+      // Fetch profiles separately since there's no FK from games to profiles
+      const userIds = [...new Set(data.map((g) => g.user_id))];
+      const { data: profilesData } = await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds);
+      const profileMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
+
       const gameIds = data.map((g) => g.id);
-      const { data: likesData } = await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds);
+      const { data: likesData } = gameIds.length > 0
+        ? await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
+        : { data: [] };
+
       const processed = data.map((g) => {
         const gameLikes = (likesData || []).filter((l) => l.game_id === g.id);
+        const profile = profileMap.get(g.user_id);
         return {
           ...g,
-          profiles: Array.isArray(g.profiles) ? g.profiles[0] : g.profiles,
+          profiles: profile ? { username: profile.username, avatar_url: profile.avatar_url } : null,
           alleys: Array.isArray(g.alleys) ? g.alleys[0] : g.alleys,
           likes_count: gameLikes.length,
           is_liked: user ? gameLikes.some((l) => l.user_id === user.id) : false,
