@@ -148,12 +148,24 @@ const ScoreLog = () => {
   useEffect(() => { fetchData(); }, [user]);
 
   const fetchData = async () => {
-    const [gamesRes, alleysRes] = await Promise.all([
-      user ? supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", user.id).order("date", { ascending: false }) : Promise.resolve({ data: [] }),
-      supabase.from("alleys").select("id, name").order("name"),
-    ]);
+    const gamesRes = user
+      ? await supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", user.id).order("date", { ascending: false })
+      : { data: [] };
+
+    // Batch-fetch all alleys to avoid 1000 row limit
+    let allAlleys: any[] = [];
+    const BATCH = 1000;
+    let from = 0;
+    while (true) {
+      const { data: batch } = await supabase.from("alleys").select("id, name, city, state").order("name").range(from, from + BATCH - 1);
+      if (!batch || batch.length === 0) break;
+      allAlleys = [...allAlleys, ...batch];
+      if (batch.length < BATCH) break;
+      from += BATCH;
+    }
+
     setGames(gamesRes.data || []);
-    setAlleys(alleysRes.data || []);
+    setAlleys(allAlleys);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
