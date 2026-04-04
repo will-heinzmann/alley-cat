@@ -251,6 +251,17 @@ const ScoreLog = () => {
               className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none resize-none"
               placeholder="Ball choice, lane conditions..." />
           </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Photo (optional):</label>
+            <input type="file" accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setImageFile(f);
+                setImagePreview(f ? URL.createObjectURL(f) : null);
+              }}
+              className="w-full text-xs text-foreground" />
+            {imagePreview && <img src={imagePreview} alt="Preview" className="mt-1 max-h-32 border border-border" />}
+          </div>
           <button type="submit" disabled={saving}
             className="w-full border border-border bg-primary text-primary-foreground py-1.5 text-xs hover:opacity-80 disabled:opacity-50">
             {saving ? "Saving..." : "Save Game (+50 pts)"}
