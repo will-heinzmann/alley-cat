@@ -49,7 +49,11 @@ const HomePage = () => {
     return [...new Set(filtered.map((a) => a.city))].sort();
   }, [alleys, stateFilter]);
 
-  const filtered = alleys.filter((a) => {
+  useEffect(() => {
+    setPage(1);
+  }, [search, stateFilter, cityFilter, minRating]);
+
+  const filtered = useMemo(() => alleys.filter((a) => {
     const matchesSearch =
       !search ||
       a.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,7 +64,10 @@ const HomePage = () => {
     const matchesCity = !cityFilter || a.city === cityFilter;
     const matchesRating = a.alley_rating >= minRating;
     return matchesSearch && matchesState && matchesCity && matchesRating;
-  });
+  }), [alleys, search, stateFilter, cityFilter, minRating]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="min-h-screen pb-20">
