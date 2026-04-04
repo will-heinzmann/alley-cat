@@ -236,12 +236,22 @@ const ScoreLog = () => {
               <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
             </div>
           )}
-          <div>
+          <div className="relative">
             <label className="text-xs text-muted-foreground block mb-1">Alley:</label>
+            <input
+              type="text"
+              placeholder="Search alleys..."
+              value={alleySearch}
+              onChange={(e) => setAlleySearch(e.target.value)}
+              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none mb-1"
+            />
             <select value={alleyId} onChange={(e) => setAlleyId(e.target.value)}
               className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required>
               <option value="">Select alley...</option>
-              {alleys.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {alleys
+                .filter((a) => !alleySearch || `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase()))
+                .slice(0, 100)
+                .map((a) => <option key={a.id} value={a.id}>{a.name} — {a.city}, {a.state}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
