@@ -26,6 +26,7 @@ const HomePage = () => {
   const [cityFilter, setCityFilter] = useState("");
   const [minRating, setMinRating] = useState(0);
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
     fetchAlleys();
