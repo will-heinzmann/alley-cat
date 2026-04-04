@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
 
+const BATCH_SIZE = 1000;
+const PAGE_SIZE = 50;
+
 const HomePage = () => {
   const { user } = useAuth();
   const [search, setSearch] = useState("");
@@ -11,14 +14,27 @@ const HomePage = () => {
   const [stateFilter, setStateFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
   const [minRating, setMinRating] = useState(0);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetchAlleys();
   }, []);
 
   const fetchAlleys = async () => {
-    const { data } = await supabase.from("alleys").select("*").order("name");
-    setAlleys(data || []);
+    let all: any[] = [];
+    let from = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("alleys")
+        .select("*")
+        .order("name")
+        .range(from, from + BATCH_SIZE - 1);
+      if (!data || data.length === 0) break;
+      all = all.concat(data);
+      if (data.length < BATCH_SIZE) break;
+      from += BATCH_SIZE;
+    }
+    setAlleys(all);
     setLoading(false);
   };
 
@@ -33,7 +49,11 @@ const HomePage = () => {
     return [...new Set(filtered.map((a) => a.city))].sort();
   }, [alleys, stateFilter]);
 
-  const filtered = alleys.filter((a) => {
+  useEffect(() => {
+    setPage(1);
+  }, [search, stateFilter, cityFilter, minRating]);
+
+  const filtered = useMemo(() => alleys.filter((a) => {
     const matchesSearch =
       !search ||
       a.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -44,7 +64,10 @@ const HomePage = () => {
     const matchesCity = !cityFilter || a.city === cityFilter;
     const matchesRating = a.alley_rating >= minRating;
     return matchesSearch && matchesState && matchesCity && matchesRating;
-  });
+  }), [alleys, search, stateFilter, cityFilter, minRating]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="min-h-screen pb-20">
@@ -125,9 +148,32 @@ const HomePage = () => {
             <p className="text-xs text-muted-foreground mt-1">Try adjusting your filters.</p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filtered.map((alley) => <AlleyCard key={alley.id} alley={alley} />)}
-          </div>
+          <>
+            <div className="space-y-2">
+              {paged.map((alley) => <AlleyCard key={alley.id} alley={alley} />)}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4 text-sm">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="border border-border px-3 py-1 bg-muted text-foreground disabled:opacity-40"
+                >
+                  ◀ Prev
+                </button>
+                <span className="text-muted-foreground">
+                  Page {page} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="border border-border px-3 py-1 bg-muted text-foreground disabled:opacity-40"
+                >
+                  Next ▶
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
