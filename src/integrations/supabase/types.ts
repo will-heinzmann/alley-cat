@@ -124,6 +124,7 @@ export type Database = {
           created_at: string
           date: string
           id: string
+          image_url: string | null
           notes: string | null
           oil_condition: string
           score: number
@@ -134,6 +135,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          image_url?: string | null
           notes?: string | null
           oil_condition?: string
           score: number
@@ -144,6 +146,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          image_url?: string | null
           notes?: string | null
           oil_condition?: string
           score?: number

@@ -132,6 +132,8 @@ const ScoreLog = () => {
   const [saving, setSaving] = useState(false);
   const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
   const [frameScore, setFrameScore] = useState<number>(0);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Pre-select alley from query param
   useEffect(() => {
@@ -157,12 +159,25 @@ const ScoreLog = () => {
     e.preventDefault();
     if (!user) { navigate("/auth"); return; }
     setSaving(true);
-    const { error } = await supabase.from("games").insert({ user_id: user.id, alley_id: alleyId, score: parseInt(score), date, oil_condition: oil, notes: notes || null });
+    let imageUrl: string | null = null;
+    if (imageFile) {
+      const ext = imageFile.name.split(".").pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("game-images").upload(path, imageFile);
+      if (uploadErr) {
+        toast({ title: "Image upload failed", description: uploadErr.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("game-images").getPublicUrl(path);
+      imageUrl = urlData.publicUrl;
+    }
+    const { error } = await supabase.from("games").insert({ user_id: user.id, alley_id: alleyId, score: parseInt(score), date, oil_condition: oil, notes: notes || null, image_url: imageUrl });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Game logged!", description: "+50 AlleyPoints" });
-      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); fetchData();
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); fetchData();
     }
     setSaving(false);
   };
@@ -235,6 +250,17 @@ const ScoreLog = () => {
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
               className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none resize-none"
               placeholder="Ball choice, lane conditions..." />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">Photo (optional):</label>
+            <input type="file" accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setImageFile(f);
+                setImagePreview(f ? URL.createObjectURL(f) : null);
+              }}
+              className="w-full text-xs text-foreground" />
+            {imagePreview && <img src={imagePreview} alt="Preview" className="mt-1 max-h-32 border border-border" />}
           </div>
           <button type="submit" disabled={saving}
             className="w-full border border-border bg-primary text-primary-foreground py-1.5 text-xs hover:opacity-80 disabled:opacity-50">

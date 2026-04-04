@@ -10,12 +10,14 @@ interface FeedGame {
   date: string;
   oil_condition: string;
   notes: string | null;
+  image_url: string | null;
   created_at: string;
   user_id: string;
   profiles: { username: string; avatar_url: string | null } | null;
   alleys: { name: string; city: string; state: string } | null;
   likes_count: number;
   is_liked: boolean;
+  is_own: boolean;
 }
 
 const Feed = () => {
@@ -28,18 +30,19 @@ const Feed = () => {
     if (user) {
       const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
       followingIds = (follows || []).map((f) => f.following_id);
-      followingIds.push(user.id);
     }
 
     const query = supabase
       .from("games")
-      .select(`id, score, date, oil_condition, notes, created_at, user_id,
+      .select(`id, score, date, oil_condition, notes, image_url, created_at, user_id,
         profiles!games_user_id_fkey(username, avatar_url),
         alleys!games_alley_id_fkey(name, city, state)`)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (followingIds.length > 0) query.in("user_id", followingIds);
+    // If logged in with followers, get followers' + own games
+    const userAndFollowing = user ? [...followingIds, user.id] : [];
+    if (userAndFollowing.length > 0) query.in("user_id", userAndFollowing);
 
     const { data } = await query;
     if (data) {
@@ -53,8 +56,16 @@ const Feed = () => {
           alleys: Array.isArray(g.alleys) ? g.alleys[0] : g.alleys,
           likes_count: gameLikes.length,
           is_liked: user ? gameLikes.some((l) => l.user_id === user.id) : false,
+          is_own: user ? g.user_id === user.id : false,
         };
       });
+
+      // Sort: followers' games first, then own games
+      processed.sort((a, b) => {
+        if (a.is_own !== b.is_own) return a.is_own ? 1 : -1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
       setGames(processed);
     }
     setLoading(false);
@@ -114,6 +125,9 @@ const Feed = () => {
                 <span className="text-foreground border border-border px-1">{game.oil_condition}</span>
                 <span className="text-muted-foreground">{game.date}</span>
               </div>
+              {game.image_url && (
+                <img src={game.image_url} alt="Game photo" className="mt-2 max-h-48 border border-border w-full object-cover" />
+              )}
               {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
               <div className="border-t border-border mt-2 pt-2">
                 <button
