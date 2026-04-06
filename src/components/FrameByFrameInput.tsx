@@ -10,7 +10,7 @@ interface FrameByFrameInputProps {
   onScoreChange: (totalScore: number, frames: FrameData[]) => void;
 }
 
-const calculateBowlingScore = (frames: FrameData[]): number => {
+const framesToRolls = (frames: FrameData[]): number[] => {
   const rolls: number[] = [];
   for (let i = 0; i < 10; i++) {
     const f = frames[i];
@@ -23,27 +23,28 @@ const calculateBowlingScore = (frames: FrameData[]): number => {
       if (f.roll3 !== undefined && f.roll3 !== null) rolls.push(f.roll3);
     }
   }
+  return rolls;
+};
 
+const calculateBowlingScore = (frames: FrameData[]): number => {
+  const rolls = framesToRolls(frames);
   let score = 0;
-  let ri = 0;
+  let rollIndex = 0;
+
   for (let frame = 0; frame < 10; frame++) {
-    if (ri >= rolls.length) break;
-    if (frame === 9) {
-      score += (rolls[ri] ?? 0) + (rolls[ri + 1] ?? 0) + (rolls[ri + 2] ?? 0);
-      break;
-    }
-    if (rolls[ri] === 10) {
-      score += 10 + (rolls[ri + 1] ?? 0) + (rolls[ri + 2] ?? 0);
-      ri += 1;
-    } else if ((rolls[ri] ?? 0) + (rolls[ri + 1] ?? 0) === 10) {
-      score += 10 + (rolls[ri + 2] ?? 0);
-      ri += 2;
+    if (rolls[rollIndex] === 10) {
+      score += 10 + (rolls[rollIndex + 1] || 0) + (rolls[rollIndex + 2] || 0);
+      rollIndex += 1;
+    } else if ((rolls[rollIndex] + (rolls[rollIndex + 1] || 0)) === 10) {
+      score += 10 + (rolls[rollIndex + 2] || 0);
+      rollIndex += 2;
     } else {
-      score += (rolls[ri] ?? 0) + (rolls[ri + 1] ?? 0);
-      ri += 2;
+      score += (rolls[rollIndex] || 0) + (rolls[rollIndex + 1] || 0);
+      rollIndex += 2;
     }
   }
-  return Math.min(300, score);
+
+  return score;
 };
 
 const initFrames = (): FrameData[] =>
