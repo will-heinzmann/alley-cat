@@ -81,6 +81,8 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       lane_count: lanes,
       phone: form.phone.trim() || null,
       website: form.website.trim() || null,
+      alley_rating: 0,
+      beer_rating: 0,
     });
 
     setSubmitting(false);
