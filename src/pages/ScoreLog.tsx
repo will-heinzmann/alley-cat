@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { isOnline, onConnectivityChange, addToOfflineQueue, syncOfflineGames, getOfflineQueue, type OfflineGame } from "@/lib/offlineSync";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
