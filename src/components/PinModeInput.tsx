@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import PinDeck from "./PinDeck";
+import { getSpareAdvice } from "@/lib/spareGuide";
 
 interface FrameData {
   roll1: number | null;
@@ -74,11 +75,16 @@ const getRollDisplay = (frames: FrameData[], frameIdx: number, rollIdx: number):
 const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
   const [frames, setFrames] = useState<FrameData[]>(initFrames);
   const [currentFrame, setCurrentFrame] = useState(0);
-  const [currentRoll, setCurrentRoll] = useState(0); // 0, 1, or 2 (10th frame)
+  const [currentRoll, setCurrentRoll] = useState(0);
   const [standing, setStanding] = useState<boolean[]>(allStanding);
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [gameComplete, setGameComplete] = useState(false);
   const [pinModeEnabled, setPinModeEnabled] = useState(true);
+
+  // Long-press editing state
+  const [editingFrame, setEditingFrame] = useState<number | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
 
   const togglePin = useCallback((idx: number) => {
     setHit(prev => {
@@ -87,6 +93,73 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
       return next;
     });
   }, []);
+
+  // Spare suggestions: show on roll 2+ when pin mode is enabled
+  const spareSuggestions = (() => {
+    if (!pinModeEnabled || currentRoll === 0) return [];
+    // On 10th frame, show suggestions on roll 2 if roll 1 wasn't a strike,
+    // or on roll 3 if applicable
+    if (currentFrame === 9) {
+      const f = frames[currentFrame];
+      if (currentRoll === 1 && f.roll1 === 10) return []; // fresh rack after strike
+      if (currentRoll === 2) {
+        const r1 = f.roll1 ?? 0;
+        const r2 = f.roll2 ?? 0;
+        if (r1 === 10 && r2 === 10) return []; // fresh rack
+        if (r1 !== 10 && r1 + r2 === 10) return []; // fresh rack after spare
+      }
+    }
+    const advice = getSpareAdvice(standing);
+    return advice.targetPins;
+  })();
+
+  const spareTip = (() => {
+    if (spareSuggestions.length === 0) return "";
+    return getSpareAdvice(standing).tip;
+  })();
+
+  // Long-press handlers for frame editing
+  const handleFramePointerDown = (frameIdx: number) => {
+    longPressTriggered.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      startEditingFrame(frameIdx);
+    }, 500);
+  };
+
+  const handleFramePointerUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const startEditingFrame = (frameIdx: number) => {
+    const f = frames[frameIdx];
+    if (f.roll1 === null) return; // nothing to edit
+
+    setEditingFrame(frameIdx);
+    // Reset the frame data
+    const newFrames = frames.map((fr, i) => {
+      if (i === frameIdx) {
+        return frameIdx === 9
+          ? { roll1: null, roll2: null, roll3: null }
+          : { roll1: null, roll2: null };
+      }
+      return { ...fr };
+    });
+    setFrames(newFrames);
+    setCurrentFrame(frameIdx);
+    setCurrentRoll(0);
+    setStanding(allStanding());
+    setHit(noHits());
+    setGameComplete(false);
+    onScoreChange(calculateScore(newFrames), newFrames);
+  };
+
+  const cancelEdit = () => {
+    setEditingFrame(null);
+  };
 
   const confirmRoll = useCallback(() => {
     const pinsHit = hit.filter(Boolean).length;
@@ -102,7 +175,23 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
           setFrames(newFrames);
           const total = calculateScore(newFrames);
           onScoreChange(total, newFrames);
-          if (frame < 9) {
+          // If editing, check if we should stop or continue
+          if (editingFrame !== null) {
+            setEditingFrame(null);
+            // Find next incomplete frame
+            const nextIncomplete = newFrames.findIndex((f, i) => {
+              if (i < 9) return f.roll1 === null;
+              return f.roll1 === null;
+            });
+            if (nextIncomplete === -1) {
+              setGameComplete(true);
+            } else {
+              setCurrentFrame(nextIncomplete);
+              setCurrentRoll(0);
+              setStanding(allStanding());
+              setHit(noHits());
+            }
+          } else if (frame < 9) {
             setCurrentFrame(frame + 1);
             setCurrentRoll(0);
             setStanding(allStanding());
@@ -120,7 +209,21 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
         newFrames[frame].roll2 = pinsHit;
         setFrames(newFrames);
         onScoreChange(calculateScore(newFrames), newFrames);
-        if (frame < 9) {
+        if (editingFrame !== null) {
+          setEditingFrame(null);
+          const nextIncomplete = newFrames.findIndex((f, i) => {
+            if (i < 9) return f.roll1 === null;
+            return f.roll1 === null;
+          });
+          if (nextIncomplete === -1) {
+            setGameComplete(true);
+          } else {
+            setCurrentFrame(nextIncomplete);
+            setCurrentRoll(0);
+            setStanding(allStanding());
+            setHit(noHits());
+          }
+        } else if (frame < 9) {
           setCurrentFrame(frame + 1);
           setCurrentRoll(0);
           setStanding(allStanding());
@@ -159,16 +262,18 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
           setHit(noHits());
           setCurrentRoll(2);
         } else {
+          setEditingFrame(null);
           setGameComplete(true);
         }
       } else {
         newFrames[9].roll3 = pinsHit;
         setFrames(newFrames);
         onScoreChange(calculateScore(newFrames), newFrames);
+        setEditingFrame(null);
         setGameComplete(true);
       }
     }
-  }, [hit, standing, frames, currentFrame, currentRoll, onScoreChange]);
+  }, [hit, standing, frames, currentFrame, currentRoll, onScoreChange, editingFrame]);
 
   const resetGame = () => {
     setFrames(initFrames());
@@ -177,6 +282,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
     setStanding(allStanding());
     setHit(noHits());
     setGameComplete(false);
+    setEditingFrame(null);
     onScoreChange(0, initFrames());
   };
 
@@ -218,12 +324,15 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
   };
 
   const cumuls = getCumulatives();
-  const frameLabel = currentFrame < 9 ? `Frame ${currentFrame + 1}` : "10th Frame";
+  const frameLabel = editingFrame !== null
+    ? `Editing Frame ${currentFrame + 1}`
+    : currentFrame < 9 ? `Frame ${currentFrame + 1}` : "10th Frame";
   const rollLabel = currentRoll === 0 ? "Roll 1" : currentRoll === 1 ? "Roll 2" : "Roll 3";
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center">
+        <p className="text-[10px] text-muted-foreground">Long-press a frame to edit</p>
         <button 
           onClick={() => setPinModeEnabled(!pinModeEnabled)}
           className={`text-[10px] px-2 py-1 border ${pinModeEnabled ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground'}`}
@@ -239,7 +348,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
               {Array.from({ length: 10 }).map((_, i) => (
                 <th key={i} className={`border border-border p-1 text-muted-foreground w-[9%] ${
                   i === currentFrame && !gameComplete ? "bg-primary/20 text-primary" : "bg-muted"
-                }`}>{i + 1}</th>
+                } ${editingFrame === i ? "ring-2 ring-secondary" : ""}`}>{i + 1}</th>
               ))}
               <th className="border border-border p-1 text-muted-foreground bg-muted">TOT</th>
             </tr>
@@ -250,10 +359,19 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
                 const isStrike = i < 9 && frame.roll1 === 10;
                 const needsThird = i === 9 && frame.roll1 !== null && frame.roll2 !== null &&
                   (frame.roll1 === 10 || frame.roll1 + (frame.roll2 ?? 0) >= 10);
+                const hasData = frame.roll1 !== null;
                 return (
-                  <td key={i} className={`border border-border p-0 text-center align-top ${
-                    i === currentFrame && !gameComplete ? "bg-primary/5" : ""
-                  }`}>
+                  <td
+                    key={i}
+                    className={`border border-border p-0 text-center align-top select-none ${
+                      i === currentFrame && !gameComplete ? "bg-primary/5" : ""
+                    } ${editingFrame === i ? "ring-2 ring-secondary" : ""} ${
+                      hasData ? "cursor-pointer" : ""
+                    }`}
+                    onPointerDown={() => hasData && !gameComplete ? handleFramePointerDown(i) : undefined}
+                    onPointerUp={handleFramePointerUp}
+                    onPointerLeave={handleFramePointerUp}
+                  >
                     <div className="flex border-b border-border">
                       <span className="flex-1 p-0.5 border-r border-border text-foreground">
                         {getRollDisplay(frames, i, 0)}
@@ -293,17 +411,34 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
       ) : (
         <div className="border border-border bg-card p-3">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs text-primary font-bold">{frameLabel} — {rollLabel}</span>
+            <div>
+              <span className={`text-xs font-bold ${editingFrame !== null ? "text-secondary" : "text-primary"}`}>
+                {frameLabel} — {rollLabel}
+              </span>
+              {editingFrame !== null && (
+                <button type="button" onClick={cancelEdit}
+                  className="ml-2 text-[10px] text-muted-foreground hover:text-foreground">[cancel]</button>
+              )}
+            </div>
             <button type="button" onClick={confirmRoll}
               className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
               [Confirm Roll →]
             </button>
           </div>
+
+          {/* Spare suggestion tip */}
+          {spareTip && (
+            <div className="bg-secondary/10 border border-secondary/30 px-2 py-1 mb-2 text-[10px] text-secondary text-center">
+              🎯 {spareTip}
+            </div>
+          )}
+
           {pinModeEnabled ? (
             <PinDeck
               standing={standing}
               hit={hit}
               onTogglePin={togglePin}
+              spareSuggestions={spareSuggestions}
             />
           ) : (
             <div className="grid grid-cols-5 gap-2 py-4">
