@@ -137,7 +137,7 @@ const FrameByFrameInput = ({ onScoreChange }: FrameByFrameInputProps) => {
     const total = calculateBowlingScore(newFrames);
     onScoreChange(total, newFrames);
 
-    if (value !== "" && value !== null) {
+    if (value !== "" && value !== null && value !== "1") {
       setTimeout(() => focusNext(frameIdx, rollIdx, newFrames), 50);
     }
   };
