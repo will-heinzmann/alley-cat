@@ -12,6 +12,7 @@ import ScoreLog from "./pages/ScoreLog";
 import Leaderboard from "./pages/Leaderboard";
 import BowlerProfile from "./pages/BowlerProfile";
 import AuthPage from "./pages/AuthPage";
+import AlleyUpdates from "./pages/AlleyUpdates";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import Header from "./components/Header";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/bowler/:userId" element={<BowlerProfile />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/admin/alley-updates" element={<AlleyUpdates />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
