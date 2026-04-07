@@ -98,7 +98,10 @@ const HomePage = () => {
   }), [alleys, search, stateFilter, cityFilter, minRating, showFavorites, favoriteIds]);
 
   const mapAlleys = useMemo(
-    () => filtered.filter((a) => Number.isFinite(a.lat) && Number.isFinite(a.lng) && (a.lat !== 0 || a.lng !== 0)),
+    () => filtered
+      .filter((a) => Number.isFinite(a.lat) && Number.isFinite(a.lng) && (a.lat !== 0 || a.lng !== 0))
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 1000),
     [filtered]
   );
 
