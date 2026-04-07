@@ -19,6 +19,7 @@ import Header from "./components/Header";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -29,7 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Feed />} />
             <Route path="/alleys" element={<Index />} />
-            <Route path="/alley/:id" element={<AlleyDetail />} />
+            <Route path="/alley/:slug" element={<AlleyDetail />} />
             <Route path="/log" element={<ScoreLog />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/bowler/:userId" element={<BowlerProfile />} />
@@ -41,6 +42,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

@@ -224,7 +224,7 @@ const HomePage = () => {
                       <strong>{alley.name}</strong><br />
                       {alley.city}, {alley.state}<br />
                       ⭐ {alley.alley_rating}/5<br />
-                      <Link to={`/alley/${alley.id}`} className="text-primary underline">View Details</Link>
+                      <Link to={`/alley/${alley.slug}`} className="text-primary underline">View Details</Link>
                     </div>
                   </Popup>
                 </Marker>
