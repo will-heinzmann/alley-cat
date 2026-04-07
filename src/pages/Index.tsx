@@ -158,6 +158,12 @@ const HomePage = () => {
             📋 DIRECTORY — {filtered.length} alleys
           </h2>
           <div className="flex gap-1">
+            {user && (
+              <button onClick={() => setShowFavorites(!showFavorites)}
+                className={`text-xs px-2 py-0.5 border ${showFavorites ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                [❤️ Favs]
+              </button>
+            )}
             <button onClick={() => setViewMode("list")}
               className={`text-xs px-2 py-0.5 border ${viewMode === "list" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
               [List]
