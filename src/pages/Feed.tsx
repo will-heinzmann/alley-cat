@@ -18,6 +18,7 @@ interface FeedGame {
   likes_count: number;
   is_liked: boolean;
   is_own: boolean;
+  is_following: boolean;
 }
 
 const Feed = () => {
