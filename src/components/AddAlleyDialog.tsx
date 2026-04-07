@@ -82,7 +82,9 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
     let lng = 0;
     try {
       const q = encodeURIComponent(`${address.trim()}, ${city.trim()}, ${state} ${zip_code.trim()}`);
-      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`, {
+        headers: { "User-Agent": "AlleyCat/1.0 (bowling app)" },
+      });
       const geoData = await geoRes.json();
       if (geoData && geoData.length > 0) {
         lat = parseFloat(geoData[0].lat);
