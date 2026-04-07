@@ -151,6 +151,8 @@ const GroupPlay = () => {
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [currentRoll, setCurrentRoll] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [scoringMode, setScoringMode] = useState<"frame" | "pin">("frame");
+  const [frameInput, setFrameInput] = useState("");
 
   const [alleys, setAlleys] = useState<any[]>([]);
   const [alleyId, setAlleyId] = useState("");
@@ -233,7 +235,12 @@ const GroupPlay = () => {
     setPlayers(newPlayers);
     setActivePlayerIdx(0);
     setPhase("playing");
-    openPinSelector(newPlayers, 0);
+    if (scoringMode === "pin") {
+      openPinSelector(newPlayers, 0);
+    } else {
+      setShowPinModal(true);
+      setFrameInput("");
+    }
   };
 
   const openPinSelector = (ps: Player[], playerIdx: number) => {
@@ -332,6 +339,67 @@ const GroupPlay = () => {
     }
   };
 
+  const confirmFrameInput = () => {
+    const value = parseInt(frameInput);
+    if (isNaN(value) || value < 0) return;
+    const newPlayers = players.map(p => ({ ...p, frames: p.frames.map(f => ({ ...f })) }));
+    const player = newPlayers[activePlayerIdx];
+    const frameIdx = getCurrentFrameIndex(player.frames);
+    if (frameIdx >= 10) return;
+    const f = player.frames[frameIdx];
+
+    if (frameIdx < 9) {
+      if (f.roll1 === null) {
+        if (value > 10) return;
+        f.roll1 = value;
+        if (value === 10) {
+          f.roll2 = null;
+          setPlayers(newPlayers);
+          setFrameInput("");
+          advanceToNextPlayer(newPlayers);
+        } else {
+          setPlayers(newPlayers);
+          setFrameInput("");
+          setCurrentRoll(1);
+        }
+      } else {
+        const maxPins = 10 - (f.roll1 ?? 0);
+        if (value > maxPins) return;
+        f.roll2 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        advanceToNextPlayer(newPlayers);
+      }
+    } else {
+      if (f.roll1 === null) {
+        if (value > 10) return;
+        f.roll1 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        setCurrentRoll(1);
+      } else if (f.roll2 === null) {
+        const r1 = f.roll1 ?? 0;
+        const max2 = r1 === 10 ? 10 : 10 - r1;
+        if (value > max2) return;
+        f.roll2 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        const needs3 = r1 === 10 || r1 + value >= 10;
+        if (needs3) {
+          setCurrentRoll(2);
+        } else {
+          advanceToNextPlayer(newPlayers);
+        }
+      } else {
+        if (value > 10) return;
+        f.roll3 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        advanceToNextPlayer(newPlayers);
+      }
+    }
+  };
+
   const advanceToNextPlayer = (ps: Player[]) => {
     setShowPinModal(false);
     const allDone = ps.every(p => getCurrentFrameIndex(p.frames) >= 10);
@@ -351,7 +419,12 @@ const GroupPlay = () => {
     setStanding(allStanding());
     setHit(noHits());
     setCurrentRoll(0);
-    setTimeout(() => openPinSelector(ps, nextIdx), 200);
+    setFrameInput("");
+    if (scoringMode === "pin") {
+      setTimeout(() => openPinSelector(ps, nextIdx), 200);
+    } else {
+      setShowPinModal(true);
+    }
   };
 
   const handleSaveGroupGame = async () => {
@@ -471,6 +544,19 @@ const GroupPlay = () => {
           )}
 
           <div className="border-t border-border pt-3 mt-3">
+            <div className="mb-2">
+              <p className="text-[10px] text-muted-foreground mb-1">Scoring Mode:</p>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => setScoringMode("frame")}
+                  className={`text-xs px-2 py-1 border ${scoringMode === "frame" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                  [Frame-by-Frame]
+                </button>
+                <button type="button" onClick={() => setScoringMode("pin")}
+                  className={`text-xs px-2 py-1 border ${scoringMode === "pin" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                  [Pin Mode 🎳]
+                </button>
+              </div>
+            </div>
             <p className="text-[10px] text-muted-foreground mb-2">★ = Your score will be saved to your profile. Guest scores are for display only.</p>
             <button type="button" onClick={startGame}
               className="w-full border border-border bg-primary text-primary-foreground py-2 text-xs hover:opacity-80">
@@ -673,7 +759,7 @@ const GroupPlay = () => {
         })}
       </div>
 
-      {/* Pin selector for active player */}
+      {/* Scoring input for active player */}
       {showPinModal && activeFrameIdx < 10 && (
         <div className="border border-primary bg-card p-3">
           <div className="flex justify-between items-center mb-2">
@@ -681,21 +767,47 @@ const GroupPlay = () => {
               <span className="text-xs text-primary font-bold">{activePlayer.name}</span>
               <span className="text-xs text-muted-foreground ml-2">{frameLabel} — {rollLabel}</span>
             </div>
-            <button type="button" onClick={confirmRoll}
-              className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
-              [Confirm →]
-            </button>
+            {scoringMode === "pin" ? (
+              <button type="button" onClick={confirmRoll}
+                className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
+                [Confirm →]
+              </button>
+            ) : (
+              <button type="button" onClick={confirmFrameInput}
+                className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
+                [Enter →]
+              </button>
+            )}
           </div>
-          <PinDeck standing={standing} hit={hit} onTogglePin={(i) => {
-            setHit(prev => {
-              const next = [...prev];
-              next[i] = !next[i];
-              return next;
-            });
-          }} />
-          <p className="text-center text-xs text-muted-foreground">
-            Pins hit: <span className="text-primary font-bold">{hit.filter(Boolean).length}</span>
-          </p>
+          {scoringMode === "pin" ? (
+            <>
+              <PinDeck standing={standing} hit={hit} onTogglePin={(i) => {
+                setHit(prev => {
+                  const next = [...prev];
+                  next[i] = !next[i];
+                  return next;
+                });
+              }} />
+              <p className="text-center text-xs text-muted-foreground">
+                Pins hit: <span className="text-primary font-bold">{hit.filter(Boolean).length}</span>
+              </p>
+            </>
+          ) : (
+            <div className="text-center">
+              <input
+                type="number"
+                min="0"
+                max="10"
+                value={frameInput}
+                onChange={(e) => setFrameInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); confirmFrameInput(); } }}
+                className="border border-border bg-input px-3 py-2 text-foreground text-lg text-center outline-none w-24"
+                placeholder="0-10"
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground mt-1">Enter pins knocked down</p>
+            </div>
+          )}
         </div>
       )}
     </div>
