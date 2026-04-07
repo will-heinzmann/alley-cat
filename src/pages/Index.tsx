@@ -82,6 +82,11 @@ const HomePage = () => {
     return matchesSearch && matchesState && matchesCity && matchesRating;
   }), [alleys, search, stateFilter, cityFilter, minRating, showFavorites, favoriteIds]);
 
+  const mapAlleys = useMemo(
+    () => filtered.filter((a) => Number.isFinite(a.lat) && Number.isFinite(a.lng) && (a.lat !== 0 || a.lng !== 0)).slice(0, 500),
+    [filtered]
+  );
+
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -193,14 +198,14 @@ const HomePage = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              {filtered.filter((a) => a.lat && a.lng && (a.lat !== 0 || a.lng !== 0)).slice(0, 500).map((alley) => (
+              {mapAlleys.map((alley) => (
                 <Marker key={alley.id} position={[alley.lat, alley.lng]}>
                   <Popup>
                     <div className="text-xs">
                       <strong>{alley.name}</strong><br />
                       {alley.city}, {alley.state}<br />
                       ⭐ {alley.alley_rating}/5<br />
-                      <Link to={`/alley/${alley.id}`} className="text-blue-600 underline">View Details</Link>
+                      <Link to={`/alley/${alley.id}`} className="text-primary underline">View Details</Link>
                     </div>
                   </Popup>
                 </Marker>
