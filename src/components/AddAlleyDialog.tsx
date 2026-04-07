@@ -31,6 +31,7 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
     address: "",
     city: "",
     state: "",
+    zip_code: "",
     lane_count: "",
     phone: "",
     website: "",
