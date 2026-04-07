@@ -26,27 +26,25 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchFeed = async () => {
-    let followingIds: string[] = [];
-    if (user) {
-      const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
-      followingIds = (follows || []).map((f) => f.following_id);
+    // Guard: no feed for guests
+    if (!user) {
+      setLoading(false);
+      return;
     }
 
-    const userAndFollowing = user ? [...followingIds, user.id] : [];
+    const { data: follows } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
+    const followingIds = (follows || []).map((f) => f.following_id);
+    const userAndFollowing = [...followingIds, user.id];
 
-    const query = supabase
+    const { data } = await supabase
       .from("games")
       .select(`id, score, date, oil_condition, notes, image_url, created_at, user_id,
         alleys!games_alley_id_fkey(name, city, state)`)
+      .in("user_id", userAndFollowing)
       .order("created_at", { ascending: false })
       .limit(50);
 
-    // Show own + followers' games; if not logged in show all
-    if (userAndFollowing.length > 0) query.in("user_id", userAndFollowing);
-
-    const { data } = await query;
     if (data) {
-      // Fetch profiles separately since there's no FK from games to profiles
       const userIds = [...new Set(data.map((g) => g.user_id))];
       const { data: profilesData } = await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds);
       const profileMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
@@ -56,6 +54,8 @@ const Feed = () => {
         ? await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
         : { data: [] };
 
+      const followingSet = new Set(followingIds);
+
       const processed = data.map((g) => {
         const gameLikes = (likesData || []).filter((l) => l.game_id === g.id);
         const profile = profileMap.get(g.user_id);
@@ -64,14 +64,15 @@ const Feed = () => {
           profiles: profile ? { username: profile.username, avatar_url: profile.avatar_url } : null,
           alleys: Array.isArray(g.alleys) ? g.alleys[0] : g.alleys,
           likes_count: gameLikes.length,
-          is_liked: user ? gameLikes.some((l) => l.user_id === user.id) : false,
-          is_own: user ? g.user_id === user.id : false,
+          is_liked: gameLikes.some((l) => l.user_id === user.id),
+          is_own: g.user_id === user.id,
+          is_following: followingSet.has(g.user_id),
         };
       });
 
-      // Sort: followers' games first, then own games
+      // Followed users first, then own, sorted by created_at within each group
       processed.sort((a, b) => {
-        if (a.is_own !== b.is_own) return a.is_own ? 1 : -1;
+        if (a.is_following !== b.is_following) return a.is_following ? -1 : 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
 
@@ -102,6 +103,11 @@ const Feed = () => {
 
       {loading ? (
         <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
+      ) : !user ? (
+        <div className="p-6 text-center">
+          <p className="text-sm text-muted-foreground mb-3">Sign in to see your feed.</p>
+          <Link to="/auth" className="text-primary text-sm">[Sign In]</Link>
+        </div>
       ) : games.length === 0 ? (
         <div className="p-6 text-center">
           <p className="text-sm text-muted-foreground mb-3">No games in your feed yet.</p>
