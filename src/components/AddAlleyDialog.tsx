@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { generateSlug } from "@/lib/slug";
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,8 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       return;
     }
 
+    const slug = generateSlug(name.trim(), city.trim());
+
     const { error } = await supabase.from("alleys").insert({
       name: name.trim(),
       address: address.trim(),
@@ -83,6 +86,7 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       website: form.website.trim() || null,
       alley_rating: 0,
       beer_rating: 0,
+      slug,
     });
 
     setSubmitting(false);

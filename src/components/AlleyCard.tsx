@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 interface AlleyCardProps {
   alley: {
     id: string;
+    slug: string;
     name: string;
     address: string;
     city: string;
@@ -16,7 +17,7 @@ interface AlleyCardProps {
 
 const AlleyCard = ({ alley }: AlleyCardProps) => {
   return (
-    <Link to={`/alley/${alley.id}`}>
+    <Link to={`/alley/${alley.slug}`}>
       <div className="border border-border bg-card p-3 hover:bg-muted transition-colors cursor-pointer">
         <div className="flex items-start justify-between mb-1">
           <span className="text-sm text-primary font-bold">{alley.name}</span>

@@ -28,6 +28,7 @@ export type Database = {
           name: string
           oil_pattern: string
           phone: string | null
+          slug: string
           state: string
           updated_at: string
           website: string | null
@@ -45,6 +46,7 @@ export type Database = {
           name: string
           oil_pattern?: string
           phone?: string | null
+          slug: string
           state: string
           updated_at?: string
           website?: string | null
@@ -62,6 +64,7 @@ export type Database = {
           name?: string
           oil_pattern?: string
           phone?: string | null
+          slug?: string
           state?: string
           updated_at?: string
           website?: string | null
