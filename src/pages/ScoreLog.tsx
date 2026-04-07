@@ -252,6 +252,15 @@ const ScoreLog = () => {
         <div>
           <Link to="/" className="text-primary text-xs">← Back</Link>
           <h1 className="text-lg text-primary mt-1">🎳 Score Log</h1>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className={`inline-block w-2 h-2 rounded-full ${online ? "bg-green-500" : "bg-destructive"}`} />
+            <span className="text-[10px] text-muted-foreground">
+              {online ? "Online" : "Offline — scores save locally"}
+            </span>
+            {pendingCount > 0 && (
+              <span className="text-[10px] text-secondary font-bold">({pendingCount} pending sync)</span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => user ? setShowForm(!showForm) : navigate("/auth")}
