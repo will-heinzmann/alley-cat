@@ -113,13 +113,12 @@ const AlleyUpdates = () => {
         ) : (
           <div className="space-y-3">
             {requests.map((req) => {
-              const profile = Array.isArray(req.profiles) ? req.profiles[0] : req.profiles;
               const alley = Array.isArray(req.alleys) ? req.alleys[0] : req.alleys;
               return (
                 <div key={req.id} className="border border-border bg-card p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-muted-foreground">
-                      By <span className="text-primary">{profile?.username || "Unknown"}</span> · {new Date(req.created_at).toLocaleDateString()}
+                      By <span className="text-primary">{req._username || "Unknown"}</span> · {new Date(req.created_at).toLocaleDateString()}
                     </span>
                     {alley && (
                       <Link to={`/alley/${alley.slug}`} className="text-xs text-primary hover:underline">
