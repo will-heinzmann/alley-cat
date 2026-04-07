@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
+import AddAlleyDialog from "@/components/AddAlleyDialog";
 
 // Fix default leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -178,10 +179,13 @@ const HomePage = () => {
           </h2>
           <div className="flex gap-1">
             {user && (
-              <button onClick={() => setShowFavorites(!showFavorites)}
-                className={`text-xs px-2 py-0.5 border ${showFavorites ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
-                [❤️ Favs]
-              </button>
+              <>
+                <AddAlleyDialog onAlleyAdded={fetchAlleys} />
+                <button onClick={() => setShowFavorites(!showFavorites)}
+                  className={`text-xs px-2 py-0.5 border ${showFavorites ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                  [❤️ Favs]
+                </button>
+              </>
             )}
             <button onClick={() => setViewMode("list")}
               className={`text-xs px-2 py-0.5 border ${viewMode === "list" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
