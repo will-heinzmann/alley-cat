@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
 
+const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
+
 const AlleyDetail = () => {
   const { slug } = useParams();
   const { user } = useAuth();
@@ -26,6 +28,7 @@ const AlleyDetail = () => {
   const [editLaneCount, setEditLaneCount] = useState(0);
   const [editPhone, setEditPhone] = useState("");
 
+  const isAdmin = user?.id === ADMIN_ID;
   const isFavorited = alley ? favoriteIds.has(alley.id) : false;
 
   useEffect(() => { if (slug) fetchData(); }, [slug]);
@@ -56,13 +59,31 @@ const AlleyDetail = () => {
   };
 
   const saveField = async (field: "lane_count" | "phone", value: any) => {
-    const updateData = field === "lane_count" ? { lane_count: value as number } : { phone: value as string | null };
-    const { error } = await supabase.from("alleys").update(updateData).eq("id", alley.id);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    if (isAdmin) {
+      const updateData = field === "lane_count" ? { lane_count: value as number } : { phone: value as string | null };
+      const { error } = await supabase.from("alleys").update(updateData).eq("id", alley.id);
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Updated!", description: `${field === "lane_count" ? "Lane count" : "Phone number"} saved.` });
+        setAlley((prev: any) => ({ ...prev, [field]: value }));
+      }
     } else {
-      toast({ title: "Updated!", description: `${field === "lane_count" ? "Lane count" : "Phone number"} saved.` });
-      setAlley((prev: any) => ({ ...prev, [field]: value }));
+      // Submit as update request
+      const newValue = String(value ?? "");
+      const oldValue = String(alley[field] ?? "");
+      const { error } = await supabase.from("alley_update_requests").insert({
+        alley_id: alley.id,
+        user_id: user!.id,
+        field_name: field,
+        old_value: oldValue,
+        new_value: newValue,
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Update submitted!", description: "Your change request has been sent for review." });
+      }
     }
     if (field === "lane_count") setEditingLanes(false);
     if (field === "phone") setEditingPhone(false);
@@ -89,6 +110,7 @@ const AlleyDetail = () => {
 
   const canonicalUrl = `https://alley-cat.lovable.app/alley/${alley.slug}`;
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${alley.name} ${alley.address} ${alley.city} ${alley.state}`)}`;
+  const editLabel = isAdmin ? "[Edit]" : "[Suggest Edit]";
 
   return (
     <div className="min-h-screen pb-20">
@@ -146,7 +168,7 @@ const AlleyDetail = () => {
                 ) : (
                   <div className="flex items-center justify-between">
                     <span>{alley.phone || <span className="text-muted-foreground italic">Not listed</span>}</span>
-                    {user && <button onClick={() => setEditingPhone(true)} className="text-primary text-xs hover:underline ml-2">[Edit]</button>}
+                    {user && <button onClick={() => setEditingPhone(true)} className="text-primary text-xs hover:underline ml-2">{editLabel}</button>}
                   </div>
                 )}
               </td>
@@ -167,7 +189,7 @@ const AlleyDetail = () => {
                 ) : (
                   <div className="flex items-center justify-between">
                     <span className="text-primary font-bold">{alley.lane_count || "Unknown"}</span>
-                    {user && <button onClick={() => setEditingLanes(true)} className="text-primary text-xs hover:underline ml-2">[Edit]</button>}
+                    {user && <button onClick={() => setEditingLanes(true)} className="text-primary text-xs hover:underline ml-2">{editLabel}</button>}
                   </div>
                 )}
               </td>
