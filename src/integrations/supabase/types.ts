@@ -244,6 +244,73 @@ export type Database = {
           },
         ]
       }
+      group_game_players: {
+        Row: {
+          created_at: string
+          group_game_id: string
+          id: string
+          is_guest: boolean
+          player_name: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          group_game_id: string
+          id?: string
+          is_guest?: boolean
+          player_name: string
+          score?: number
+        }
+        Update: {
+          created_at?: string
+          group_game_id?: string
+          id?: string
+          is_guest?: boolean
+          player_name?: string
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_game_players_group_game_id_fkey"
+            columns: ["group_game_id"]
+            isOneToOne: false
+            referencedRelation: "group_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_games: {
+        Row: {
+          alley_id: string | null
+          created_at: string
+          date: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          alley_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          alley_id?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_games_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
