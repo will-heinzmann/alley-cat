@@ -77,6 +77,21 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
 
     const slug = generateSlug(name.trim(), city.trim());
 
+    // Geocode address using Nominatim
+    let lat = 0;
+    let lng = 0;
+    try {
+      const q = encodeURIComponent(`${address.trim()}, ${city.trim()}, ${state} ${zip_code.trim()}`);
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+      const geoData = await geoRes.json();
+      if (geoData && geoData.length > 0) {
+        lat = parseFloat(geoData[0].lat);
+        lng = parseFloat(geoData[0].lon);
+      }
+    } catch (e) {
+      console.warn("Geocoding failed, alley will be added without map coordinates", e);
+    }
+
     const { error } = await supabase.from("alleys").insert({
       name: name.trim(),
       address: address.trim(),
@@ -89,6 +104,8 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       alley_rating: 0,
       beer_rating: 0,
       slug,
+      lat,
+      lng,
     });
 
     setSubmitting(false);
