@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 interface Game {
   id: string;
@@ -12,12 +12,20 @@ interface SeriesSummaryProps {
   games: Game[];
 }
 
+type TimeRange = "3" | "10" | "all";
+
 const SeriesSummary = ({ games }: SeriesSummaryProps) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [range, setRange] = useState<TimeRange>("3");
+
+  const slicedGames = useMemo(() => {
+    if (range === "all") return games;
+    return games.slice(0, Number(range));
+  }, [games, range]);
 
   const stats = useMemo(() => {
-    if (games.length === 0) return null;
-    const scores = games.map((g) => g.score);
+    if (slicedGames.length === 0) return null;
+    const scores = slicedGames.map((g) => g.score);
     const total = scores.reduce((a, b) => a + b, 0);
     const avg = Math.round(total / scores.length);
     const high = Math.max(...scores);
@@ -30,18 +38,18 @@ const SeriesSummary = ({ games }: SeriesSummaryProps) => {
       : 0;
 
     // Session = games on the same day
-    const dates = [...new Set(games.map((g) => g.date))];
+    const dates = [...new Set(slicedGames.map((g) => g.date))];
     const sessionCounts = dates.map((d) => ({
       date: d,
-      games: games.filter((g) => g.date === d),
-      total: games.filter((g) => g.date === d).reduce((a, g) => a + g.score, 0),
+      games: slicedGames.filter((g) => g.date === d),
+      total: slicedGames.filter((g) => g.date === d).reduce((a, g) => a + g.score, 0),
     }));
     const bestSession = sessionCounts.length > 0
       ? sessionCounts.reduce((best, s) => s.total > best.total ? s : best)
       : null;
 
     return { total, avg, high, low, cleanPct, strikes, trend, gamesCount: scores.length, bestSession };
-  }, [games]);
+  }, [slicedGames]);
 
   const handleShare = async () => {
     if (!stats) return;
@@ -66,12 +74,20 @@ const SeriesSummary = ({ games }: SeriesSummaryProps) => {
 
   return (
     <div ref={cardRef} className="border border-border bg-card">
-      <div className="bg-muted px-3 py-2 border-b border-border flex items-center justify-between">
+      <div className="bg-muted px-3 py-2 border-b border-border flex items-center justify-between flex-wrap gap-1">
         <div className="flex items-center gap-1">
           <h3 className="text-xs text-primary font-bold">📊 SERIES SUMMARY</h3>
-          <span className="inline-block cursor-help" title="Your stats across all logged games — total pins, averages, streaks, and session bests.">ℹ️</span>
+          <span className="inline-block cursor-help" title="Your bowling stats summary — toggle between your last 3 games (series), last 10, or all-time.">ℹ️</span>
         </div>
-        <button onClick={handleShare} className="text-xs text-secondary hover:underline">[Share 📤]</button>
+        <div className="flex items-center gap-1">
+          {(["3", "10", "all"] as TimeRange[]).map((r) => (
+            <button key={r} onClick={() => setRange(r)}
+              className={`text-[10px] px-2 py-0.5 border ${range === r ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [{r === "all" ? "All" : `Last ${r}`}]
+            </button>
+          ))}
+          <button onClick={handleShare} className="text-xs text-secondary hover:underline">[Share 📤]</button>
+        </div>
       </div>
       <div className="p-3">
         <div className="grid grid-cols-2 gap-2 text-xs">
