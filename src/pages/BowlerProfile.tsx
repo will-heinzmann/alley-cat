@@ -164,6 +164,11 @@ const BowlerProfile = () => {
                 <p className="text-xs text-muted-foreground">Tap 📷 to change photo</p>
               </div>
               <div>
+                <label className="text-xs text-muted-foreground block mb-1">Full Name:</label>
+                <input value={editFullName} onChange={e => setEditFullName(e.target.value)}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" placeholder="e.g. John Smith" />
+              </div>
+              <div>
                 <label className="text-xs text-muted-foreground block mb-1">Username:</label>
                 <input value={editUsername} onChange={e => setEditUsername(e.target.value)}
                   className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" />
@@ -214,6 +219,7 @@ const BowlerProfile = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-lg text-primary font-bold">{profile.username}</p>
+                      {profile.full_name && <p className="text-xs text-foreground">{profile.full_name}</p>}
                       <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
                     </div>
                     <div className="flex gap-1">
