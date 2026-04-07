@@ -342,7 +342,7 @@ const LeagueNight = () => {
       score: myScore,
       date,
       oil_condition: "House",
-      notes: `League Night with ${players.slice(1).map(p => p.name).join(", ")}`,
+      notes: `Group Play with ${players.slice(1).map(p => p.name).join(", ")}`,
     });
     if (error) {
       toast({ title: "Error saving", description: error.message, variant: "destructive" });
@@ -355,10 +355,10 @@ const LeagueNight = () => {
   const handleShareResults = async () => {
     // Generate a text-based shareable summary
     const lines = players.map(p => `${p.name}: ${calculateScore(p.frames)}`).join("\n");
-    const text = `🎳 Alley Cat League Night!\n\n${lines}\n\nTrack your games at alley-cat.lovable.app`;
+    const text = `🎳 Alley Cat Group Play!\n\n${lines}\n\nTrack your games at alley-cat.lovable.app`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Alley Cat League Night", text });
+        await navigator.share({ title: "Alley Cat Group Play", text });
       } catch {}
     } else {
       await navigator.clipboard.writeText(text);
@@ -371,10 +371,10 @@ const LeagueNight = () => {
       <div className="min-h-screen pb-20 p-4">
         <header className="border-b border-border pb-4 mb-4">
           <Link to="/" className="text-primary text-xs">← Back</Link>
-          <h1 className="text-lg text-primary mt-1">🏆 League Night</h1>
+          <h1 className="text-lg text-primary mt-1">🏆 Group Play</h1>
         </header>
         <div className="border border-border p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-3">Sign in to track League Night scores</p>
+          <p className="text-sm text-muted-foreground mb-3">Sign in to track Group Play scores</p>
           <Link to="/auth" className="border border-border bg-primary text-primary-foreground px-4 py-2 text-xs hover:opacity-80">
             [Sign In]
           </Link>
@@ -389,7 +389,7 @@ const LeagueNight = () => {
       <div className="min-h-screen pb-20 p-4">
         <header className="border-b border-border pb-4 mb-4">
           <Link to="/" className="text-primary text-xs">← Back</Link>
-          <h1 className="text-lg text-primary mt-1">🏆 League Night</h1>
+          <h1 className="text-lg text-primary mt-1">🏆 Group Play</h1>
           <p className="text-xs text-muted-foreground">Track scores for your whole group</p>
         </header>
 
@@ -423,7 +423,7 @@ const LeagueNight = () => {
             <p className="text-[10px] text-muted-foreground mb-2">★ = Your score will be saved to your profile. Guest scores are for display only.</p>
             <button type="button" onClick={startGame}
               className="w-full border border-border bg-primary text-primary-foreground py-2 text-xs hover:opacity-80">
-              [Start League Night →]
+              [Start Group Play →]
             </button>
           </div>
         </div>
@@ -437,7 +437,7 @@ const LeagueNight = () => {
     return (
       <div className="min-h-screen pb-20 p-4">
         <header className="border-b border-border pb-4 mb-4">
-          <h1 className="text-lg text-primary">🏆 League Night Results</h1>
+          <h1 className="text-lg text-primary">🏆 Group Play Results</h1>
         </header>
 
         <div ref={scoreboardRef} className="space-y-2 mb-4">
@@ -542,7 +542,7 @@ const LeagueNight = () => {
   return (
     <div className="min-h-screen pb-20 p-2">
       <header className="border-b border-border pb-2 mb-2">
-        <h1 className="text-sm text-primary font-bold">🏆 League Night</h1>
+        <h1 className="text-sm text-primary font-bold">🏆 Group Play</h1>
       </header>
 
       {/* Horizontal scoreboard for all players */}
