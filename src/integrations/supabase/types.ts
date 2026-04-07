@@ -68,6 +68,35 @@ export type Database = {
         }
         Relationships: []
       }
+      favorite_alleys: {
+        Row: {
+          alley_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          alley_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          alley_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorite_alleys_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
