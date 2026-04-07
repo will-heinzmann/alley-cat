@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      alley_update_requests: {
+        Row: {
+          alley_id: string
+          created_at: string
+          field_name: string
+          id: string
+          new_value: string
+          old_value: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alley_id: string
+          created_at?: string
+          field_name: string
+          id?: string
+          new_value: string
+          old_value?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alley_id?: string
+          created_at?: string
+          field_name?: string
+          id?: string
+          new_value?: string
+          old_value?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alley_update_requests_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alleys: {
         Row: {
           address: string
@@ -291,7 +338,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_app_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
