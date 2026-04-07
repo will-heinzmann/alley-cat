@@ -1,0 +1,1 @@
+ALTER TABLE public.alleys ADD COLUMN zip_code text;
