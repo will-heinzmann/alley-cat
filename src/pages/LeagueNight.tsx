@@ -17,6 +17,13 @@ interface Player {
   frames: FrameData[];
 }
 
+interface PastGame {
+  id: string;
+  date: string;
+  alley_name: string | null;
+  players: { player_name: string; is_guest: boolean; score: number }[];
+}
+
 const allStanding = () => Array(10).fill(true);
 const noHits = () => Array(10).fill(false);
 
@@ -117,7 +124,6 @@ const isFrameComplete = (frames: FrameData[], frameIdx: number): boolean => {
   const f = frames[frameIdx];
   if (f.roll1 === null) return false;
   if (frameIdx < 9) return f.roll1 === 10 || f.roll2 !== null;
-  // 10th frame
   if (f.roll2 === null) return false;
   const needs3 = f.roll1 === 10 || f.roll1 + (f.roll2 ?? 0) >= 10;
   if (needs3) return f.roll3 !== null;
@@ -128,34 +134,63 @@ const getCurrentFrameIndex = (frames: FrameData[]): number => {
   for (let i = 0; i < 10; i++) {
     if (!isFrameComplete(frames, i)) return i;
   }
-  return 10; // game complete
+  return 10;
 };
 
-const LeagueNight = () => {
+const GroupPlay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Setup state
   const [phase, setPhase] = useState<"setup" | "playing" | "summary">("setup");
   const [players, setPlayers] = useState<Player[]>([]);
   const [playerNames, setPlayerNames] = useState<string[]>(["", ""]);
   const [activePlayerIdx, setActivePlayerIdx] = useState(0);
 
-  // Pin mode state for active player
   const [standing, setStanding] = useState<boolean[]>(allStanding);
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [currentRoll, setCurrentRoll] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
 
-  // Alley selection
   const [alleys, setAlleys] = useState<any[]>([]);
   const [alleyId, setAlleyId] = useState("");
   const [alleySearch, setAlleySearch] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState(false);
 
+  // Past games
+  const [pastGames, setPastGames] = useState<PastGame[]>([]);
+  const [loadingPast, setLoadingPast] = useState(true);
+
   const scoreboardRef = useRef<HTMLDivElement>(null);
+
+  const fetchPastGames = async () => {
+    if (!user) { setLoadingPast(false); return; }
+    setLoadingPast(true);
+    const { data: games } = await supabase
+      .from("group_games")
+      .select("id, date, alley_id, alleys(name)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (!games || games.length === 0) { setPastGames([]); setLoadingPast(false); return; }
+
+    const gameIds = games.map(g => g.id);
+    const { data: playerRows } = await supabase
+      .from("group_game_players")
+      .select("group_game_id, player_name, is_guest, score")
+      .in("group_game_id", gameIds);
+
+    const mapped: PastGame[] = games.map(g => ({
+      id: g.id,
+      date: g.date,
+      alley_name: (Array.isArray(g.alleys) ? (g.alleys as any)[0]?.name : (g.alleys as any)?.name) ?? null,
+      players: (playerRows ?? []).filter(p => p.group_game_id === g.id).sort((a, b) => b.score - a.score),
+    }));
+    setPastGames(mapped);
+    setLoadingPast(false);
+  };
 
   useEffect(() => {
     const fetchAlleys = async () => {
@@ -171,7 +206,8 @@ const LeagueNight = () => {
       setAlleys(all);
     };
     fetchAlleys();
-  }, []);
+    fetchPastGames();
+  }, [user]);
 
   const addPlayerSlot = () => {
     if (playerNames.length >= 6) return;
@@ -191,7 +227,7 @@ const LeagueNight = () => {
     }
     const newPlayers: Player[] = names.map((name, i) => ({
       name: name.trim(),
-      isGuest: i > 0, // first player is the logged-in user
+      isGuest: i > 0,
       frames: initFrames(),
     }));
     setPlayers(newPlayers);
@@ -210,21 +246,14 @@ const LeagueNight = () => {
         setStanding(allStanding());
         setCurrentRoll(0);
       } else {
-        // Roll 2 — only standing pins remain
-        const remaining = allStanding().map((_, i) => true); // We need to track what was hit in roll 1
-        // Actually we need to figure out which pins are still up
-        // Since roll1 = pinsHit count, we don't know exact pins. For pin mode we track at confirm time.
-        // This function is called fresh, so standing should already be set
         setCurrentRoll(1);
       }
     } else {
-      // 10th frame
       if (f.roll1 === null) {
         setStanding(allStanding());
         setCurrentRoll(0);
       } else if (f.roll2 === null) {
         setCurrentRoll(1);
-        // standing already set from previous confirm
       } else {
         setCurrentRoll(2);
       }
@@ -263,7 +292,6 @@ const LeagueNight = () => {
         return;
       }
     } else {
-      // 10th frame
       if (currentRoll === 0) {
         f.roll1 = pinsHit;
         setPlayers(newPlayers);
@@ -306,7 +334,6 @@ const LeagueNight = () => {
 
   const advanceToNextPlayer = (ps: Player[]) => {
     setShowPinModal(false);
-    // Check if all players are done
     const allDone = ps.every(p => getCurrentFrameIndex(p.frames) >= 10);
     if (allDone) {
       setPlayers(ps);
@@ -314,7 +341,6 @@ const LeagueNight = () => {
       return;
     }
 
-    // Find next player who still has frames to play
     let nextIdx = (activePlayerIdx + 1) % ps.length;
     let attempts = 0;
     while (getCurrentFrameIndex(ps[nextIdx].frames) >= 10 && attempts < ps.length) {
@@ -325,18 +351,19 @@ const LeagueNight = () => {
     setStanding(allStanding());
     setHit(noHits());
     setCurrentRoll(0);
-    // Auto-open pin selector after brief delay
     setTimeout(() => openPinSelector(ps, nextIdx), 200);
   };
 
-  const handleSaveLoggedUserScore = async () => {
+  const handleSaveGroupGame = async () => {
     if (!user || !alleyId) {
       toast({ title: "Please select an alley" });
       return;
     }
     setSaving(true);
+
+    // Save the logged-in user's score to games table too
     const myScore = calculateScore(players[0].frames);
-    const { error } = await supabase.from("games").insert({
+    const { error: gameErr } = await supabase.from("games").insert({
       user_id: user.id,
       alley_id: alleyId,
       score: myScore,
@@ -344,16 +371,40 @@ const LeagueNight = () => {
       oil_condition: "House",
       notes: `Group Play with ${players.slice(1).map(p => p.name).join(", ")}`,
     });
-    if (error) {
-      toast({ title: "Error saving", description: error.message, variant: "destructive" });
+
+    // Save group game record
+    const { data: groupGame, error: ggErr } = await supabase.from("group_games").insert({
+      user_id: user.id,
+      alley_id: alleyId,
+      date,
+    }).select("id").single();
+
+    if (ggErr || !groupGame) {
+      toast({ title: "Error saving group game", description: ggErr?.message, variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+
+    // Save all player scores
+    const playerInserts = players.map(p => ({
+      group_game_id: groupGame.id,
+      player_name: p.name,
+      is_guest: p.isGuest,
+      score: calculateScore(p.frames),
+    }));
+
+    const { error: pErr } = await supabase.from("group_game_players").insert(playerInserts);
+
+    if (gameErr || pErr) {
+      toast({ title: "Partially saved", description: "Some data may not have saved", variant: "destructive" });
     } else {
-      toast({ title: "Game saved!", description: "+50 AlleyPoints" });
+      toast({ title: "Group game saved!", description: "+50 AlleyPoints for your score" });
     }
     setSaving(false);
+    fetchPastGames();
   };
 
   const handleShareResults = async () => {
-    // Generate a text-based shareable summary
     const lines = players.map(p => `${p.name}: ${calculateScore(p.frames)}`).join("\n");
     const text = `🎳 Alley Cat Group Play!\n\n${lines}\n\nTrack your games at alley-cat.lovable.app`;
     if (navigator.share) {
@@ -427,6 +478,39 @@ const LeagueNight = () => {
             </button>
           </div>
         </div>
+
+        {/* Past Group Games */}
+        <div className="mt-6 border-t border-border pt-4">
+          <h2 className="text-sm text-primary font-bold mb-2">Past Group Games</h2>
+          {loadingPast ? (
+            <p className="text-xs text-muted-foreground">Loading...</p>
+          ) : pastGames.length === 0 ? (
+            <p className="text-xs text-muted-foreground">No group games yet. Start one above!</p>
+          ) : (
+            <div className="space-y-2">
+              {pastGames.map(game => (
+                <div key={game.id} className="border border-border bg-card p-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs text-muted-foreground">{game.date}</span>
+                    {game.alley_name && <span className="text-xs text-primary">{game.alley_name}</span>}
+                  </div>
+                  <div className="space-y-0.5">
+                    {game.players.map((p, i) => (
+                      <div key={i} className="flex justify-between text-xs">
+                        <span className="text-foreground">
+                          {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}{" "}
+                          {p.player_name}
+                          {p.is_guest && <span className="text-muted-foreground"> (guest)</span>}
+                        </span>
+                        <span className="text-secondary font-bold">{p.score}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -496,7 +580,7 @@ const LeagueNight = () => {
         {/* Save & Share */}
         <div className="space-y-2">
           <div className="relative">
-            <label className="text-xs text-muted-foreground block mb-1">Alley (to save your score):</label>
+            <label className="text-xs text-muted-foreground block mb-1">Alley (to save scores):</label>
             <input
               type="text" placeholder="Search alleys..." value={alleySearch}
               onChange={e => { setAlleySearch(e.target.value); setAlleyId(""); }}
@@ -515,16 +599,16 @@ const LeagueNight = () => {
             )}
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSaveLoggedUserScore} disabled={saving || !alleyId}
+            <button onClick={handleSaveGroupGame} disabled={saving || !alleyId}
               className="flex-1 border border-border bg-primary text-primary-foreground py-1.5 text-xs hover:opacity-80 disabled:opacity-50">
-              {saving ? "Saving..." : "[Save My Score]"}
+              {saving ? "Saving..." : "[Save Group Game]"}
             </button>
             <button onClick={handleShareResults}
               className="flex-1 border border-border bg-secondary text-secondary-foreground py-1.5 text-xs hover:opacity-80">
               [Share Results]
             </button>
           </div>
-          <button onClick={() => { setPhase("setup"); setPlayers([]); }}
+          <button onClick={() => { setPhase("setup"); setPlayers([]); fetchPastGames(); }}
             className="w-full border border-border bg-muted text-foreground py-1.5 text-xs hover:opacity-80">
             [New Game]
           </button>
@@ -618,4 +702,4 @@ const LeagueNight = () => {
   );
 };
 
-export default LeagueNight;
+export default GroupPlay;
