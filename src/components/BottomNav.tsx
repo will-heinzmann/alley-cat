@@ -8,7 +8,8 @@ const BottomNav = () => {
   const navItems = [
     { path: "/", label: "Feed" },
     { path: "/alleys", label: "Alleys" },
-    { path: "/log", label: "Log Game" },
+    { path: "/log", label: "Log" },
+    { path: "/league", label: "League" },
     { path: "/leaderboard", label: "Board" },
     { path: user ? `/bowler/${user.id}` : "/auth", label: "Me" },
   ];
