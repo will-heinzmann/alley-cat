@@ -79,7 +79,14 @@ const AlleyDetail = () => {
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4">
         <Link to="/alleys" className="text-primary text-xs">← Back to Directory</Link>
-        <h1 className="text-lg text-primary mt-1">🎳 {alley.name.toUpperCase()}</h1>
+        <div className="flex items-center justify-between mt-1">
+          <h1 className="text-lg text-primary">🎳 {alley.name.toUpperCase()}</h1>
+          {user && (
+            <button onClick={() => toggleFavorite(alley.id)} className="text-lg hover:opacity-80" title={isFavorited ? "Remove from favorites" : "Add to favorites"}>
+              {isFavorited ? "❤️" : "🤍"}
+            </button>
+          )}
+        </div>
         <hr className="border-primary mt-2" />
       </header>
 
