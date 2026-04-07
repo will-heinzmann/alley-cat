@@ -41,7 +41,8 @@ const AlleyDetail = () => {
   };
 
   const saveField = async (field: "lane_count" | "phone", value: any) => {
-    const { error } = await supabase.from("alleys").update({ [field]: value }).eq("id", id!);
+    const updateData = field === "lane_count" ? { lane_count: value as number } : { phone: value as string | null };
+    const { error } = await supabase.from("alleys").update(updateData).eq("id", id!);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
