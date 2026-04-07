@@ -26,6 +26,7 @@ const BowlerProfile = () => {
   const [editUsername, setEditUsername] = useState("");
   const [editHometown, setEditHometown] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editFullName, setEditFullName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
