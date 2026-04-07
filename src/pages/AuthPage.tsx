@@ -40,6 +40,30 @@ const AuthPage = () => {
     }
   };
 
+  if (signupComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="text-2xl text-primary mb-2">🎳 ALLEY CAT</h1>
+          <div className="border border-border bg-card p-6 space-y-3">
+            <p className="text-lg text-primary">📧 Check Your Email!</p>
+            <p className="text-sm text-muted-foreground">
+              We sent a verification link to <span className="text-foreground font-bold">{email}</span>.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Click the link in the email to verify your account, then come back and sign in.
+            </p>
+          </div>
+          <p className="mt-4">
+            <button onClick={() => { setSignupComplete(false); setIsLogin(true); }} className="text-primary text-xs hover:underline">
+              ← Back to Sign In
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
