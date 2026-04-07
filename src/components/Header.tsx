@@ -7,7 +7,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 border-b border-border bg-card">
       <div className="px-3 py-1 flex items-center justify-between gap-3">
         <Link to="/">
-          <img src={logo} alt="Alley Cat" className="h-9" />
+          <img src={logo} alt="Alley Cat" className="h-12" />
         </Link>
         <UserSearch />
       </div>
