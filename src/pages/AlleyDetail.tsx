@@ -18,6 +18,12 @@ const AlleyDetail = () => {
   const [oilRating, setOilRating] = useState(3);
   const [beerRating, setBeerRating] = useState(3);
 
+  // Inline editing state
+  const [editingLanes, setEditingLanes] = useState(false);
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [editLaneCount, setEditLaneCount] = useState(0);
+  const [editPhone, setEditPhone] = useState("");
+
   useEffect(() => { if (id) fetchData(); }, [id]);
 
   const fetchData = async () => {
@@ -26,8 +32,25 @@ const AlleyDetail = () => {
       supabase.from("reviews").select("*, profiles!reviews_user_id_fkey(username)").eq("alley_id", id!).order("created_at", { ascending: false }),
     ]);
     setAlley(alleyRes.data);
+    if (alleyRes.data) {
+      setEditLaneCount(alleyRes.data.lane_count);
+      setEditPhone(alleyRes.data.phone || "");
+    }
     setReviews(reviewsRes.data || []);
     setLoading(false);
+  };
+
+  const saveField = async (field: "lane_count" | "phone", value: any) => {
+    const updateData = field === "lane_count" ? { lane_count: value as number } : { phone: value as string | null };
+    const { error } = await supabase.from("alleys").update(updateData).eq("id", id!);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Updated!", description: `${field === "lane_count" ? "Lane count" : "Phone number"} saved.` });
+      setAlley((prev: any) => ({ ...prev, [field]: value }));
+    }
+    if (field === "lane_count") setEditingLanes(false);
+    if (field === "phone") setEditingPhone(false);
   };
 
   const submitReview = async (e: React.FormEvent) => {
@@ -73,13 +96,60 @@ const AlleyDetail = () => {
               <td className="border border-border p-2 text-muted-foreground w-24">Address</td>
               <td className="border border-border p-2 text-foreground">{alley.address}, {alley.city}, {alley.state}</td>
             </tr>
-            {alley.phone && (
-              <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Phone</td><td className="border border-border p-2 text-foreground">{alley.phone}</td></tr>
-            )}
+            {/* Phone - editable */}
+            <tr>
+              <td className="border border-border p-2 text-muted-foreground bg-muted">Phone</td>
+              <td className="border border-border p-2 text-foreground">
+                {editingPhone ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="border border-border bg-input px-2 py-0.5 text-foreground text-xs outline-none flex-1"
+                      placeholder="(555) 123-4567"
+                    />
+                    <button onClick={() => saveField("phone", editPhone.trim() || null)} className="text-primary text-xs hover:underline">Save</button>
+                    <button onClick={() => { setEditingPhone(false); setEditPhone(alley.phone || ""); }} className="text-muted-foreground text-xs hover:underline">✕</button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span>{alley.phone || <span className="text-muted-foreground italic">Not listed</span>}</span>
+                    {user && (
+                      <button onClick={() => setEditingPhone(true)} className="text-primary text-xs hover:underline ml-2">[Edit]</button>
+                    )}
+                  </div>
+                )}
+              </td>
+            </tr>
             {alley.website && (
               <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Website</td><td className="border border-border p-2"><a href={alley.website} className="text-primary">{alley.website}</a></td></tr>
             )}
-            <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Lanes</td><td className="border border-border p-2 text-primary font-bold">{alley.lane_count}</td></tr>
+            {/* Lanes - editable */}
+            <tr>
+              <td className="border border-border p-2 text-muted-foreground bg-muted">Lanes</td>
+              <td className="border border-border p-2">
+                {editingLanes ? (
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      value={editLaneCount}
+                      onChange={(e) => setEditLaneCount(Number(e.target.value))}
+                      className="border border-border bg-input px-2 py-0.5 text-foreground text-xs outline-none w-16"
+                    />
+                    <button onClick={() => saveField("lane_count", editLaneCount)} className="text-primary text-xs hover:underline">Save</button>
+                    <button onClick={() => { setEditingLanes(false); setEditLaneCount(alley.lane_count); }} className="text-muted-foreground text-xs hover:underline">✕</button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="text-primary font-bold">{alley.lane_count || "Unknown"}</span>
+                    {user && (
+                      <button onClick={() => setEditingLanes(true)} className="text-primary text-xs hover:underline ml-2">[Edit]</button>
+                    )}
+                  </div>
+                )}
+              </td>
+            </tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Oil</td><td className="border border-border p-2 text-foreground">{alley.oil_pattern}</td></tr>
             <tr><td className="border border-border p-2 text-muted-foreground bg-muted">Alley Rating</td><td className="border border-border p-2 text-primary">{"⭐".repeat(alley.alley_rating)} ({alley.alley_rating}/5)</td></tr>
             <tr>
