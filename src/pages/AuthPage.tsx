@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true);
+  const [searchParams] = useSearchParams();
+  const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [signupComplete, setSignupComplete] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -21,13 +23,15 @@ const AuthPage = () => {
         if (error) throw error;
         navigate("/");
       } else {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username },
+          },
+        });
         if (error) throw error;
-        if (data.user) {
-          await supabase.from("profiles").update({ username }).eq("user_id", data.user.id);
-        }
-        toast({ title: "Account created!", description: "Welcome to Alley Cat." });
-        navigate("/");
+        setSignupComplete(true);
       }
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -35,6 +39,30 @@ const AuthPage = () => {
       setLoading(false);
     }
   };
+
+  if (signupComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center">
+          <h1 className="text-2xl text-primary mb-2">🎳 ALLEY CAT</h1>
+          <div className="border border-border bg-card p-6 space-y-3">
+            <p className="text-lg text-primary">📧 Check Your Email!</p>
+            <p className="text-sm text-muted-foreground">
+              We sent a verification link to <span className="text-foreground font-bold">{email}</span>.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Click the link in the email to verify your account, then come back and sign in.
+            </p>
+          </div>
+          <p className="mt-4">
+            <button onClick={() => { setSignupComplete(false); setIsLogin(true); }} className="text-primary text-xs hover:underline">
+              ← Back to Sign In
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
