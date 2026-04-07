@@ -69,6 +69,7 @@ const HomePage = () => {
   }, [search, stateFilter, cityFilter, minRating, showFavorites]);
 
   const filtered = useMemo(() => alleys.filter((a) => {
+    if (showFavorites && !favoriteIds.has(a.id)) return false;
     const matchesSearch =
       !search ||
       a.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -79,7 +80,7 @@ const HomePage = () => {
     const matchesCity = !cityFilter || a.city === cityFilter;
     const matchesRating = a.alley_rating >= minRating;
     return matchesSearch && matchesState && matchesCity && matchesRating;
-  }), [alleys, search, stateFilter, cityFilter, minRating]);
+  }), [alleys, search, stateFilter, cityFilter, minRating, showFavorites, favoriteIds]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
