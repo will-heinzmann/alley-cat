@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -31,6 +31,44 @@ function FitBounds({ alleys }: { alleys: any[] }) {
     }
   }, [alleys, map]);
   return null;
+}
+
+function MapBoundsMarkers({ alleys }: { alleys: any[] }) {
+  const [visibleAlleys, setVisibleAlleys] = useState<any[]>([]);
+
+  const updateVisible = (map: L.Map) => {
+    const bounds = map.getBounds();
+    const inView = alleys.filter((a) =>
+      bounds.contains([a.lat, a.lng])
+    );
+    setVisibleAlleys(inView.slice(0, 1000));
+  };
+
+  const map = useMapEvents({
+    moveend: () => updateVisible(map),
+    zoomend: () => updateVisible(map),
+  });
+
+  useEffect(() => {
+    updateVisible(map);
+  }, [alleys, map]);
+
+  return (
+    <>
+      {visibleAlleys.map((alley) => (
+        <Marker key={alley.id} position={[alley.lat, alley.lng]}>
+          <Popup>
+            <div className="text-xs">
+              <strong>{alley.name}</strong><br />
+              {alley.city}, {alley.state}<br />
+              ⭐ {alley.alley_rating}/5<br />
+              <Link to={`/alley/${alley.slug}`} className="text-primary underline">View Details</Link>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+    </>
+  );
 }
 
 const HomePage = () => {
@@ -98,10 +136,7 @@ const HomePage = () => {
   }), [alleys, search, stateFilter, cityFilter, minRating, showFavorites, favoriteIds]);
 
   const mapAlleys = useMemo(
-    () => filtered
-      .filter((a) => Number.isFinite(a.lat) && Number.isFinite(a.lng) && (a.lat !== 0 || a.lng !== 0))
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 1000),
+    () => filtered.filter((a) => Number.isFinite(a.lat) && Number.isFinite(a.lng) && (a.lat !== 0 || a.lng !== 0)),
     [filtered]
   );
 
@@ -220,18 +255,7 @@ const HomePage = () => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               <FitBounds alleys={mapAlleys} />
-              {mapAlleys.map((alley) => (
-                <Marker key={alley.id} position={[alley.lat, alley.lng]}>
-                  <Popup>
-                    <div className="text-xs">
-                      <strong>{alley.name}</strong><br />
-                      {alley.city}, {alley.state}<br />
-                      ⭐ {alley.alley_rating}/5<br />
-                      <Link to={`/alley/${alley.slug}`} className="text-primary underline">View Details</Link>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+              <MapBoundsMarkers alleys={mapAlleys} />
             </MapContainer>
           </div>
         ) : (
