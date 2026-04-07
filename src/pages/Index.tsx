@@ -20,6 +20,7 @@ const PAGE_SIZE = 50;
 
 const HomePage = () => {
   const { user } = useAuth();
+  const { favoriteIds } = useFavoriteAlleys();
   const [search, setSearch] = useState("");
   const [alleys, setAlleys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ const HomePage = () => {
   const [minRating, setMinRating] = useState(0);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
     fetchAlleys();
