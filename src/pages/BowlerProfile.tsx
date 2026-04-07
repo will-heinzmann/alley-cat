@@ -26,6 +26,7 @@ const BowlerProfile = () => {
   const [editUsername, setEditUsername] = useState("");
   const [editHometown, setEditHometown] = useState("");
   const [editBio, setEditBio] = useState("");
+  const [editFullName, setEditFullName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
@@ -102,6 +103,7 @@ const BowlerProfile = () => {
     setEditUsername(profile?.username || "");
     setEditHometown(profile?.hometown || "");
     setEditBio(profile?.bio || "");
+    setEditFullName(profile?.full_name || "");
     setEditing(true);
   };
 
@@ -112,6 +114,7 @@ const BowlerProfile = () => {
       username: editUsername.trim(),
       hometown: editHometown.trim() || null,
       bio: editBio.trim() || null,
+      full_name: editFullName.trim() || null,
     }).eq("user_id", user.id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -159,6 +162,11 @@ const BowlerProfile = () => {
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                 </div>
                 <p className="text-xs text-muted-foreground">Tap 📷 to change photo</p>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Full Name:</label>
+                <input value={editFullName} onChange={e => setEditFullName(e.target.value)}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" placeholder="e.g. John Smith" />
               </div>
               <div>
                 <label className="text-xs text-muted-foreground block mb-1">Username:</label>
@@ -211,6 +219,7 @@ const BowlerProfile = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-lg text-primary font-bold">{profile.username}</p>
+                      {profile.full_name && <p className="text-xs text-foreground">{profile.full_name}</p>}
                       <p className="text-xs text-muted-foreground">{profile.hometown || "No hometown set"}</p>
                     </div>
                     <div className="flex gap-1">

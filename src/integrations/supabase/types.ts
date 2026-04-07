@@ -168,6 +168,7 @@ export type Database = {
           bio: string | null
           bowling_average: number
           created_at: string
+          full_name: string | null
           games_count: number
           hometown: string | null
           id: string
@@ -181,6 +182,7 @@ export type Database = {
           bio?: string | null
           bowling_average?: number
           created_at?: string
+          full_name?: string | null
           games_count?: number
           hometown?: string | null
           id?: string
@@ -194,6 +196,7 @@ export type Database = {
           bio?: string | null
           bowling_average?: number
           created_at?: string
+          full_name?: string | null
           games_count?: number
           hometown?: string | null
           id?: string
