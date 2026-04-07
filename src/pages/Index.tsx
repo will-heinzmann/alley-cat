@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -17,6 +17,20 @@ L.Icon.Default.mergeOptions({
 });
 const BATCH_SIZE = 1000;
 const PAGE_SIZE = 50;
+
+function FitBounds({ alleys }: { alleys: any[] }) {
+  const map = useMap();
+  useEffect(() => {
+    if (alleys.length === 0) return;
+    if (alleys.length === 1) {
+      map.setView([alleys[0].lat, alleys[0].lng], 14);
+    } else {
+      const bounds = L.latLngBounds(alleys.map((a) => [a.lat, a.lng]));
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    }
+  }, [alleys, map]);
+  return null;
+}
 
 const HomePage = () => {
   const { user } = useAuth();
@@ -198,6 +212,7 @@ const HomePage = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+              <FitBounds alleys={mapAlleys} />
               {mapAlleys.map((alley) => (
                 <Marker key={alley.id} position={[alley.lat, alley.lng]}>
                   <Popup>
