@@ -10,6 +10,8 @@ const AlleyDetail = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { favoriteIds, toggleFavorite } = useFavoriteAlleys();
+  const isFavorited = id ? favoriteIds.has(id) : false;
   const [alley, setAlley] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
