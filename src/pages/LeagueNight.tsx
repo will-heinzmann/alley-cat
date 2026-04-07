@@ -759,7 +759,7 @@ const GroupPlay = () => {
         })}
       </div>
 
-      {/* Pin selector for active player */}
+      {/* Scoring input for active player */}
       {showPinModal && activeFrameIdx < 10 && (
         <div className="border border-primary bg-card p-3">
           <div className="flex justify-between items-center mb-2">
@@ -767,21 +767,47 @@ const GroupPlay = () => {
               <span className="text-xs text-primary font-bold">{activePlayer.name}</span>
               <span className="text-xs text-muted-foreground ml-2">{frameLabel} — {rollLabel}</span>
             </div>
-            <button type="button" onClick={confirmRoll}
-              className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
-              [Confirm →]
-            </button>
+            {scoringMode === "pin" ? (
+              <button type="button" onClick={confirmRoll}
+                className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
+                [Confirm →]
+              </button>
+            ) : (
+              <button type="button" onClick={confirmFrameInput}
+                className="border border-primary bg-primary text-primary-foreground px-3 py-1 text-xs hover:opacity-80 active:scale-95 transition-transform">
+                [Enter →]
+              </button>
+            )}
           </div>
-          <PinDeck standing={standing} hit={hit} onTogglePin={(i) => {
-            setHit(prev => {
-              const next = [...prev];
-              next[i] = !next[i];
-              return next;
-            });
-          }} />
-          <p className="text-center text-xs text-muted-foreground">
-            Pins hit: <span className="text-primary font-bold">{hit.filter(Boolean).length}</span>
-          </p>
+          {scoringMode === "pin" ? (
+            <>
+              <PinDeck standing={standing} hit={hit} onTogglePin={(i) => {
+                setHit(prev => {
+                  const next = [...prev];
+                  next[i] = !next[i];
+                  return next;
+                });
+              }} />
+              <p className="text-center text-xs text-muted-foreground">
+                Pins hit: <span className="text-primary font-bold">{hit.filter(Boolean).length}</span>
+              </p>
+            </>
+          ) : (
+            <div className="text-center">
+              <input
+                type="number"
+                min="0"
+                max="10"
+                value={frameInput}
+                onChange={(e) => setFrameInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); confirmFrameInput(); } }}
+                className="border border-border bg-input px-3 py-2 text-foreground text-lg text-center outline-none w-24"
+                placeholder="0-10"
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground mt-1">Enter pins knocked down</p>
+            </div>
+          )}
         </div>
       )}
     </div>
