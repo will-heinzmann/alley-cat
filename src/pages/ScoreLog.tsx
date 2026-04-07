@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { isOnline, onConnectivityChange, addToOfflineQueue, syncOfflineGames, getOfflineQueue, type OfflineGame } from "@/lib/offlineSync";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
@@ -136,6 +137,8 @@ const ScoreLog = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [alleySearch, setAlleySearch] = useState("");
+  const [online, setOnline] = useState(isOnline());
+  const [pendingCount, setPendingCount] = useState(getOfflineQueue().length);
 
   // Pre-select alley from query param
   useEffect(() => {
@@ -146,6 +149,24 @@ const ScoreLog = () => {
     }
   }, [searchParams]);
 
+  // Connectivity monitoring + auto-sync
+  useEffect(() => {
+    const cleanup = onConnectivityChange(async (isNowOnline) => {
+      setOnline(isNowOnline);
+      if (isNowOnline && user) {
+        const { synced } = await syncOfflineGames(async (game) => {
+          return supabase.from("games").insert(game);
+        });
+        if (synced > 0) {
+          toast({ title: `Synced ${synced} offline game${synced > 1 ? "s" : ""}!` });
+          fetchData();
+        }
+        setPendingCount(getOfflineQueue().length);
+      }
+    });
+    return cleanup;
+  }, [user]);
+
   useEffect(() => { fetchData(); }, [user]);
 
   const fetchData = async () => {
@@ -153,7 +174,6 @@ const ScoreLog = () => {
       ? await supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", user.id).order("date", { ascending: false })
       : { data: [] };
 
-    // Batch-fetch all alleys to avoid 1000 row limit
     let allAlleys: any[] = [];
     const BATCH = 1000;
     let from = 0;
@@ -167,6 +187,7 @@ const ScoreLog = () => {
 
     setGames(gamesRes.data || []);
     setAlleys(allAlleys);
+    setPendingCount(getOfflineQueue().length);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,7 +196,7 @@ const ScoreLog = () => {
     if (!alleyId) { toast({ title: "Please select an alley" }); return; }
     setSaving(true);
     let imageUrl: string | null = null;
-    if (imageFile) {
+    if (imageFile && isOnline()) {
       const ext = imageFile.name.split(".").pop();
       const path = `${user.id}/${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("game-images").upload(path, imageFile);
@@ -187,11 +208,39 @@ const ScoreLog = () => {
       const { data: urlData } = supabase.storage.from("game-images").getPublicUrl(path);
       imageUrl = urlData.publicUrl;
     }
-    const { error } = await supabase.from("games").insert({ user_id: user.id, alley_id: alleyId, score: parseInt(score), date, oil_condition: oil, notes: notes || null, image_url: imageUrl });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+
+    const gameData = {
+      user_id: user.id,
+      alley_id: alleyId,
+      score: parseInt(score),
+      date,
+      oil_condition: oil,
+      notes: notes || null,
+      image_url: imageUrl,
+    };
+
+    if (!isOnline()) {
+      addToOfflineQueue({
+        ...gameData,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+      });
+      toast({ title: "Saved offline! 📴", description: "Will sync when you're back online." });
+      setPendingCount(getOfflineQueue().length);
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null);
     } else {
-      toast({ title: "Game logged!", description: "+50 AlleyPoints" });
+      const { error } = await supabase.from("games").insert(gameData);
+      if (error) {
+        addToOfflineQueue({
+          ...gameData,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+        });
+        toast({ title: "Saved offline! 📴", description: "Cloud sync failed, will retry later." });
+        setPendingCount(getOfflineQueue().length);
+      } else {
+        toast({ title: "Game logged!", description: "+50 AlleyPoints" });
+      }
       setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); fetchData();
     }
     setSaving(false);
@@ -203,6 +252,15 @@ const ScoreLog = () => {
         <div>
           <Link to="/" className="text-primary text-xs">← Back</Link>
           <h1 className="text-lg text-primary mt-1">🎳 Score Log</h1>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className={`inline-block w-2 h-2 rounded-full ${online ? "bg-green-500" : "bg-destructive"}`} />
+            <span className="text-[10px] text-muted-foreground">
+              {online ? "Online" : "Offline — scores save locally"}
+            </span>
+            {pendingCount > 0 && (
+              <span className="text-[10px] text-secondary font-bold">({pendingCount} pending sync)</span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => user ? setShowForm(!showForm) : navigate("/auth")}
