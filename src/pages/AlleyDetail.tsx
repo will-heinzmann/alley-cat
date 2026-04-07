@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
+import AlleyLeaderboard from "@/components/AlleyLeaderboard";
 
 const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
 
@@ -210,6 +211,9 @@ const AlleyDetail = () => {
             </tr>
           </tbody>
         </table>
+
+        {/* Alley Leaderboard */}
+        <AlleyLeaderboard alleyId={alley.id} alleyName={alley.name} />
 
         <div className="flex items-center justify-between">
           <h2 className="text-sm text-secondary font-bold">📝 Reviews ({reviews.length})</h2>
