@@ -339,6 +339,67 @@ const GroupPlay = () => {
     }
   };
 
+  const confirmFrameInput = () => {
+    const value = parseInt(frameInput);
+    if (isNaN(value) || value < 0) return;
+    const newPlayers = players.map(p => ({ ...p, frames: p.frames.map(f => ({ ...f })) }));
+    const player = newPlayers[activePlayerIdx];
+    const frameIdx = getCurrentFrameIndex(player.frames);
+    if (frameIdx >= 10) return;
+    const f = player.frames[frameIdx];
+
+    if (frameIdx < 9) {
+      if (f.roll1 === null) {
+        if (value > 10) return;
+        f.roll1 = value;
+        if (value === 10) {
+          f.roll2 = null;
+          setPlayers(newPlayers);
+          setFrameInput("");
+          advanceToNextPlayer(newPlayers);
+        } else {
+          setPlayers(newPlayers);
+          setFrameInput("");
+          setCurrentRoll(1);
+        }
+      } else {
+        const maxPins = 10 - (f.roll1 ?? 0);
+        if (value > maxPins) return;
+        f.roll2 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        advanceToNextPlayer(newPlayers);
+      }
+    } else {
+      if (f.roll1 === null) {
+        if (value > 10) return;
+        f.roll1 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        setCurrentRoll(1);
+      } else if (f.roll2 === null) {
+        const r1 = f.roll1 ?? 0;
+        const max2 = r1 === 10 ? 10 : 10 - r1;
+        if (value > max2) return;
+        f.roll2 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        const needs3 = r1 === 10 || r1 + value >= 10;
+        if (needs3) {
+          setCurrentRoll(2);
+        } else {
+          advanceToNextPlayer(newPlayers);
+        }
+      } else {
+        if (value > 10) return;
+        f.roll3 = value;
+        setPlayers(newPlayers);
+        setFrameInput("");
+        advanceToNextPlayer(newPlayers);
+      }
+    }
+  };
+
   const advanceToNextPlayer = (ps: Player[]) => {
     setShowPinModal(false);
     const allDone = ps.every(p => getCurrentFrameIndex(p.frames) >= 10);
@@ -358,7 +419,12 @@ const GroupPlay = () => {
     setStanding(allStanding());
     setHit(noHits());
     setCurrentRoll(0);
-    setTimeout(() => openPinSelector(ps, nextIdx), 200);
+    setFrameInput("");
+    if (scoringMode === "pin") {
+      setTimeout(() => openPinSelector(ps, nextIdx), 200);
+    } else {
+      setShowPinModal(true);
+    }
   };
 
   const handleSaveGroupGame = async () => {
