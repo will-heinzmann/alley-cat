@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
+import PinModeInput from "@/components/PinModeInput";
 
 interface FrameScore {
   roll1: string;
@@ -130,7 +131,7 @@ const ScoreLog = () => {
   const [notes, setNotes] = useState("");
   const [selectedGame, setSelectedGame] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [entryMode, setEntryMode] = useState<"total" | "frame">("total");
+  const [entryMode, setEntryMode] = useState<"total" | "frame" | "pin">("total");
   const [frameScore, setFrameScore] = useState<number>(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -213,7 +214,7 @@ const ScoreLog = () => {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="p-4 border-b border-border bg-card space-y-2">
-          <div className="flex gap-1 mb-2">
+          <div className="flex gap-1 mb-2 flex-wrap">
             <button type="button" onClick={() => setEntryMode("total")}
               className={`text-xs px-2 py-1 border ${entryMode === "total" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
               [Total Score]
@@ -221,6 +222,10 @@ const ScoreLog = () => {
             <button type="button" onClick={() => setEntryMode("frame")}
               className={`text-xs px-2 py-1 border ${entryMode === "frame" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
               [Frame-by-Frame]
+            </button>
+            <button type="button" onClick={() => setEntryMode("pin")}
+              className={`text-xs px-2 py-1 border ${entryMode === "pin" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+              [Pin Mode 🎳]
             </button>
           </div>
 
@@ -230,10 +235,16 @@ const ScoreLog = () => {
               <input type="number" min="0" max="300" value={score} onChange={(e) => setScore(e.target.value)}
                 className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" required />
             </div>
-          ) : (
+          ) : entryMode === "frame" ? (
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Enter each roll:</label>
               <FrameByFrameInput onScoreChange={(total) => { setFrameScore(total); setScore(String(total)); }} />
+              <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
+            </div>
+          ) : (
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Tap pins to score:</label>
+              <PinModeInput onScoreChange={(total) => { setFrameScore(total); setScore(String(total)); }} />
               <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
             </div>
           )}
