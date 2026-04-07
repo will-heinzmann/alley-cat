@@ -129,7 +129,7 @@ const AlleyDetail = () => {
               <td className="border border-border p-2 text-muted-foreground w-24">Address</td>
               <td className="border border-border p-2 text-foreground">
                 <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                  {alley.address}, {alley.city}, {alley.state}
+                  {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}
                 </a>
               </td>
             </tr>
