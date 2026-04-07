@@ -48,14 +48,30 @@ const AlleyDetail = () => {
 
     const { data: reviewsData } = await supabase
       .from("reviews")
-      .select("*, profiles!reviews_user_id_fkey(username)")
+      .select("*")
       .eq("alley_id", alleyData.id)
       .order("created_at", { ascending: false });
+
+    // Fetch reviewer profiles separately
+    const userIds = [...new Set((reviewsData || []).map((r: any) => r.user_id))];
+    let profileMap = new Map<string, string>();
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", userIds);
+      profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.username]));
+    }
+
+    const reviewsWithUsernames = (reviewsData || []).map((r: any) => ({
+      ...r,
+      reviewer_username: profileMap.get(r.user_id) || "Unknown",
+    }));
 
     setAlley(alleyData);
     setEditLaneCount(alleyData.lane_count);
     setEditPhone(alleyData.phone || "");
-    setReviews(reviewsData || []);
+    setReviews(reviewsWithUsernames);
     setLoading(false);
   };
 
@@ -244,19 +260,16 @@ const AlleyDetail = () => {
           </form>
         )}
 
-        {reviews.map((review) => {
-          const profile = Array.isArray(review.profiles) ? review.profiles[0] : review.profiles;
-          return (
+        {reviews.map((review) => (
             <div key={review.id} className="border border-border bg-card p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-primary font-bold">{profile?.username || "Unknown"}</span>
+                <span className="text-sm text-primary font-bold">{review.reviewer_username}</span>
                 <span className="text-xs text-secondary">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
               </div>
               <p className="text-sm text-foreground mb-1">{review.comment}</p>
               <p className="text-xs text-muted-foreground">Oil: {review.oil_rating}/5 · Beer: {review.beer_rating}/5</p>
             </div>
-          );
-        })}
+        ))}
       </div>
     </div>
   );

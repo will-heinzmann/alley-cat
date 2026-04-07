@@ -67,7 +67,10 @@ const SeriesSummary = ({ games }: SeriesSummaryProps) => {
   return (
     <div ref={cardRef} className="border border-border bg-card">
       <div className="bg-muted px-3 py-2 border-b border-border flex items-center justify-between">
-        <h3 className="text-xs text-primary font-bold">📊 SERIES SUMMARY</h3>
+        <div className="flex items-center gap-1">
+          <h3 className="text-xs text-primary font-bold">📊 SERIES SUMMARY</h3>
+          <span className="inline-block cursor-help" title="Your stats across all logged games — total pins, averages, streaks, and session bests.">ℹ️</span>
+        </div>
         <button onClick={handleShare} className="text-xs text-secondary hover:underline">[Share 📤]</button>
       </div>
       <div className="p-3">
@@ -93,7 +96,9 @@ const SeriesSummary = ({ games }: SeriesSummaryProps) => {
             <p className="text-foreground font-bold text-lg">{stats.low}</p>
           </div>
           <div className="border border-border p-2 bg-muted text-center">
-            <p className="text-muted-foreground">200+ Rate</p>
+            <p className="text-muted-foreground">
+              200+ Rate <span className="inline-block cursor-help" title="The percentage of your games where you scored 200 or higher — a measure of consistency at a high level.">ℹ️</span>
+            </p>
             <p className="text-primary font-bold text-lg">{stats.cleanPct}%</p>
           </div>
         </div>
