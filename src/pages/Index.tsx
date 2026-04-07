@@ -66,7 +66,7 @@ const HomePage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, stateFilter, cityFilter, minRating]);
+  }, [search, stateFilter, cityFilter, minRating, showFavorites]);
 
   const filtered = useMemo(() => alleys.filter((a) => {
     const matchesSearch =
