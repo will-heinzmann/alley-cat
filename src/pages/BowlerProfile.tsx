@@ -103,6 +103,7 @@ const BowlerProfile = () => {
     setEditUsername(profile?.username || "");
     setEditHometown(profile?.hometown || "");
     setEditBio(profile?.bio || "");
+    setEditFullName(profile?.full_name || "");
     setEditing(true);
   };
 
@@ -113,6 +114,7 @@ const BowlerProfile = () => {
       username: editUsername.trim(),
       hometown: editHometown.trim() || null,
       bio: editBio.trim() || null,
+      full_name: editFullName.trim() || null,
     }).eq("user_id", user.id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
