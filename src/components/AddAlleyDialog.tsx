@@ -46,8 +46,8 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       return;
     }
 
-    const { name, address, city, state, lane_count } = form;
-    if (!name.trim() || !address.trim() || !city.trim() || !state || !lane_count) {
+    const { name, address, city, state, zip_code, lane_count } = form;
+    if (!name.trim() || !address.trim() || !city.trim() || !state || !zip_code.trim() || !lane_count) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -82,6 +82,7 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       address: address.trim(),
       city: city.trim(),
       state,
+      zip_code: zip_code.trim(),
       lane_count: lanes,
       phone: form.phone.trim() || null,
       website: form.website.trim() || null,
@@ -99,7 +100,7 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
     }
 
     toast.success("Alley added successfully! 🎳");
-    setForm({ name: "", address: "", city: "", state: "", lane_count: "", phone: "", website: "" });
+    setForm({ name: "", address: "", city: "", state: "", zip_code: "", lane_count: "", phone: "", website: "" });
     setOpen(false);
     onAlleyAdded();
   };
@@ -151,7 +152,14 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
                     {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </td>
-              </tr>
+               </tr>
+               <tr>
+                 <td className="border border-border p-2 bg-muted text-xs">Zip Code *</td>
+                 <td className="border border-border p-1">
+                   <input value={form.zip_code} onChange={(e) => update("zip_code", e.target.value)}
+                     placeholder="e.g. 60614" className={inputClass} />
+                 </td>
+               </tr>
               <tr>
                 <td className="border border-border p-2 bg-muted text-xs">Lanes *</td>
                 <td className="border border-border p-1">
