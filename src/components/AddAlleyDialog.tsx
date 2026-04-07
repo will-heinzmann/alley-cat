@@ -92,7 +92,8 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
     setSubmitting(false);
 
     if (error) {
-      toast.error("Failed to add alley. Please try again.");
+      console.error("Add alley error:", error);
+      toast.error(error.message || "Failed to add alley. Please try again.");
       return;
     }
 
