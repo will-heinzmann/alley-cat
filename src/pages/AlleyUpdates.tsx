@@ -21,10 +21,22 @@ const AlleyUpdates = () => {
   const fetchRequests = async () => {
     const { data } = await supabase
       .from("alley_update_requests")
-      .select("*, alleys(name, slug), profiles!alley_update_requests_user_id_fkey(username)")
+      .select("*, alleys(name, slug)")
       .eq("status", "pending")
       .order("created_at", { ascending: false });
-    setRequests(data || []);
+
+    // Fetch usernames for submitters
+    const items = data || [];
+    if (items.length > 0) {
+      const userIds = [...new Set(items.map((r: any) => r.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, username")
+        .in("user_id", userIds);
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.username]));
+      items.forEach((r: any) => { r._username = profileMap.get(r.user_id) || "Unknown"; });
+    }
+    setRequests(items);
     setLoading(false);
   };
 
