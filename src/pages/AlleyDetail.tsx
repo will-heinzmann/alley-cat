@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
 
 const AlleyDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { favoriteIds, toggleFavorite } = useFavoriteAlleys();
+  const isFavorited = id ? favoriteIds.has(id) : false;
   const [alley, setAlley] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +79,14 @@ const AlleyDetail = () => {
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4">
         <Link to="/alleys" className="text-primary text-xs">← Back to Directory</Link>
-        <h1 className="text-lg text-primary mt-1">🎳 {alley.name.toUpperCase()}</h1>
+        <div className="flex items-center justify-between mt-1">
+          <h1 className="text-lg text-primary">🎳 {alley.name.toUpperCase()}</h1>
+          {user && (
+            <button onClick={() => toggleFavorite(alley.id)} className="text-lg hover:opacity-80" title={isFavorited ? "Remove from favorites" : "Add to favorites"}>
+              {isFavorited ? "❤️" : "🤍"}
+            </button>
+          )}
+        </div>
         <hr className="border-primary mt-2" />
       </header>
 
