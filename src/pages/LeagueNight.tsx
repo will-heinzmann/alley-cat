@@ -151,6 +151,8 @@ const GroupPlay = () => {
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [currentRoll, setCurrentRoll] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
+  const [scoringMode, setScoringMode] = useState<"frame" | "pin">("frame");
+  const [frameInput, setFrameInput] = useState("");
 
   const [alleys, setAlleys] = useState<any[]>([]);
   const [alleyId, setAlleyId] = useState("");
@@ -233,7 +235,12 @@ const GroupPlay = () => {
     setPlayers(newPlayers);
     setActivePlayerIdx(0);
     setPhase("playing");
-    openPinSelector(newPlayers, 0);
+    if (scoringMode === "pin") {
+      openPinSelector(newPlayers, 0);
+    } else {
+      setShowPinModal(true);
+      setFrameInput("");
+    }
   };
 
   const openPinSelector = (ps: Player[], playerIdx: number) => {
