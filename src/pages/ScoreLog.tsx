@@ -6,6 +6,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
 import PinModeInput from "@/components/PinModeInput";
+import SeriesSummary from "@/components/SeriesSummary";
 
 interface FrameScore {
   roll1: string;
@@ -387,6 +388,11 @@ const ScoreLog = () => {
       )}
 
       <div className="p-4">
+        {games.length > 0 && (
+          <div className="mb-4">
+            <SeriesSummary games={games} />
+          </div>
+        )}
         {games.length === 0 ? (
           <div className="border border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">No games logged yet. Hit [+ Log Game] to get started!</p>
