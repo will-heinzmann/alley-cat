@@ -544,6 +544,19 @@ const GroupPlay = () => {
           )}
 
           <div className="border-t border-border pt-3 mt-3">
+            <div className="mb-2">
+              <p className="text-[10px] text-muted-foreground mb-1">Scoring Mode:</p>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => setScoringMode("frame")}
+                  className={`text-xs px-2 py-1 border ${scoringMode === "frame" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                  [Frame-by-Frame]
+                </button>
+                <button type="button" onClick={() => setScoringMode("pin")}
+                  className={`text-xs px-2 py-1 border ${scoringMode === "pin" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
+                  [Pin Mode 🎳]
+                </button>
+              </div>
+            </div>
             <p className="text-[10px] text-muted-foreground mb-2">★ = Your score will be saved to your profile. Guest scores are for display only.</p>
             <button type="button" onClick={startGame}
               className="w-full border border-border bg-primary text-primary-foreground py-2 text-xs hover:opacity-80">
