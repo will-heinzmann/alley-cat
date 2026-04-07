@@ -105,9 +105,16 @@ const Feed = () => {
       {loading ? (
         <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
       ) : !user ? (
-        <div className="p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-3">Sign in to see your feed.</p>
-          <Link to="/auth" className="text-primary text-sm">[Sign In]</Link>
+        <div className="p-6 text-center space-y-4">
+          <p className="text-sm text-muted-foreground">Track your scores, follow friends, and find alleys.</p>
+          <div className="flex flex-col items-center gap-2">
+            <Link to="/auth" className="border border-primary bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-80">
+              🎳 Log Your First Game
+            </Link>
+            <Link to="/auth" className="text-primary text-xs hover:underline">
+              Already have an account? Sign in
+            </Link>
+          </div>
         </div>
       ) : games.length === 0 ? (
         <div className="p-6 text-center">
