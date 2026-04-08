@@ -11,15 +11,14 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const baseUrl = "https://alleycat-bowling.com";
+  const prerenderBase = `${Deno.env.get("SUPABASE_URL")!}/functions/v1/prerender`;
 
-  // Static pages
+  // Static pages with their prerender paths
   const staticPages = [
-    { loc: "/", priority: "1.0", changefreq: "daily" },
-    { loc: "/alleys", priority: "0.9", changefreq: "daily" },
-    { loc: "/leaderboard", priority: "0.7", changefreq: "daily" },
-    { loc: "/auth", priority: "0.3", changefreq: "monthly" },
-    { loc: "/blog", priority: "0.8", changefreq: "weekly" },
+    { path: "/", priority: "1.0", changefreq: "daily" },
+    { path: "/alleys", priority: "0.9", changefreq: "daily" },
+    { path: "/leaderboard", priority: "0.7", changefreq: "daily" },
+    { path: "/blog", priority: "0.8", changefreq: "weekly" },
   ];
 
   // Blog posts
@@ -55,9 +54,11 @@ Deno.serve(async () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
+  // Static pages → prerender URLs
   for (const page of staticPages) {
+    const loc = `${prerenderBase}?path=${encodeURIComponent(page.path)}`;
     xml += `  <url>
-    <loc>${baseUrl}${page.loc}</loc>
+    <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
@@ -65,9 +66,11 @@ Deno.serve(async () => {
 `;
   }
 
+  // Blog posts → prerender URLs
   for (const blogSlug of blogSlugs) {
+    const loc = `${prerenderBase}?path=${encodeURIComponent(`/blog/${blogSlug}`)}`;
     xml += `  <url>
-    <loc>${baseUrl}/blog/${blogSlug}</loc>
+    <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -75,10 +78,12 @@ Deno.serve(async () => {
 `;
   }
 
+  // Alley pages → prerender URLs
   for (const alley of allSlugs) {
     const lastmod = alley.updated_at ? alley.updated_at.split("T")[0] : today;
+    const loc = `${prerenderBase}?path=${encodeURIComponent(`/alley/${alley.slug}`)}`;
     xml += `  <url>
-    <loc>${baseUrl}/alley/${alley.slug}</loc>
+    <loc>${loc}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
