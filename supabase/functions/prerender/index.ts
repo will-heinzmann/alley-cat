@@ -11,6 +11,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const pageHeaders = {
+  ...corsHeaders,
+  "Content-Type": "text/html; charset=utf-8",
+  "Cache-Control": "public, max-age=3600, s-maxage=86400",
+};
+
 // Blog posts data (mirrored from src/data/blogPosts.ts)
 const blogPosts = [
   { slug: "how-to-calculate-bowling-handicap", title: "How to Calculate Bowling Handicap — Easy Guide (2026)", description: "Learn how to calculate your bowling handicap step-by-step. Use the standard formula with basis score, average, and percentage factor.", content: "A bowling handicap is a scoring adjustment that allows bowlers of different skill levels to compete fairly. It's calculated based on the difference between your average score and a predetermined basis score (usually 200 or 220). The standard formula is: Handicap = (Basis Score − Your Average) × Percentage Factor. For example, if the basis score is 220, your average is 150, and the percentage factor is 80%: Handicap = (220 − 150) × 0.80 = 56. You would add 56 pins to each game score. Your bowling average is the total pins knocked down divided by the number of games played. Instead of calculating your average by hand, use Alley Cat to log every game and your rolling average is computed automatically." },
@@ -22,6 +28,23 @@ const blogPosts = [
   { slug: "bowling-scoreboard-online", title: "Free Online Bowling Scoreboard — Score Games Live", description: "Use a free online bowling scoreboard to score games live with friends. Supports group play, pin-by-pin input, and shareable results.", content: "Need an online bowling scoreboard? Whether you're at the alley or setting up a home bowling tournament, Alley Cat gives you a clean, easy-to-use digital scoreboard. Group Play mode turns your phone or tablet into a live scoreboard. Add players including guests without accounts, and score each turn frame by frame. The board updates in real time as each player bowls." },
 ];
 
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function normalizeText(value: string | null | undefined, fallback = "") {
+  return escapeHtml(value?.trim() || fallback);
+}
+
+function safeJson(value: object) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 function htmlShell(title: string, description: string, canonicalPath: string, bodyHtml: string, jsonLd?: object) {
   const canonicalUrl = `${SITE}${canonicalPath}`;
   return `<!DOCTYPE html>
@@ -29,22 +52,23 @@ function htmlShell(title: string, description: string, canonicalPath: string, bo
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
-  <meta name="description" content="${description}">
-  <link rel="canonical" href="${canonicalUrl}">
-  <meta property="og:title" content="${title}">
-  <meta property="og:description" content="${description}">
-  <meta property="og:url" content="${canonicalUrl}">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Alley Cat">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="${title}">
-  <meta name="twitter:description" content="${description}">
-  ${jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : ""}
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  ${jsonLd ? `<script type="application/ld+json">${safeJson(jsonLd)}</script>` : ""}
 </head>
 <body>
   ${bodyHtml}
-  <p><a href="${canonicalUrl}">View on Alley Cat →</a></p>
+  <p><a href="${escapeHtml(canonicalUrl)}">View on Alley Cat →</a></p>
 </body>
 </html>`;
 }
@@ -76,6 +100,17 @@ async function renderAlley(slug: string): Promise<Response | null> {
   const description = `Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}. Track your bowling stats and join the ${alley.city} leaderboard on Alley Cat.`;
   const laneText = alley.lane_count > 0 ? String(alley.lane_count) : "multiple";
   const ratingText = alley.alley_rating > 0 ? `${alley.alley_rating}` : "N/A";
+  const addressLine = [alley.address, alley.city, alley.state, alley.zip_code].filter(Boolean).join(", ");
+  const safeName = normalizeText(alley.name);
+  const safeAddress = normalizeText(addressLine);
+  const safePhone = alley.phone ? normalizeText(alley.phone) : "";
+  const safeLaneText = normalizeText(laneText);
+  const safeRatingText = normalizeText(ratingText);
+  const safeOilPattern = normalizeText(alley.oil_pattern || "House");
+  const safeWebsite = alley.website ? alley.website.trim() : "";
+  const safeWebsiteLabel = safeWebsite ? escapeHtml(safeWebsite) : "";
+  const safeCity = normalizeText(alley.city);
+  const safeState = normalizeText(alley.state);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -88,24 +123,28 @@ async function renderAlley(slug: string): Promise<Response | null> {
   };
 
   const relatedHtml = (relatedAlleys || [])
-    .map((a: any) => `<li><a href="${SITE}/alley/${a.slug}">🎳 ${a.name}</a> — ${a.city}, ${alley.state}</li>`)
+    .map((a: any) => `<li><a href="${SITE}/alley/${encodeURIComponent(a.slug)}">🎳 ${escapeHtml(a.name)}</a> — ${escapeHtml(a.city)}, ${safeState}</li>`)
     .join("\n");
 
   const bodyHtml = `
-  <h1>${alley.name}</h1>
-  <p>${alley.address}, ${alley.city}, ${alley.state} ${alley.zip_code || ""}</p>
-  ${alley.phone ? `<p>Phone: ${alley.phone}</p>` : ""}
-  <p>Lanes: ${laneText}</p>
-  <p>Rating: ${ratingText}/5</p>
-  <p>Oil Pattern: ${alley.oil_pattern}</p>
-  ${alley.website ? `<p>Website: <a href="${alley.website}">${alley.website}</a></p>` : ""}
-  <h2>About ${alley.name}</h2>
-  <p>${alley.name} is a prominent bowling destination located in ${alley.city}, ${alley.state}. Equipped with approximately ${laneText} lanes, it provides a great environment for both casual bowlers and league players.</p>
-  <p>Use <a href="${SITE}">Alley Cat</a> to track your scores frame-by-frame, analyze spare conversions, and see how you compare on the ${alley.city} leaderboard.</p>
+  <main>
+    <article>
+      <h1>${safeName}</h1>
+      <p>${safeAddress}</p>
+      ${alley.phone ? `<p>Phone: ${safePhone}</p>` : ""}
+      <p>Lanes: ${safeLaneText}</p>
+      <p>Rating: ${safeRatingText}/5</p>
+      <p>Oil Pattern: ${safeOilPattern}</p>
+      ${safeWebsite ? `<p>Website: <a href="${escapeHtml(safeWebsite)}">${safeWebsiteLabel}</a></p>` : ""}
+      <h2>About ${safeName}</h2>
+      <p>${safeName} is a bowling destination in ${safeCity}, ${safeState}. With approximately ${safeLaneText} lanes, it offers space for casual games, league nights, and practice sessions for bowlers working on consistency.</p>
+      <p>If you're planning a trip to ${safeName}, use Alley Cat to log every frame, track spare conversions, and compare your performance with other bowlers on the ${safeCity} leaderboard.</p>
+    </article>
+  </main>
   ${relatedAlleys && relatedAlleys.length > 0 ? `<h2>Other Alleys in ${alley.state}</h2><ul>${relatedHtml}</ul>` : ""}`;
 
   return new Response(htmlShell(title, description, `/alley/${alley.slug}`, bodyHtml, jsonLd), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
@@ -126,17 +165,17 @@ function renderHome(): Response {
   <p>Follow other bowlers, like their games, and track your friends' progress on the social feed. Group Play mode lets you score games with friends — even guests who don't have an account.</p>
   <p>Alley Cat is completely free. No subscriptions, no paywalls. Sign up and start bowling.</p>`;
   return new Response(htmlShell(title, description, "/", bodyHtml, jsonLd), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
 function renderBlogIndex(): Response {
   const title = "Bowling Tips & Guides | Alley Cat Blog";
   const description = "Read bowling tips, guides, and strategies on the Alley Cat blog. Learn about handicaps, score tracking, finding alleys near you, and more.";
-  const listHtml = blogPosts.map(p => `<li><a href="${SITE}/blog/${p.slug}">${p.title}</a><br><small>${p.description}</small></li>`).join("\n");
+  const listHtml = blogPosts.map((p) => `<li><a href="${SITE}/blog/${encodeURIComponent(p.slug)}">${escapeHtml(p.title)}</a><br><small>${escapeHtml(p.description)}</small></li>`).join("\n");
   const bodyHtml = `<h1>Alley Cat Blog — Bowling Tips & Guides</h1><ul>${listHtml}</ul>`;
   return new Response(htmlShell(title, description, "/blog", bodyHtml), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
@@ -144,9 +183,9 @@ function renderBlogPost(slug: string): Response | null {
   const post = blogPosts.find(p => p.slug === slug);
   if (!post) return null;
   const jsonLd = { "@context": "https://schema.org", "@type": "BlogPosting", headline: post.title, description: post.description, url: `${SITE}/blog/${post.slug}`, publisher: { "@type": "Organization", name: "Alley Cat" } };
-  const bodyHtml = `<h1>${post.title}</h1><p>${post.content}</p><p><a href="${SITE}/blog">← Back to all articles</a></p>`;
+  const bodyHtml = `<h1>${escapeHtml(post.title)}</h1><p>${escapeHtml(post.content)}</p><p><a href="${SITE}/blog">← Back to all articles</a></p>`;
   return new Response(htmlShell(post.title, post.description, `/blog/${post.slug}`, bodyHtml, jsonLd), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
@@ -162,7 +201,7 @@ function renderAlleys(): Response {
   <p>Been to an alley? Leave a rating and review to help other bowlers find the best lanes. Rate the overall experience, beer selection, and oil conditions.</p>
   <p><a href="${SITE}">Sign up for Alley Cat</a> to start discovering and reviewing bowling alleys today.</p>`;
   return new Response(htmlShell(title, description, "/alleys", bodyHtml), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
@@ -176,7 +215,7 @@ function renderLeaderboard(): Response {
   <p>Every game you log on Alley Cat counts toward your leaderboard ranking. Your position is determined by your highest scores and bowling average. Toggle between weekly and all-time views to see who's hot right now.</p>
   <p>Log games consistently and watch yourself climb the ranks. <a href="${SITE}">Join Alley Cat</a> to start competing.</p>`;
   return new Response(htmlShell(title, description, "/leaderboard", bodyHtml), {
-    headers: { ...corsHeaders, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=3600, s-maxage=86400" },
+    headers: pageHeaders,
   });
 }
 
