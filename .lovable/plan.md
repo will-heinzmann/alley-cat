@@ -2,29 +2,54 @@
 
 ## Problem
 
-The current `public/sitemap.xml` is a static file — a frozen snapshot from when it was generated. When new alleys are added to the database, they don't appear in the sitemap until someone manually regenerates it. The Edge Function at `supabase/functions/sitemap/index.ts` already generates a dynamic sitemap with all alleys, but Google can't use it because `robots.txt` points to the static file.
+Ubersuggest (and most SEO crawlers besides Google) do **not execute JavaScript**. Your app is a client-side SPA — the `index.html` body is just `<div id="root"></div>`. When these crawlers visit any page, they see zero words because all content is rendered by JavaScript after page load. `react-helmet-async` only works in the browser, not for non-JS crawlers.
 
-## Solution
+The prerender Edge Function we built earlier (`supabase/functions/prerender`) solves this for alley pages, but **nothing routes crawlers to it** — they still hit the empty SPA shell.
 
-Remove the static file and point Google directly to the Edge Function, which already queries all alleys dynamically.
+## Solution: Prerender Middleware via Edge Function
 
-### Steps
+Create a **gateway Edge Function** that acts as a lightweight reverse proxy:
 
-1. **Delete `public/sitemap.xml`** — Remove the 12,000+ line static file. It goes stale immediately and is the root cause of missing alleys.
+1. **Detect bots** — Check the `User-Agent` header for known crawlers (Googlebot, Bingbot, Ubersuggest, Twitterbot, facebookexternalhit, etc.)
+2. **For bots** — Generate and return fully-rendered static HTML with all the text content, meta tags, and structured data already in the markup
+3. **For real users** — Redirect or proxy to the normal SPA
 
-2. **Update `public/robots.txt`** — Change the Sitemap directive from the static file to the Edge Function URL:
-   ```
-   Sitemap: https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/sitemap
-   ```
+### What gets prerendered
 
-3. **Add a client-side redirect** — Since Google previously indexed `alleycat-bowling.com/sitemap.xml`, add a small catch in routing or a meta-refresh so any bot hitting `/sitemap.xml` gets redirected to the Edge Function. This can be done via a Vite plugin or a simple `_redirects`-style config depending on the hosting setup. Alternatively, we can skip this if the robots.txt update is sufficient.
+| Route pattern | Content source |
+|---|---|
+| `/alley/:slug` | Existing prerender function (alley data from DB) |
+| `/blog/:slug` | Blog post content from `blogPosts` data |
+| `/blog` | Blog index listing |
+| `/` (home) | Static SEO copy about Alley Cat |
+| `/alleys` | Alley directory description + state links |
+| `/leaderboard` | Leaderboard description |
 
-The Edge Function (`supabase/functions/sitemap/index.ts`) already handles everything correctly: it paginates through all alleys in batches of 1,000, includes `updated_at` dates, blog posts, and static pages. No changes needed there.
+### Implementation steps
 
-### Technical Details
+1. **Create `supabase/functions/seo-proxy/index.ts`** — A single Edge Function that:
+   - Parses the incoming URL path
+   - Checks User-Agent for bot signatures
+   - For bots: returns full HTML with real text content, meta tags, and JSON-LD
+   - For humans: returns a redirect to the SPA URL
 
-- The Edge Function returns `Content-Type: application/xml` with proper caching headers (1 hour)
-- It fetches alleys in batches to handle the 1,000-row Supabase limit
-- Each alley URL follows the `/alley/:slug` pattern with `updated_at` as `lastmod`
-- After deploying, re-submit the new sitemap URL in Google Search Console
+2. **Update `robots.txt`** — No changes needed; bots already have `Allow: /`
+
+3. **Update `public/sitemap.xml` generation** — Point alley URLs to the proxy endpoint so crawlers hit the prerendered version
+
+### The catch
+
+This approach works perfectly **if you can point your domain's traffic through the Edge Function**. Since Lovable hosting doesn't support custom reverse proxy configuration, the practical approach is:
+
+- **Option A**: Update the sitemap to use the Edge Function URLs directly (e.g., `https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/prerender?slug=...`). Crawlers follow sitemap URLs and will get full HTML. The downside is the URLs in search results would show the function URL unless you add canonical tags pointing back to the SPA.
+
+- **Option B** (recommended): Enhance the existing `prerender` Edge Function to handle **all page types** (not just alleys), then update the sitemap to list the prerender URLs with `<link rel="canonical">` tags pointing to the real SPA URLs. This way crawlers index the content but Google shows the clean URLs in search results.
+
+### Technical details
+
+- The prerender function already returns proper HTML with meta tags and caching headers
+- Extend it to accept a `path` parameter (e.g., `?path=/blog/bowling-handicap`) in addition to `?slug=`
+- Each page type gets a template with real text content baked in
+- Canonical URLs always point to `https://alley-cat.lovable.app/...`
+- The sitemap Edge Function updates to emit the prerender endpoint URLs
 
