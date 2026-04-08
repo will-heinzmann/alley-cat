@@ -188,6 +188,7 @@ const Leagues = () => {
             <div>
               <Link to="/" className="text-primary text-xs">← Back</Link>
               <h1 className="text-lg text-primary mt-1">🏆 Leagues</h1>
+              <Link to="/league" className="text-[10px] text-muted-foreground hover:text-primary">[Casual Group Play →]</Link>
             </div>
             <button
               onClick={() => user ? setShowCreate(!showCreate) : navigate("/auth")}
