@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import AlleyCard from "@/components/AlleyCard";
@@ -144,8 +145,13 @@ const HomePage = () => {
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
+    <>
+    <Helmet>
+      <title>Find Bowling Alleys Near You — 1,600+ Venues | Alley Cat</title>
+      <meta name="description" content="Browse and search over 1,600 bowling alleys across the US. Filter by state, city, and rating to find the perfect lanes near you." />
+      <link rel="canonical" href="https://alley-cat.lovable.app/alleys" />
+    </Helmet>
     <div className="min-h-screen pb-20">
-      <header className="border-b border-border p-4 text-center">
         <h1 className="text-2xl text-primary tracking-wide">
           🎳 ALLEY CAT 🎳
         </h1>

@@ -19,6 +19,12 @@ const Leaderboard = () => {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Loading...</p></div>;
 
   return (
+    <>
+    <Helmet>
+      <title>Bowling Leaderboard — Top Bowlers Ranked | Alley Cat</title>
+      <meta name="description" content="See the top-ranked bowlers on Alley Cat. Compare scores, averages, and total points on the global bowling leaderboard." />
+      <link rel="canonical" href="https://alley-cat.lovable.app/leaderboard" />
+    </Helmet>
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4">
         <Link to="/" className="text-primary text-xs">← Back</Link>

@@ -134,6 +134,11 @@ const BowlerProfile = () => {
   const isOwnProfile = user?.id === userId;
 
   return (
+    <>
+    <Helmet>
+      <title>{profile?.username ? `${profile.username} — Bowler Profile` : "Bowler Profile"} | Alley Cat</title>
+      <meta name="description" content={`Check out ${profile?.username || "this bowler"}'s stats, game history, and bowling average on Alley Cat.`} />
+    </Helmet>
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4">
         <Link to="/" className="text-primary text-xs">← Back</Link>

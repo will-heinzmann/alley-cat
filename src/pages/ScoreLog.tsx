@@ -359,6 +359,12 @@ const ScoreLog = () => {
   };
 
   return (
+    <>
+    <Helmet>
+      <title>Log Bowling Score — Track Frames & Stats | Alley Cat</title>
+      <meta name="description" content="Log your bowling scores frame-by-frame with Alley Cat. Track strikes, spares, and splits to analyze your game and improve your average." />
+      <link rel="canonical" href="https://alley-cat.lovable.app/log" />
+    </Helmet>
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4 flex items-center justify-between">
         <div>
