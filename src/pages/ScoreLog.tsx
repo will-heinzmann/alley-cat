@@ -268,7 +268,7 @@ const ScoreLog = () => {
       } else {
         toast({ title: "Game logged!", description: "+50 AlleyPoints" });
       }
-      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); fetchData();
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); setCurrentFrameData(null); fetchData();
     }
     setSaving(false);
   };
