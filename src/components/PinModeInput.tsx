@@ -80,7 +80,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [gameComplete, setGameComplete] = useState(false);
   const [pinModeEnabled, setPinModeEnabled] = useState(true);
-
+  const [spareAttempt, setSpareAttempt] = useState(false); // true = pins default to hit, tap to mark missed
   // Long-press editing state
   const [editingFrame, setEditingFrame] = useState<number | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
