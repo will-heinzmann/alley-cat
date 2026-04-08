@@ -11,9 +11,9 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const siteBase = "https://alley-cat.lovable.app";
+  const proxyBase = `${Deno.env.get("SUPABASE_URL")!}/functions/v1/seo-proxy`;
 
-  // Static pages with their prerender paths
+  // Static pages
   const staticPages = [
     { path: "/", priority: "1.0", changefreq: "daily" },
     { path: "/alleys", priority: "0.9", changefreq: "daily" },
@@ -54,9 +54,9 @@ Deno.serve(async () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
-  // Static pages → canonical URLs
+  // Static pages → seo-proxy URLs
   for (const page of staticPages) {
-    const loc = `${siteBase}${page.path}`;
+    const loc = `${proxyBase}?path=${encodeURIComponent(page.path)}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
@@ -66,9 +66,9 @@ Deno.serve(async () => {
 `;
   }
 
-  // Blog posts → canonical URLs
+  // Blog posts → seo-proxy URLs
   for (const blogSlug of blogSlugs) {
-    const loc = `${siteBase}/blog/${blogSlug}`;
+    const loc = `${proxyBase}?path=${encodeURIComponent(`/blog/${blogSlug}`)}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
@@ -78,10 +78,10 @@ Deno.serve(async () => {
 `;
   }
 
-  // Alley pages → canonical URLs
+  // Alley pages → seo-proxy URLs
   for (const alley of allSlugs) {
     const lastmod = alley.updated_at ? alley.updated_at.split("T")[0] : today;
-    const loc = `${siteBase}/alley/${alley.slug}`;
+    const loc = `${proxyBase}?path=${encodeURIComponent(`/alley/${alley.slug}`)}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${lastmod}</lastmod>

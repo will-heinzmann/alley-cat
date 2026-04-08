@@ -1,4 +1,4 @@
-const SITE = "https://alley-cat.lovable.app";
+const SITE = "https://alleycat-bowling.com";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 
 const corsHeaders = {
@@ -51,9 +51,7 @@ Deno.serve(async (req) => {
     return new Response("Invalid path", { status: 400, headers: corsHeaders });
   }
 
-  if (!isBot(req.headers.get("user-agent"))) {
-    return Response.redirect(`${SITE}${path}`, 302);
-  }
+  // Serve prerendered HTML to all visitors — only bots follow sitemap URLs here anyway
 
   const prerenderUrl = new URL(`${SUPABASE_URL}/functions/v1/prerender`);
   prerenderUrl.searchParams.set("path", path);
