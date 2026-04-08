@@ -65,7 +65,7 @@ const PinDeck = ({ standing, hit, onTogglePin, disabled = false, spareSuggestion
           })}
         </div>
       ))}
-      <p className="text-[10px] text-muted-foreground mt-1">Tap pins to mark as hit</p>
+      <p className="text-[10px] text-muted-foreground mt-1">{invertMode ? "Tap pins you MISSED" : "Tap pins to mark as hit"}</p>
     </div>
   );
 };

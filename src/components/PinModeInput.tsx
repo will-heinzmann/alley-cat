@@ -86,6 +86,10 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
 
+  // On spare rolls, "hit" means "knocked down". Pins start as all-hit,
+  // so user taps to mark pins they MISSED (toggles them off).
+  const isSpareRoll = currentRoll > 0;
+
   const togglePin = useCallback((idx: number) => {
     setHit(prev => {
       const next = [...prev];
