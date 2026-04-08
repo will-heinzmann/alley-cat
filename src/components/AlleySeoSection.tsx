@@ -24,6 +24,7 @@ const AlleySeoSection = ({ alley }: AlleySeoSectionProps) => {
         .select("name, slug, city")
         .eq("state", alley.state)
         .neq("id", alley.id)
+        .not("name", "ilike", "%test%")
         .order("created_at", { ascending: false })
         .limit(5);
       setRelatedAlleys(data || []);
