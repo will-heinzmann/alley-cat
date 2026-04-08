@@ -11,7 +11,7 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const baseUrl = "https://alley-cat.lovable.app";
+  const baseUrl = "https://alleycat-bowling.com";
 
   // Static pages
   const staticPages = [
