@@ -22,6 +22,7 @@ interface FrameScore {
 }
 
 const frameDataToDisplay = (frameData: FrameData[]): FrameScore[] => {
+  // Build flat rolls array
   const rolls: number[] = [];
   for (let i = 0; i < 10; i++) {
     const f = frameData[i];
@@ -38,46 +39,78 @@ const frameDataToDisplay = (frameData: FrameData[]): FrameScore[] => {
   const frames: FrameScore[] = [];
   let cumulative = 0;
   let ri = 0;
+  let pendingCumulative = false; // track if we lost certainty
 
   for (let i = 0; i < 10; i++) {
     const f = frameData[i];
-    if (!f) break;
+    if (!f || f.roll1 === null) break;
     const r1 = f.roll1 ?? 0;
     const r2 = f.roll2 ?? 0;
 
     if (i < 9) {
       if (r1 === 10) {
-        const bonus = (rolls[ri + 1] ?? 0) + (rolls[ri + 2] ?? 0);
-        cumulative += 10 + bonus;
-        frames.push({ roll1: "X", roll2: "", cumulative });
+        // Strike: need next 2 rolls to resolve
+        const nextF = frameData[i + 1];
+        const hasBonusRolls = nextF && nextF.roll1 !== null &&
+          (nextF.roll1 === 10 ? (i + 2 < 10 ? frameData[i + 2]?.roll1 !== null : nextF.roll2 !== null) : nextF.roll2 !== null);
+        if (hasBonusRolls && !pendingCumulative) {
+          cumulative += 10 + (rolls[ri + 1] ?? 0) + (rolls[ri + 2] ?? 0);
+          frames.push({ roll1: "X", roll2: "", cumulative });
+        } else {
+          pendingCumulative = true;
+          frames.push({ roll1: "X", roll2: "", cumulative: 0 });
+        }
+        ri += 1;
+      } else if (f.roll2 === null) {
+        // Incomplete frame
+        frames.push({ roll1: r1 === 0 ? "-" : String(r1), roll2: "", cumulative: 0 });
+        pendingCumulative = true;
         ri += 1;
       } else if (r1 + r2 === 10) {
-        const bonus = rolls[ri + 2] ?? 0;
-        cumulative += 10 + bonus;
-        frames.push({ roll1: r1 === 0 ? "-" : String(r1), roll2: "/", cumulative });
+        // Spare: need next 1 roll to resolve
+        const nextF = frameData[i + 1];
+        const hasBonusRoll = nextF && nextF.roll1 !== null;
+        if (hasBonusRoll && !pendingCumulative) {
+          cumulative += 10 + (rolls[ri + 2] ?? 0);
+          frames.push({ roll1: r1 === 0 ? "-" : String(r1), roll2: "/", cumulative });
+        } else {
+          pendingCumulative = true;
+          frames.push({ roll1: r1 === 0 ? "-" : String(r1), roll2: "/", cumulative: 0 });
+        }
         ri += 2;
       } else {
-        cumulative += r1 + r2;
-        frames.push({
-          roll1: r1 === 0 ? "-" : String(r1),
-          roll2: r2 === 0 ? "-" : String(r2),
-          cumulative,
-        });
+        // Open frame
+        if (!pendingCumulative) {
+          cumulative += r1 + r2;
+          frames.push({
+            roll1: r1 === 0 ? "-" : String(r1),
+            roll2: r2 === 0 ? "-" : String(r2),
+            cumulative,
+          });
+        } else {
+          frames.push({
+            roll1: r1 === 0 ? "-" : String(r1),
+            roll2: r2 === 0 ? "-" : String(r2),
+            cumulative: 0,
+          });
+        }
         ri += 2;
       }
     } else {
       // 10th frame
       const r3 = f.roll3 ?? 0;
-      cumulative += r1 + r2 + r3;
+      const needs3 = r1 === 10 || r1 + r2 >= 10;
+      const isComplete = f.roll2 !== null && (!needs3 || f.roll3 !== null);
+
       let d1 = r1 === 10 ? "X" : r1 === 0 ? "-" : String(r1);
       let d2: string;
       if (r1 === 10) {
-        d2 = r2 === 10 ? "X" : r2 === 0 ? "-" : String(r2);
+        d2 = f.roll2 === null ? "" : r2 === 10 ? "X" : r2 === 0 ? "-" : String(r2);
       } else {
-        d2 = r1 + r2 === 10 ? "/" : r2 === 0 ? "-" : String(r2);
+        d2 = f.roll2 === null ? "" : r1 + r2 === 10 ? "/" : r2 === 0 ? "-" : String(r2);
       }
-      let d3 = "-";
-      if (r1 === 10 || r1 + r2 >= 10) {
+      let d3 = "";
+      if (needs3 && f.roll3 !== null) {
         if (r1 === 10 && r2 === 10) {
           d3 = r3 === 10 ? "X" : r3 === 0 ? "-" : String(r3);
         } else if (r1 === 10) {
@@ -86,10 +119,61 @@ const frameDataToDisplay = (frameData: FrameData[]): FrameScore[] => {
           d3 = r3 === 10 ? "X" : r3 === 0 ? "-" : String(r3);
         }
       }
-      frames.push({ roll1: d1, roll2: d2, roll3: d3, cumulative });
+
+      // For completed games, recalculate total from scratch for accuracy
+      if (isComplete && !pendingCumulative) {
+        cumulative += r1 + r2 + r3;
+        frames.push({ roll1: d1, roll2: d2, roll3: d3, cumulative });
+      } else {
+        frames.push({ roll1: d1, roll2: d2, roll3: d3, cumulative: 0 });
+      }
       ri += 3;
     }
   }
+
+  // If there were pending cumulatives (strikes/spares waiting for bonus),
+  // do a second pass now that all data is available for completed games
+  if (pendingCumulative && frames.length === 10) {
+    let cum = 0;
+    let rIdx = 0;
+    let allResolved = true;
+    for (let i = 0; i < 10; i++) {
+      const f = frameData[i];
+      if (!f || f.roll1 === null) { allResolved = false; break; }
+      const r1 = f.roll1 ?? 0;
+      const r2 = f.roll2 ?? 0;
+      if (i < 9) {
+        if (r1 === 10) {
+          if (rolls[rIdx + 1] === undefined || rolls[rIdx + 2] === undefined) { allResolved = false; break; }
+          cum += 10 + (rolls[rIdx + 1] ?? 0) + (rolls[rIdx + 2] ?? 0);
+          frames[i].cumulative = cum;
+          rIdx += 1;
+        } else if (f.roll2 === null) {
+          allResolved = false; break;
+        } else if (r1 + r2 === 10) {
+          if (rolls[rIdx + 2] === undefined) { allResolved = false; break; }
+          cum += 10 + (rolls[rIdx + 2] ?? 0);
+          frames[i].cumulative = cum;
+          rIdx += 2;
+        } else {
+          cum += r1 + r2;
+          frames[i].cumulative = cum;
+          rIdx += 2;
+        }
+      } else {
+        const r3 = f.roll3 ?? 0;
+        cum += r1 + r2 + r3;
+        frames[i].cumulative = cum;
+      }
+    }
+    if (!allResolved) {
+      // Clear cumulatives that couldn't be resolved
+      for (let i = 0; i < frames.length; i++) {
+        frames[i].cumulative = 0;
+      }
+    }
+  }
+
   return frames;
 };
 
@@ -131,7 +215,7 @@ const ScoreDisplay = ({ playerName, score, gameId, frameData }: { playerName: st
                   <span className="flex-1 p-0.5 text-foreground">{frame.roll2}</span>
                   {i === 9 && <span className="flex-1 p-0.5 border-l border-border text-foreground">{frame.roll3 || ""}</span>}
                 </div>
-                <div className="p-1 text-primary font-bold">{frame.cumulative}</div>
+                <div className="p-1 text-primary font-bold">{frame.cumulative > 0 ? frame.cumulative : ""}</div>
               </td>
             ))}
             <td className="border border-border p-1 text-center text-secondary font-bold text-sm">{score}</td>
