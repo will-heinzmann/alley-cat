@@ -19,6 +19,18 @@ Deno.serve(async () => {
     { loc: "/alleys", priority: "0.9", changefreq: "daily" },
     { loc: "/leaderboard", priority: "0.7", changefreq: "daily" },
     { loc: "/auth", priority: "0.3", changefreq: "monthly" },
+    { loc: "/blog", priority: "0.8", changefreq: "weekly" },
+  ];
+
+  // Blog posts
+  const blogSlugs = [
+    "how-to-calculate-bowling-handicap",
+    "alley-cat-bowling",
+    "bowling-stat-tracker",
+    "bowling-scorecard-app",
+    "bowling-alleys-near-me",
+    "bowling-score-tracker",
+    "bowling-scoreboard-online",
   ];
 
   // Fetch all alley slugs
@@ -49,6 +61,16 @@ Deno.serve(async () => {
     <lastmod>${today}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
+  </url>
+`;
+  }
+
+  for (const blogSlug of blogSlugs) {
+    xml += `  <url>
+    <loc>${baseUrl}/blog/${blogSlug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 `;
   }
