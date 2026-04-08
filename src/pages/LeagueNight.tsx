@@ -493,6 +493,12 @@ const GroupPlay = () => {
 
   if (!user) {
     return (
+      <>
+      <Helmet>
+        <title>Group Play — Bowl With Friends | Alley Cat</title>
+        <meta name="description" content="Start a group bowling session with friends. Track scores for multiple players frame-by-frame with Alley Cat's Group Play mode." />
+        <link rel="canonical" href="https://alley-cat.lovable.app/league" />
+      </Helmet>
       <div className="min-h-screen pb-20 p-4">
         <header className="border-b border-border pb-4 mb-4">
           <Link to="/" className="text-primary text-xs">← Back</Link>
