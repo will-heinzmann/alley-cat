@@ -11,7 +11,7 @@ const BottomNav = () => {
     { path: "/log", label: "Log" },
     { path: "/league", label: "Group Play" },
     { path: "/leaderboard", label: "Board" },
-    { path: user ? `/bowler/${user.id}` : "/auth", label: "Me" },
+    { path: user ? `/bowler/${user.id}` : "/auth", label: "My Profile" },
   ];
 
   return (
