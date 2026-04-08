@@ -294,6 +294,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
     setCurrentRoll(0);
     setStanding(allStanding());
     setHit(noHits());
+    setSpareAttempt(false);
     setGameComplete(false);
     setEditingFrame(null);
     onScoreChange(0, initFrames());
