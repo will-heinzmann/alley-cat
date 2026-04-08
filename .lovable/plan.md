@@ -2,54 +2,47 @@
 
 ## Problem
 
-Ubersuggest (and most SEO crawlers besides Google) do **not execute JavaScript**. Your app is a client-side SPA — the `index.html` body is just `<div id="root"></div>`. When these crawlers visit any page, they see zero words because all content is rendered by JavaScript after page load. `react-helmet-async` only works in the browser, not for non-JS crawlers.
+The screenshot confirms it: **View Page Source** on `alleycat-bowling.com/alley/1-7-10-sports-center-augusta` shows the generic SPA shell — just `<div id="root"></div>` with home page meta tags. No alley name, no address, no description.
 
-The prerender Edge Function we built earlier (`supabase/functions/prerender`) solves this for alley pages, but **nothing routes crawlers to it** — they still hit the empty SPA shell.
+**Root cause**: Lovable's hosting has a built-in SPA fallback. It serves the root `index.html` for every route, ignoring the static HTML files the Vite prerender plugin generates in `dist/alley/<slug>/index.html`. The prerendered files exist in the build output but never reach the browser or bots.
 
-## Solution: Prerender Middleware via Edge Function
+This cannot be fixed at the hosting layer — Lovable hosting always serves the SPA shell for deep links. The Vite prerender plugin approach is a dead end.
 
-Create a **gateway Edge Function** that acts as a lightweight reverse proxy:
+## Solution: Route Bots Through Edge Functions
 
-1. **Detect bots** — Check the `User-Agent` header for known crawlers (Googlebot, Bingbot, Ubersuggest, Twitterbot, facebookexternalhit, etc.)
-2. **For bots** — Generate and return fully-rendered static HTML with all the text content, meta tags, and structured data already in the markup
-3. **For real users** — Redirect or proxy to the normal SPA
+The `prerender` and `seo-proxy` Edge Functions already exist and work. The missing piece is connecting bots to them. Since we can't change hosting behavior, we route bots via the **sitemap** and **robots.txt**.
 
-### What gets prerendered
+### Steps
 
-| Route pattern | Content source |
-|---|---|
-| `/alley/:slug` | Existing prerender function (alley data from DB) |
-| `/blog/:slug` | Blog post content from `blogPosts` data |
-| `/blog` | Blog index listing |
-| `/` (home) | Static SEO copy about Alley Cat |
-| `/alleys` | Alley directory description + state links |
-| `/leaderboard` | Leaderboard description |
+1. **Update `prerender/index.ts`** — Change the `SITE` constant from `alley-cat.lovable.app` to `alleycat-bowling.com` so canonical URLs point to the custom domain.
 
-### Implementation steps
+2. **Update `seo-proxy/index.ts`** — Change the `SITE` constant to `alleycat-bowling.com`. Remove the bot-detection gate — serve prerendered HTML to ALL visitors (only bots follow sitemap URLs to this endpoint anyway). This ensures Ubersuggest, Google, etc. always get full HTML.
 
-1. **Create `supabase/functions/seo-proxy/index.ts`** — A single Edge Function that:
-   - Parses the incoming URL path
-   - Checks User-Agent for bot signatures
-   - For bots: returns full HTML with real text content, meta tags, and JSON-LD
-   - For humans: returns a redirect to the SPA URL
+3. **Update `sitemap/index.ts`** — Point all `<loc>` URLs to the seo-proxy Edge Function (e.g., `https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/seo-proxy?path=/alley/slug`). The prerendered HTML inside contains `<link rel="canonical" href="https://alleycat-bowling.com/alley/slug">`, so Google indexes under the clean custom domain URL.
 
-2. **Update `robots.txt`** — No changes needed; bots already have `Allow: /`
+4. **Update `public/robots.txt`** — Point sitemap to the dynamic Edge Function sitemap: `Sitemap: https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/sitemap`
 
-3. **Update `public/sitemap.xml` generation** — Point alley URLs to the proxy endpoint so crawlers hit the prerendered version
+5. **Remove `vite-plugin-prerender.ts` and `scripts/prerender-static.mjs`** — These generate static files that Lovable hosting ignores. Remove the plugin from `vite.config.ts` and the script from `package.json`. Eliminates build complexity and a ~2,000-file generation step that does nothing.
 
-### The catch
+### How It Works
 
-This approach works perfectly **if you can point your domain's traffic through the Edge Function**. Since Lovable hosting doesn't support custom reverse proxy configuration, the practical approach is:
+```text
+Bot visits sitemap
+  → Sees: .../seo-proxy?path=/alley/slug
+  → Fetches that URL
+  → Gets full HTML with alley name, address, About section, JSON-LD
+  → Sees <link rel="canonical" href="https://alleycat-bowling.com/alley/slug">
+  → Indexes content under the clean canonical URL
 
-- **Option A**: Update the sitemap to use the Edge Function URLs directly (e.g., `https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/prerender?slug=...`). Crawlers follow sitemap URLs and will get full HTML. The downside is the URLs in search results would show the function URL unless you add canonical tags pointing back to the SPA.
+Human visits alleycat-bowling.com/alley/slug
+  → Gets SPA shell (unchanged)
+  → React app loads and renders normally
+```
 
-- **Option B** (recommended): Enhance the existing `prerender` Edge Function to handle **all page types** (not just alleys), then update the sitemap to list the prerender URLs with `<link rel="canonical">` tags pointing to the real SPA URLs. This way crawlers index the content but Google shows the clean URLs in search results.
+### Technical Details
 
-### Technical details
-
-- The prerender function already returns proper HTML with meta tags and caching headers
-- Extend it to accept a `path` parameter (e.g., `?path=/blog/bowling-handicap`) in addition to `?slug=`
-- Each page type gets a template with real text content baked in
-- Canonical URLs always point to `https://alley-cat.lovable.app/...`
-- The sitemap Edge Function updates to emit the prerender endpoint URLs
+- The `prerender` Edge Function already handles all routes: home, alleys, blog, leaderboard, and 2,000+ individual alley pages
+- Each prerendered page includes JSON-LD structured data, meta tags, full text content, and related alleys
+- Canonical tags ensure Google attributes content to `alleycat-bowling.com` URLs
+- No hosting configuration changes needed — everything works through Edge Functions
 
