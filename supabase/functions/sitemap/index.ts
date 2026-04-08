@@ -11,7 +11,7 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const proxyBase = `${Deno.env.get("SUPABASE_URL")!}/functions/v1/seo-proxy`;
+  const siteBase = "https://alley-cat.lovable.app";
 
   // Static pages with their prerender paths
   const staticPages = [
@@ -54,9 +54,9 @@ Deno.serve(async () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
-  // Static pages → bot-aware proxy URLs
+  // Static pages → canonical URLs
   for (const page of staticPages) {
-    const loc = `${proxyBase}?path=${encodeURIComponent(page.path)}`;
+    const loc = `${siteBase}${page.path}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
@@ -66,9 +66,9 @@ Deno.serve(async () => {
 `;
   }
 
-  // Blog posts → bot-aware proxy URLs
+  // Blog posts → canonical URLs
   for (const blogSlug of blogSlugs) {
-    const loc = `${proxyBase}?path=${encodeURIComponent(`/blog/${blogSlug}`)}`;
+    const loc = `${siteBase}/blog/${blogSlug}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
@@ -78,10 +78,10 @@ Deno.serve(async () => {
 `;
   }
 
-  // Alley pages → bot-aware proxy URLs
+  // Alley pages → canonical URLs
   for (const alley of allSlugs) {
     const lastmod = alley.updated_at ? alley.updated_at.split("T")[0] : today;
-    const loc = `${proxyBase}?path=${encodeURIComponent(`/alley/${alley.slug}`)}`;
+    const loc = `${siteBase}/alley/${alley.slug}`;
     xml += `  <url>
     <loc>${loc}</loc>
     <lastmod>${lastmod}</lastmod>

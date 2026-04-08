@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/sitemap
+Sitemap: https://alley-cat.lovable.app/sitemap.xml
