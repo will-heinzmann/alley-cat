@@ -1,47 +1,30 @@
 
-I do not need extra map requirements to fix this. The current behavior is already well-defined: the Alleys page should switch between list and map, and the map should plot the currently filtered alleys with popups.
 
-## What I found
-- The crash is still the same React/Leaflet compatibility error: `render2 is not a function`.
-- `src/pages/Index.tsx` is already using the correct React Leaflet v4 API (`MapContainer`, `TileLayer`, `Marker`, `Popup`).
-- `package.json` now says `react-leaflet: 4.2.1`, and `bun.lock` also reflects v4.
-- But `package-lock.json` is out of sync and does not reflect `react-leaflet` correctly at the root dependency level, which strongly suggests the preview is still installing/resolving the wrong package set from stale lockfile data.
+## Problem
 
-## Plan
-1. Align dependency files so the installed version is definitively React Leaflet v4
-   - Update the npm lockfile to match `package.json`
-   - Ensure `react-leaflet@4.2.1` and its matching `@react-leaflet/core@2.x` are what the project resolves to
-   - Remove the stale version mismatch that is likely keeping the preview on the broken package tree
+The current `public/sitemap.xml` is a static file — a frozen snapshot from when it was generated. When new alleys are added to the database, they don't appear in the sitemap until someone manually regenerates it. The Edge Function at `supabase/functions/sitemap/index.ts` already generates a dynamic sitemap with all alleys, but Google can't use it because `robots.txt` points to the static file.
 
-2. Keep the map implementation itself essentially as-is
-   - The current map component structure in `Index.tsx` is already appropriate for v4
-   - Preserve the current UX: filtered alleys only, national default center, popup link to alley details
+## Solution
 
-3. Add a small safety pass around map data
-   - Make sure only alleys with valid numeric coordinates render as markers
-   - Keep the current cap on rendered markers for performance
+Remove the static file and point Google directly to the Edge Function, which already queries all alleys dynamically.
 
-4. Verify the result after dependency alignment
-   - Confirm the Map toggle no longer crashes
-   - Confirm the map loads tiles and displays markers for filtered alleys
-   - Confirm popups still link into alley detail pages
+### Steps
 
-## Technical details
-```text
-Current likely problem:
-package.json = react-leaflet 4.2.1
-bun.lock      = react-leaflet 4.2.1
-package-lock  = stale / inconsistent
+1. **Delete `public/sitemap.xml`** — Remove the 12,000+ line static file. It goes stale immediately and is the root cause of missing alleys.
 
-Result:
-preview can still resolve/install the wrong dependency tree
-→ runtime crash: "render2 is not a function"
+2. **Update `public/robots.txt`** — Change the Sitemap directive from the static file to the Edge Function URL:
+   ```
+   Sitemap: https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/sitemap
+   ```
 
-Implementation target:
-single consistent dependency graph using react-leaflet v4 for React 18
-```
+3. **Add a client-side redirect** — Since Google previously indexed `alleycat-bowling.com/sitemap.xml`, add a small catch in routing or a meta-refresh so any bot hitting `/sitemap.xml` gets redirected to the Edge Function. This can be done via a Vite plugin or a simple `_redirects`-style config depending on the hosting setup. Alternatively, we can skip this if the robots.txt update is sufficient.
 
-## Expected outcome
-- No crash when pressing `[Map]`
-- Existing alley filters still determine which markers appear
-- No new product requirements needed from you before I implement the fix
+The Edge Function (`supabase/functions/sitemap/index.ts`) already handles everything correctly: it paginates through all alleys in batches of 1,000, includes `updated_at` dates, blog posts, and static pages. No changes needed there.
+
+### Technical Details
+
+- The Edge Function returns `Content-Type: application/xml` with proper caching headers (1 hour)
+- It fetches alleys in batches to handle the 1,000-row Supabase limit
+- Each alley URL follows the `/alley/:slug` pattern with `updated_at` as `lastmod`
+- After deploying, re-submit the new sitemap URL in Google Search Console
+
