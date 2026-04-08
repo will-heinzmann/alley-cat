@@ -14,7 +14,7 @@ interface FeedGame {
   image_url: string | null;
   created_at: string;
   user_id: string;
-  profiles: { username: string; avatar_url: string | null } | null;
+  profiles: { username: string; full_name: string | null; avatar_url: string | null } | null;
   alleys: { name: string; city: string; state: string } | null;
   likes_count: number;
   is_liked: boolean;
