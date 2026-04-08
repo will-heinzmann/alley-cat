@@ -205,6 +205,7 @@ export type Database = {
           alley_id: string
           created_at: string
           date: string
+          frame_data: Json | null
           id: string
           image_url: string | null
           notes: string | null
@@ -216,6 +217,7 @@ export type Database = {
           alley_id: string
           created_at?: string
           date?: string
+          frame_data?: Json | null
           id?: string
           image_url?: string | null
           notes?: string | null
@@ -227,6 +229,7 @@ export type Database = {
           alley_id?: string
           created_at?: string
           date?: string
+          frame_data?: Json | null
           id?: string
           image_url?: string | null
           notes?: string | null
