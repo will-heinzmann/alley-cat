@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
@@ -94,6 +95,12 @@ const Feed = () => {
   };
 
   return (
+    <>
+      <Helmet>
+        <title>Alley Cat — Track Bowling Scores, Find Alleys & Compete</title>
+        <meta name="description" content="Alley Cat is the ultimate bowling companion. Track your scores frame-by-frame, discover 1,600+ bowling alleys, compare stats with friends, and climb the leaderboard." />
+        <link rel="canonical" href="https://alley-cat.lovable.app/" />
+      </Helmet>
     <div className="min-h-screen pb-20">
       {/* Dashboard grid: single column mobile, two columns on lg+ */}
       <div className="p-4 md:p-6 max-w-6xl mx-auto">
@@ -191,11 +198,44 @@ const Feed = () => {
         </div>
       </div>
 
+      {/* SEO Footer Section */}
+      <div className="max-w-4xl mx-auto px-4 py-6 mt-4 bg-muted/40 border-t border-border">
+        <h2 className="text-sm text-primary border-b border-border pb-1 mb-3">🎳 About Alley Cat</h2>
+        <div className="space-y-3 text-xs text-muted-foreground leading-relaxed">
+          <p>
+            Alley Cat is the free bowling companion built for everyone — from casual weekend rollers to 
+            die-hard league warriors chasing that elusive 300 game. Think of it as Strava, but for the lanes. 
+            Log every frame, track your spare conversions, monitor your average over time, and see exactly 
+            where your game is improving (or where that 7-10 split keeps haunting you).
+          </p>
+          <p>
+            With a directory of over 1,600 bowling alleys across the United States, finding your next lane 
+            is easier than picking up a single-pin spare. Search by city, state, or rating — and once you're 
+            there, log your scores and leave a review so other bowlers know what to expect. Whether you're 
+            searching for "bowling near me" or planning a road trip to the best-rated alleys in the country, 
+            Alley Cat has you covered.
+          </p>
+          <p>
+            Compete on the global leaderboard, follow your friends' games in the social feed, or organize 
+            a group session with Group Play mode. Alley Cat tracks it all — your high games, your 200+ rate, 
+            your series averages, and your all-time stats. It's the scorekeeping app your league notebook 
+            wishes it could be. Lace up, grab your ball, and let Alley Cat handle the rest. 🐱
+          </p>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link to="/alleys" className="text-xs text-primary underline">Browse All Alleys</Link>
+          <Link to="/leaderboard" className="text-xs text-primary underline">View Leaderboard</Link>
+          <Link to="/blog" className="text-xs text-primary underline">Bowling Tips & Blog</Link>
+          <Link to="/auth?mode=signup" className="text-xs text-primary underline">Create Free Account</Link>
+        </div>
+      </div>
+
       <div className="text-center p-4">
         <hr className="border-border mb-3" />
         <p className="text-xs text-muted-foreground">⚡ Alley Cat © {new Date().getFullYear()}</p>
       </div>
     </div>
+    </>
   );
 };
 

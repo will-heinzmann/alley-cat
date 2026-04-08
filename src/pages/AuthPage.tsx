@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -65,6 +66,12 @@ const AuthPage = () => {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>{isLogin ? "Sign In" : "Create Account"} — Alley Cat Bowling Tracker</title>
+      <meta name="description" content="Sign in or create a free Alley Cat account to track your bowling scores, find alleys, and compete on the leaderboard." />
+      <link rel="canonical" href="https://alley-cat.lovable.app/auth" />
+    </Helmet>
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <h1 className="text-2xl text-primary text-center mb-1">🎳 ALLEY CAT</h1>
@@ -104,6 +111,7 @@ const AuthPage = () => {
         </p>
       </div>
     </div>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -493,6 +494,11 @@ const GroupPlay = () => {
   if (!user) {
     return (
       <div className="min-h-screen pb-20 p-4">
+        <Helmet>
+          <title>Group Play — Bowl With Friends | Alley Cat</title>
+          <meta name="description" content="Start a group bowling session with friends. Track scores for multiple players frame-by-frame with Alley Cat's Group Play mode." />
+          <link rel="canonical" href="https://alley-cat.lovable.app/league" />
+        </Helmet>
         <header className="border-b border-border pb-4 mb-4">
           <Link to="/" className="text-primary text-xs">← Back</Link>
           <h1 className="text-lg text-primary mt-1">🏆 Group Play</h1>
