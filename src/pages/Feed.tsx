@@ -111,7 +111,7 @@ const Feed = () => {
                 <p className="text-sm text-muted-foreground">Track your scores, follow friends, and find alleys.</p>
                 <div className="flex flex-col items-center gap-2">
                   <Link to="/auth?mode=signup" className="border border-primary bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-80">
-                    🎳 Log Your First Game
+                    🎳 Create Account & Log Your First Game
                   </Link>
                   <Link to="/auth" className="text-primary text-xs hover:underline">
                     Already have an account? Sign in
