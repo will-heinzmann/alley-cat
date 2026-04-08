@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -12,8 +12,9 @@ const getAvatarUrl = (path: string | null) => {
 
 const BowlerProfile = () => {
   const { userId } = useParams();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<any>(null);
   const [games, setGames] = useState<any[]>([]);
@@ -245,6 +246,17 @@ const BowlerProfile = () => {
                 <strong>{followersCount}</strong> followers · <strong>{followingCount}</strong> following · <strong>{profile.games_count}</strong> games
               </p>
               {profile.bio && <p className="text-xs text-muted-foreground italic mt-2">{profile.bio}</p>}
+              {isOwnProfile && (
+                <button
+                  onClick={async () => {
+                    await signOut();
+                    navigate("/");
+                  }}
+                  className="mt-3 border border-border px-3 py-1 text-xs text-destructive hover:opacity-80"
+                >
+                  [Log Out]
+                </button>
+              )}
             </>
           )}
         </div>
