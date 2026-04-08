@@ -152,6 +152,7 @@ const HomePage = () => {
       <link rel="canonical" href="https://alley-cat.lovable.app/alleys" />
     </Helmet>
     <div className="min-h-screen pb-20">
+      <header className="border-b border-border p-4 text-center">
         <h1 className="text-2xl text-primary tracking-wide">
           🎳 ALLEY CAT 🎳
         </h1>
