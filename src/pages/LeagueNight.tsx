@@ -511,6 +511,7 @@ const GroupPlay = () => {
           </Link>
         </div>
       </div>
+      </>
     );
   }
 
