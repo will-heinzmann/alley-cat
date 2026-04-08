@@ -5,6 +5,50 @@ import { createClient } from "@supabase/supabase-js";
 const SITE = "https://alley-cat.lovable.app";
 const DIST_DIR = path.resolve("dist");
 const ROOT_INDEX_PATH = path.join(DIST_DIR, "index.html");
+const blogPosts = [
+  {
+    slug: "how-to-calculate-bowling-handicap",
+    title: "How to Calculate Bowling Handicap — Easy Guide (2026)",
+    description: "Learn how to calculate your bowling handicap step-by-step. Use the standard formula with basis score, average, and percentage factor.",
+    intro: "Whether you're joining a league or just want to level the playing field with friends, understanding your bowling handicap is essential.",
+  },
+  {
+    slug: "alley-cat-bowling",
+    title: "Alley Cat Bowling — The Social Bowling App for Every Bowler",
+    description: "Alley Cat is a free bowling app to track scores, find alleys, and compete on leaderboards. Built for casual and league bowlers alike.",
+    intro: "Alley Cat is more than a score tracker — it's a social platform built for bowlers who want to track, compete, and discover the best alleys in America.",
+  },
+  {
+    slug: "bowling-stat-tracker",
+    title: "Best Bowling Stat Tracker — Track Scores, Averages & Trends",
+    description: "Find the best bowling stat tracker to log games, monitor averages, and analyze performance trends. Free and easy to use.",
+    intro: "Serious bowlers know that improvement starts with data. A good stat tracker helps you see patterns, set goals, and measure progress over time.",
+  },
+  {
+    slug: "bowling-scorecard-app",
+    title: "Free Bowling Scorecard App — Log Games Frame by Frame",
+    description: "Use a free bowling scorecard app to log games frame-by-frame, track strikes and spares, and calculate scores automatically.",
+    intro: "Forget pen and paper. A digital bowling scorecard app makes it easy to log every roll, track your stats, and share results with friends.",
+  },
+  {
+    slug: "bowling-alleys-near-me",
+    title: "Find Bowling Alleys Near Me — 2,000+ Locations with Ratings",
+    description: "Search 2,000+ bowling alleys near you with ratings, reviews, and details like lane count and oil patterns. Find your next lane.",
+    intro: "Looking for a bowling alley nearby? Alley Cat has a directory of bowling alleys across the United States — complete with ratings, reviews, and details you won't find on Google.",
+  },
+  {
+    slug: "bowling-score-tracker",
+    title: "Bowling Score Tracker — Free Online Tool to Log Every Game",
+    description: "Track your bowling scores online for free. Log games, calculate averages, and monitor your improvement over time with Alley Cat.",
+    intro: "A bowling score tracker helps you stay on top of your game. Log every session, watch your average climb, and never lose track of a personal best.",
+  },
+  {
+    slug: "bowling-scoreboard-online",
+    title: "Free Online Bowling Scoreboard — Score Games Live",
+    description: "Use a free online bowling scoreboard to score games live with friends. Supports group play, pin-by-pin input, and shareable results.",
+    intro: "Need an online bowling scoreboard? Alley Cat gives you a clean, easy-to-use digital scoreboard for live bowling sessions with friends.",
+  },
+];
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -56,6 +100,63 @@ const buildDocument = ({ title, description, canonicalPath, bodyHtml, jsonLd, as
     <div id="root">${bodyHtml}</div>
   </body>
 </html>`;
+
+const buildSitemapXml = (alleys) => {
+  const today = new Date().toISOString().split("T")[0];
+  const staticPages = [
+    { path: "/", priority: "1.0", changefreq: "daily" },
+    { path: "/alleys", priority: "0.9", changefreq: "daily" },
+    { path: "/leaderboard", priority: "0.7", changefreq: "weekly" },
+    { path: "/blog", priority: "0.8", changefreq: "weekly" },
+  ];
+
+  const urls = [
+    ...staticPages.map((page) => ({
+      loc: `${SITE}${page.path}`,
+      lastmod: today,
+      changefreq: page.changefreq,
+      priority: page.priority,
+    })),
+    ...blogPosts.map((post) => ({
+      loc: `${SITE}/blog/${post.slug}`,
+      lastmod: today,
+      changefreq: "monthly",
+      priority: "0.7",
+    })),
+    ...alleys.map((alley) => ({
+      loc: `${SITE}/alley/${alley.slug}`,
+      lastmod: alley.updated_at ? alley.updated_at.split("T")[0] : today,
+      changefreq: "weekly",
+      priority: "0.8",
+    })),
+  ];
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((url) => `  <url>
+    <loc>${url.loc}</loc>
+    <lastmod>${url.lastmod}</lastmod>
+    <changefreq>${url.changefreq}</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`).join("\n")}
+</urlset>`;
+};
+
+const renderStaticPage = ({ title, description, canonicalPath, heading, intro, sections = [], links = [], assetTags }) => {
+  const bodyHtml = `
+    <div class="min-h-screen pb-20">
+      <header class="border-b border-border p-4 text-center">
+        <h1 class="text-xl text-primary">${formatMaybe(heading)}</h1>
+        <p class="text-xs text-muted-foreground mt-1">${formatMaybe(intro)}</p>
+      </header>
+      <div class="max-w-4xl mx-auto p-4 space-y-4">
+        ${sections.map((section) => `<section class="border border-border bg-card p-4 space-y-2"><h2 class="text-sm text-primary">${formatMaybe(section.heading)}</h2><p class="text-sm text-foreground leading-relaxed">${formatMaybe(section.content)}</p></section>`).join("")}
+        ${links.length ? `<div class="border border-border bg-card p-4"><ul class="space-y-2">${links.map((link) => `<li><a class="text-primary hover:underline" href="${link.href}">${formatMaybe(link.label)}</a></li>`).join("")}</ul></div>` : ""}
+      </div>
+    </div>`;
+
+  return buildDocument({ title, description, canonicalPath, bodyHtml, assetTags });
+};
 
 const renderAlleyPage = (alley, relatedAlleys, assetTags) => {
   const canonicalPath = `/alley/${alley.slug}`;
@@ -216,6 +317,59 @@ const updateRootIndex = async (assetTags) => {
   }));
 };
 
+const writeStaticRoutes = async (assetTags) => {
+  await writeFile(path.join(DIST_DIR, "alleys", "index.html"), renderStaticPage({
+    title: "Find Bowling Alleys Near You — 1,600+ Venues | Alley Cat",
+    description: "Browse and search bowling alleys across the US. Filter by state, city, and rating to find the perfect lanes near you.",
+    canonicalPath: "/alleys",
+    heading: "🎳 ALLEY CAT 🎳",
+    intro: "Find Your Lane",
+    sections: [
+      { heading: "Search Bowling Alleys", content: "Browse alley pages with address details, lane count, oil pattern notes, and community ratings so you can pick the right spot before you head out." },
+      { heading: "Track More Than Directions", content: "Each alley page on Alley Cat helps bowlers log scores, compare performance, and discover other venues nearby for future sessions." },
+    ],
+    assetTags,
+  }));
+
+  await writeFile(path.join(DIST_DIR, "leaderboard", "index.html"), renderStaticPage({
+    title: "Bowling Leaderboard — Top Bowlers Ranked | Alley Cat",
+    description: "See the top-ranked bowlers on Alley Cat. Compare scores, averages, and total points on the global bowling leaderboard.",
+    canonicalPath: "/leaderboard",
+    heading: "🏆 Global Top Cats",
+    intro: "See how bowlers stack up across Alley Cat.",
+    sections: [
+      { heading: "Track Rankings", content: "The Alley Cat leaderboard helps bowlers compare averages, high scores, and total points while keeping tabs on the players setting the pace." },
+      { heading: "Compete With Context", content: "Log your games consistently and use Alley Cat to see how your performance evolves from league nights to casual practice sessions." },
+    ],
+    assetTags,
+  }));
+
+  await writeFile(path.join(DIST_DIR, "blog", "index.html"), renderStaticPage({
+    title: "Bowling Tips & Guides — Alley Cat Blog",
+    description: "Bowling tips, guides, and resources from Alley Cat. Learn about handicaps, score tracking, finding alleys near you, and more.",
+    canonicalPath: "/blog",
+    heading: "🎳 Alley Cat Blog",
+    intro: "Bowling tips, guides, and resources",
+    links: blogPosts.map((post) => ({ href: `/blog/${post.slug}`, label: post.title })),
+    assetTags,
+  }));
+
+  for (const post of blogPosts) {
+    await writeFile(path.join(DIST_DIR, "blog", post.slug, "index.html"), renderStaticPage({
+      title: post.title,
+      description: post.description,
+      canonicalPath: `/blog/${post.slug}`,
+      heading: post.title,
+      intro: post.intro,
+      sections: [
+        { heading: "Why It Matters", content: post.description },
+        { heading: "How Alley Cat Helps", content: `${post.intro} Use Alley Cat to track games, compare bowling performance, and discover new alleys with better context.` },
+      ],
+      assetTags,
+    }));
+  }
+};
+
 const main = async () => {
   const baseHtml = await fs.readFile(ROOT_INDEX_PATH, "utf8");
   const assetTags = Array.from(baseHtml.matchAll(/<(?:link|script)\b[^>]*(?:><\/script>|\/?>)/g))
@@ -232,6 +386,8 @@ const main = async () => {
   }
 
   await updateRootIndex(assetTags);
+  await writeStaticRoutes(assetTags);
+  await writeFile(path.join(DIST_DIR, "sitemap.xml"), buildSitemapXml(alleys));
 
   for (const alley of alleys) {
     const relatedAlleys = (alleysByState.get(alley.state) || [])
