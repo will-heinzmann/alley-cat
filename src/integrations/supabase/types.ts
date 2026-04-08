@@ -314,6 +314,159 @@ export type Database = {
           },
         ]
       }
+      league_games: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          league_session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          league_session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          league_session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_games_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_games_league_session_id_fkey"
+            columns: ["league_session_id"]
+            isOneToOne: false
+            referencedRelation: "league_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_members: {
+        Row: {
+          id: string
+          joined_at: string
+          league_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          league_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          league_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          league_id: string
+          session_date: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          league_id: string
+          session_date: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          league_id?: string
+          session_date?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_sessions_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leagues: {
+        Row: {
+          alley_id: string | null
+          created_at: string
+          created_by: string
+          day_of_week: string | null
+          description: string | null
+          end_date: string | null
+          games_per_session: number
+          id: string
+          name: string
+          start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          alley_id?: string | null
+          created_at?: string
+          created_by: string
+          day_of_week?: string | null
+          description?: string | null
+          end_date?: string | null
+          games_per_session?: number
+          id?: string
+          name: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alley_id?: string | null
+          created_at?: string
+          created_by?: string
+          day_of_week?: string | null
+          description?: string | null
+          end_date?: string | null
+          games_per_session?: number
+          id?: string
+          name?: string
+          start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leagues_alley_id_fkey"
+            columns: ["alley_id"]
+            isOneToOne: false
+            referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
