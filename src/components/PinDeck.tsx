@@ -7,6 +7,8 @@ interface PinDeckProps {
   disabled?: boolean;
   /** Indices of pins to highlight as spare targets */
   spareSuggestions?: number[];
+  /** When true, label changes to "Tap pins you MISSED" */
+  invertMode?: boolean;
 }
 
 const PIN_ROWS = [
@@ -16,7 +18,7 @@ const PIN_ROWS = [
   [0],
 ];
 
-const PinDeck = ({ standing, hit, onTogglePin, disabled = false, spareSuggestions = [] }: PinDeckProps) => {
+const PinDeck = ({ standing, hit, onTogglePin, disabled = false, spareSuggestions = [], invertMode = false }: PinDeckProps) => {
   const handleTap = useCallback((idx: number) => {
     if (disabled || !standing[idx]) return;
     onTogglePin(idx);
