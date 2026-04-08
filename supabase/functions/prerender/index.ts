@@ -4,7 +4,7 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const SITE = "https://alley-cat.lovable.app";
+const SITE = "https://alleycat-bowling.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
