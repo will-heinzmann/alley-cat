@@ -47,7 +47,7 @@ const Feed = () => {
 
     if (data) {
       const userIds = [...new Set(data.map((g) => g.user_id))];
-      const { data: profilesData } = await supabase.from("profiles").select("user_id, username, avatar_url").in("user_id", userIds);
+      const { data: profilesData } = await supabase.from("profiles").select("user_id, username, full_name, avatar_url").in("user_id", userIds);
       const profileMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
 
       const gameIds = data.map((g) => g.id);
@@ -62,7 +62,7 @@ const Feed = () => {
         const profile = profileMap.get(g.user_id);
         return {
           ...g,
-          profiles: profile ? { username: profile.username, avatar_url: profile.avatar_url } : null,
+          profiles: profile ? { username: profile.username, full_name: profile.full_name, avatar_url: profile.avatar_url } : null,
           alleys: Array.isArray(g.alleys) ? g.alleys[0] : g.alleys,
           likes_count: gameLikes.length,
           is_liked: gameLikes.some((l) => l.user_id === user.id),
@@ -133,9 +133,14 @@ const Feed = () => {
                 {games.map((game) => (
                   <div key={game.id} className="border border-border bg-card p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Link to={`/bowler/${game.user_id}`} className="text-primary text-sm font-bold hover:underline">
-                        {game.profiles?.username || "Unknown"}
-                      </Link>
+                      <div>
+                        <Link to={`/bowler/${game.user_id}`} className="text-primary text-sm font-bold hover:underline">
+                          {game.profiles?.username || "Unknown"}
+                        </Link>
+                        {game.profiles?.full_name && (
+                          <p className="text-[10px] text-muted-foreground leading-tight">{game.profiles.full_name}</p>
+                        )}
+                      </div>
                       <span className="text-xl text-primary font-bold">{game.score}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-1">
