@@ -153,6 +153,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
     setCurrentRoll(0);
     setStanding(allStanding());
     setHit(noHits());
+    setSpareAttempt(false);
     setGameComplete(false);
     onScoreChange(calculateScore(newFrames), newFrames);
   };
@@ -190,18 +191,21 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
               setCurrentRoll(0);
               setStanding(allStanding());
               setHit(noHits());
+              setSpareAttempt(false);
             }
           } else if (frame < 9) {
             setCurrentFrame(frame + 1);
             setCurrentRoll(0);
             setStanding(allStanding());
             setHit(noHits());
+            setSpareAttempt(false);
           }
           return;
         }
         const newStanding = standing.map((s, i) => s && !hit[i]);
         setStanding(newStanding);
-        setHit(noHits());
+        setHit([...newStanding]); // spare attempt: default all remaining pins as hit
+        setSpareAttempt(true);
         setCurrentRoll(1);
         setFrames(newFrames);
         onScoreChange(calculateScore(newFrames), newFrames);
@@ -222,12 +226,14 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
             setCurrentRoll(0);
             setStanding(allStanding());
             setHit(noHits());
+            setSpareAttempt(false);
           }
         } else if (frame < 9) {
           setCurrentFrame(frame + 1);
           setCurrentRoll(0);
           setStanding(allStanding());
           setHit(noHits());
+          setSpareAttempt(false);
         }
       }
     } else {
@@ -238,10 +244,12 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
         if (pinsHit === 10) {
           setStanding(allStanding());
           setHit(noHits());
+          setSpareAttempt(false); // fresh rack after strike
         } else {
           const newStanding = standing.map((s, i) => s && !hit[i]);
           setStanding(newStanding);
-          setHit(noHits());
+          setHit([...newStanding]); // spare attempt
+          setSpareAttempt(true);
         }
         setCurrentRoll(1);
       } else if (roll === 1) {
@@ -253,13 +261,18 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
         if (needsThird) {
           if (r1 === 10 && pinsHit === 10) {
             setStanding(allStanding());
+            setHit(noHits());
+            setSpareAttempt(false); // fresh rack (double)
           } else if (r1 === 10) {
             const newStanding = standing.map((s, i) => s && !hit[i]);
             setStanding(newStanding);
+            setHit([...newStanding]); // spare attempt (strike then non-strike)
+            setSpareAttempt(true);
           } else {
             setStanding(allStanding());
+            setHit(noHits());
+            setSpareAttempt(false); // fresh rack after spare
           }
-          setHit(noHits());
           setCurrentRoll(2);
         } else {
           setEditingFrame(null);
