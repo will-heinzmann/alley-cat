@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import FeedLeaderboard from "@/components/FeedLeaderboard";
 
 interface FeedGame {
   id: string;
@@ -27,7 +28,6 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchFeed = async () => {
-    // Guard: no feed for guests
     if (!user) {
       setLoading(false);
       return;
@@ -71,7 +71,6 @@ const Feed = () => {
         };
       });
 
-      // Followed users first, then own, sorted by created_at within each group
       processed.sort((a, b) => {
         if (a.is_following !== b.is_following) return a.is_following ? -1 : 1;
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -96,74 +95,96 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen pb-20">
-      <header className="border-b border-border p-4 text-center">
-        <h1 className="text-2xl text-primary tracking-wide">🎳 ALLEY CAT 🎳</h1>
-        <p className="text-sm text-secondary mt-1">Your Feed</p>
-        <hr className="border-primary mt-3" />
-      </header>
+      {/* Dashboard grid: single column mobile, two columns on lg+ */}
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Feed Column */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="border-b border-primary pb-2">
+              <h2 className="text-lg text-primary font-bold">🏠 HOME FEED</h2>
+            </div>
 
-      {loading ? (
-        <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
-      ) : !user ? (
-        <div className="p-6 text-center space-y-4">
-          <p className="text-sm text-muted-foreground">Track your scores, follow friends, and find alleys.</p>
-          <div className="flex flex-col items-center gap-2">
-            <Link to="/auth?mode=signup" className="border border-primary bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-80">
-              🎳 Log Your First Game
-            </Link>
-            <Link to="/auth" className="text-primary text-xs hover:underline">
-              Already have an account? Sign in
-            </Link>
+            {loading ? (
+              <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
+            ) : !user ? (
+              <div className="border border-border bg-card p-6 text-center space-y-4">
+                <p className="text-sm text-muted-foreground">Track your scores, follow friends, and find alleys.</p>
+                <div className="flex flex-col items-center gap-2">
+                  <Link to="/auth?mode=signup" className="border border-primary bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-80">
+                    🎳 Log Your First Game
+                  </Link>
+                  <Link to="/auth" className="text-primary text-xs hover:underline">
+                    Already have an account? Sign in
+                  </Link>
+                </div>
+              </div>
+            ) : games.length === 0 ? (
+              <div className="border border-border bg-card p-6 text-center">
+                <p className="text-sm text-muted-foreground mb-3">No games in your feed yet.</p>
+                <p className="text-sm text-foreground">
+                  Follow other bowlers or <Link to="/log" className="text-primary">log your first game</Link>!
+                </p>
+                <p className="mt-3">
+                  <Link to="/alleys" className="text-primary text-sm">[Browse Alleys]</Link>
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {games.map((game) => (
+                  <div key={game.id} className="border border-border bg-card p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Link to={`/bowler/${game.user_id}`} className="text-primary text-sm font-bold hover:underline">
+                        {game.profiles?.username || "Unknown"}
+                      </Link>
+                      <span className="text-xl text-primary font-bold">{game.score}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {formatDistanceToNow(new Date(game.created_at), { addSuffix: true })}
+                    </p>
+                    {game.alleys && (
+                      <p className="text-xs text-muted-foreground">
+                        📍 {game.alleys.name} — {game.alleys.city}, {game.alleys.state}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 mt-2 text-xs">
+                      <span className="text-foreground border border-border px-1">{game.oil_condition}</span>
+                      <span className="text-muted-foreground">{game.date}</span>
+                    </div>
+                    {game.image_url && (
+                      <img src={game.image_url} alt="Game photo" className="mt-2 max-h-48 border border-border w-full object-cover" />
+                    )}
+                    {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
+                    <div className="border-t border-border mt-2 pt-2">
+                      <button
+                        onClick={() => toggleLike(game.id, game.is_liked)}
+                        className={`text-xs transition-colors ${game.is_liked ? "text-secondary font-bold" : "text-muted-foreground hover:text-secondary"}`}
+                      >
+                        {game.is_liked ? "♥" : "♡"} {game.likes_count} likes
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar Column - stacks below on mobile */}
+          <div className="space-y-6">
+            <FeedLeaderboard />
+
+            {user && (
+              <div className="border border-border bg-card p-4">
+                <h3 className="text-xs text-primary font-bold mb-2">⚡ QUICK LINKS</h3>
+                <div className="space-y-1">
+                  <Link to="/log" className="block text-xs text-foreground hover:text-primary">[📝 Log a Game]</Link>
+                  <Link to="/alleys" className="block text-xs text-foreground hover:text-primary">[🎳 Browse Alleys]</Link>
+                  <Link to="/league" className="block text-xs text-foreground hover:text-primary">[👥 Group Play]</Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      ) : games.length === 0 ? (
-        <div className="p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-3">No games in your feed yet.</p>
-          <p className="text-sm text-foreground">
-            Follow other bowlers or <Link to="/log" className="text-primary">log your first game</Link>!
-          </p>
-          <p className="mt-3">
-            <Link to="/alleys" className="text-primary text-sm">[Browse Alleys]</Link>
-          </p>
-        </div>
-      ) : (
-        <div className="p-4 space-y-3">
-          {games.map((game) => (
-            <div key={game.id} className="border border-border bg-card p-3">
-              <div className="flex items-center justify-between mb-2">
-                <Link to={`/bowler/${game.user_id}`} className="text-primary text-sm font-bold hover:underline">
-                  {game.profiles?.username || "Unknown"}
-                </Link>
-                <span className="text-xl text-primary font-bold">{game.score}</span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">
-                {formatDistanceToNow(new Date(game.created_at), { addSuffix: true })}
-              </p>
-              {game.alleys && (
-                <p className="text-xs text-muted-foreground">
-                  📍 {game.alleys.name} — {game.alleys.city}, {game.alleys.state}
-                </p>
-              )}
-              <div className="flex items-center gap-3 mt-2 text-xs">
-                <span className="text-foreground border border-border px-1">{game.oil_condition}</span>
-                <span className="text-muted-foreground">{game.date}</span>
-              </div>
-              {game.image_url && (
-                <img src={game.image_url} alt="Game photo" className="mt-2 max-h-48 border border-border w-full object-cover" />
-              )}
-              {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
-              <div className="border-t border-border mt-2 pt-2">
-                <button
-                  onClick={() => toggleLike(game.id, game.is_liked)}
-                  className={`text-xs transition-colors ${game.is_liked ? "text-secondary font-bold" : "text-muted-foreground hover:text-secondary"}`}
-                >
-                  {game.is_liked ? "♥" : "♡"} {game.likes_count} likes
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      </div>
 
       <div className="text-center p-4">
         <hr className="border-border mb-3" />
