@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
 import AlleyLeaderboard from "@/components/AlleyLeaderboard";
+import AlleySeoSection from "@/components/AlleySeoSection";
 
 const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
 
@@ -271,6 +272,8 @@ const AlleyDetail = () => {
             </div>
         ))}
       </div>
+
+      <AlleySeoSection alley={alley} />
     </div>
   );
 };
