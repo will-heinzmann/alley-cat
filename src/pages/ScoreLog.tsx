@@ -215,7 +215,7 @@ const ScoreDisplay = ({ playerName, score, gameId, frameData }: { playerName: st
                   <span className="flex-1 p-0.5 text-foreground">{frame.roll2}</span>
                   {i === 9 && <span className="flex-1 p-0.5 border-l border-border text-foreground">{frame.roll3 || ""}</span>}
                 </div>
-                <div className="p-1 text-primary font-bold">{frame.cumulative}</div>
+                <div className="p-1 text-primary font-bold">{frame.cumulative > 0 ? frame.cumulative : ""}</div>
               </td>
             ))}
             <td className="border border-border p-1 text-center text-secondary font-bold text-sm">{score}</td>
