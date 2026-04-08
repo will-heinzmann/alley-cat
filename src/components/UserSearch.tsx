@@ -62,7 +62,7 @@ const UserSearch = () => {
           setOpen(true);
         }}
         onFocus={() => query.length >= 2 && setOpen(true)}
-        className="w-full border border-border bg-input px-2 py-1 text-foreground text-xs outline-none placeholder:text-muted-foreground"
+        className="w-full border-2 border-primary/40 bg-muted px-3 py-1.5 text-foreground text-xs outline-none placeholder:text-foreground/50 focus:border-primary"
       />
       {open && query.trim().length >= 2 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1 border border-border bg-card max-h-60 overflow-y-auto">
