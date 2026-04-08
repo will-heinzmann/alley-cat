@@ -72,6 +72,7 @@ const Leaderboard = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

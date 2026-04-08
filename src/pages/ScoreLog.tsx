@@ -547,6 +547,7 @@ const ScoreLog = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

@@ -301,6 +301,7 @@ const HomePage = () => {
         </p>
       </div>
     </div>
+    </>
   );
 };
 
