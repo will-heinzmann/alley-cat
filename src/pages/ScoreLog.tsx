@@ -300,7 +300,7 @@ const ScoreLog = () => {
       {showForm && (
         <form onSubmit={handleSubmit} className="p-4 border-b border-border bg-card space-y-2">
           <div className="flex gap-1 mb-2 flex-wrap">
-            <button type="button" onClick={() => setEntryMode("total")}
+            <button type="button" onClick={() => { setEntryMode("total"); setCurrentFrameData(null); }}
               className={`text-xs px-2 py-1 border ${entryMode === "total" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
               [Total Score]
             </button>
