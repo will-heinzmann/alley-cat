@@ -140,6 +140,32 @@ const AlleyDetail = () => {
         <meta property="og:description" content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}.`} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Alley Cat" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={`${alley.name} in ${alley.city}, ${alley.state} | Alley Cat`} />
+        <meta name="twitter:description" content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}.`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BowlingAlley",
+          name: alley.name,
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: alley.address,
+            addressLocality: alley.city,
+            addressRegion: alley.state,
+            ...(alley.zip_code && { postalCode: alley.zip_code }),
+          },
+          ...(alley.phone && { telephone: alley.phone }),
+          ...(alley.website && { url: alley.website }),
+          ...(alley.alley_rating > 0 && {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: alley.alley_rating,
+              bestRating: 5,
+              reviewCount: reviews.length || 1,
+            },
+          }),
+        })}</script>
       </Helmet>
 
       <header className="border-b border-border p-4">
