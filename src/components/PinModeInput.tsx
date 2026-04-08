@@ -453,6 +453,7 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
               hit={hit}
               onTogglePin={togglePin}
               spareSuggestions={spareSuggestions}
+              invertMode={spareAttempt}
             />
           ) : (
             <div className="grid grid-cols-5 gap-2 py-4">
