@@ -8,6 +8,12 @@ import FrameByFrameInput from "@/components/FrameByFrameInput";
 import PinModeInput from "@/components/PinModeInput";
 import SeriesSummary from "@/components/SeriesSummary";
 
+interface FrameData {
+  roll1: number | null;
+  roll2: number | null;
+  roll3?: number | null;
+}
+
 interface FrameScore {
   roll1: string;
   roll2: string;
@@ -15,75 +21,93 @@ interface FrameScore {
   cumulative: number;
 }
 
-const generateFrames = (totalScore: number, seed: string): FrameScore[] => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
-  }
-  const rng = () => {
-    hash = (hash * 1103515245 + 12345) & 0x7fffffff;
-    return (hash % 1000) / 1000;
-  };
-
-  if (totalScore === 300) {
-    const frames: FrameScore[] = [];
-    for (let i = 0; i < 9; i++) frames.push({ roll1: "X", roll2: "", cumulative: (i + 1) * 30 });
-    frames.push({ roll1: "X", roll2: "X", roll3: "X", cumulative: 300 });
-    return frames;
-  }
-
-  const frameScores: number[] = [];
-  let remaining = totalScore;
+const frameDataToDisplay = (frameData: FrameData[]): FrameScore[] => {
+  const rolls: number[] = [];
   for (let i = 0; i < 10; i++) {
-    const framesLeft = 10 - i;
-    const avg = remaining / framesLeft;
-    const variance = Math.min(avg, 10 - avg, 3);
-    let frameVal = Math.round(avg + (rng() - 0.5) * 2 * variance);
-    frameVal = Math.max(0, Math.min(10, frameVal));
-    if (i === 9) frameVal = Math.max(0, Math.min(10, remaining));
-    remaining -= frameVal;
-    remaining = Math.max(0, remaining);
-    frameScores.push(frameVal);
-  }
-  let diff = totalScore - frameScores.reduce((a, b) => a + b, 0);
-  for (let i = 0; diff > 0 && i < 10; i++) {
-    const add = Math.min(diff, 10 - frameScores[i]);
-    frameScores[i] += add;
-    diff -= add;
+    const f = frameData[i];
+    if (!f) break;
+    rolls.push(f.roll1 ?? 0);
+    if (i < 9) {
+      if (f.roll1 !== 10) rolls.push(f.roll2 ?? 0);
+    } else {
+      rolls.push(f.roll2 ?? 0);
+      if (f.roll3 !== undefined && f.roll3 !== null) rolls.push(f.roll3);
+    }
   }
 
   const frames: FrameScore[] = [];
   let cumulative = 0;
+  let ri = 0;
+
   for (let i = 0; i < 10; i++) {
-    const pins = frameScores[i];
-    const isLast = i === 9;
-    if (pins === 10) {
-      cumulative += 10;
-      if (isLast) {
-        const bonus1 = Math.floor(rng() * 11);
-        const bonus2 = bonus1 === 10 ? Math.floor(rng() * 11) : Math.floor(rng() * (11 - bonus1));
-        frames.push({ roll1: "X", roll2: bonus1 === 10 ? "X" : String(bonus1), roll3: bonus1 === 10 && bonus2 === 10 ? "X" : bonus2 === (10 - bonus1) && bonus1 !== 10 ? "/" : String(bonus2), cumulative: totalScore });
-      } else {
+    const f = frameData[i];
+    if (!f) break;
+    const r1 = f.roll1 ?? 0;
+    const r2 = f.roll2 ?? 0;
+
+    if (i < 9) {
+      if (r1 === 10) {
+        const bonus = (rolls[ri + 1] ?? 0) + (rolls[ri + 2] ?? 0);
+        cumulative += 10 + bonus;
         frames.push({ roll1: "X", roll2: "", cumulative });
+        ri += 1;
+      } else if (r1 + r2 === 10) {
+        const bonus = rolls[ri + 2] ?? 0;
+        cumulative += 10 + bonus;
+        frames.push({ roll1: r1 === 0 ? "-" : String(r1), roll2: "/", cumulative });
+        ri += 2;
+      } else {
+        cumulative += r1 + r2;
+        frames.push({
+          roll1: r1 === 0 ? "-" : String(r1),
+          roll2: r2 === 0 ? "-" : String(r2),
+          cumulative,
+        });
+        ri += 2;
       }
     } else {
-      const roll1 = Math.min(pins, Math.floor(rng() * (pins + 1)));
-      const roll2 = pins - roll1;
-      cumulative += pins;
-      if (isLast) {
-        frames.push({ roll1: roll1 === 10 ? "X" : String(roll1), roll2: roll1 + roll2 === 10 ? "/" : String(roll2), roll3: "-", cumulative: totalScore });
+      // 10th frame
+      const r3 = f.roll3 ?? 0;
+      cumulative += r1 + r2 + r3;
+      let d1 = r1 === 10 ? "X" : r1 === 0 ? "-" : String(r1);
+      let d2: string;
+      if (r1 === 10) {
+        d2 = r2 === 10 ? "X" : r2 === 0 ? "-" : String(r2);
       } else {
-        const r2Display = roll1 + roll2 === 10 ? "/" : roll2 === 0 ? "-" : String(roll2);
-        frames.push({ roll1: roll1 === 0 ? "-" : String(roll1), roll2: r2Display, cumulative });
+        d2 = r1 + r2 === 10 ? "/" : r2 === 0 ? "-" : String(r2);
       }
+      let d3 = "-";
+      if (r1 === 10 || r1 + r2 >= 10) {
+        if (r1 === 10 && r2 === 10) {
+          d3 = r3 === 10 ? "X" : r3 === 0 ? "-" : String(r3);
+        } else if (r1 === 10) {
+          d3 = r2 + r3 === 10 ? "/" : r3 === 0 ? "-" : String(r3);
+        } else {
+          d3 = r3 === 10 ? "X" : r3 === 0 ? "-" : String(r3);
+        }
+      }
+      frames.push({ roll1: d1, roll2: d2, roll3: d3, cumulative });
+      ri += 3;
     }
+  }
+  return frames;
+};
+
+const generateFallbackFrames = (totalScore: number): FrameScore[] => {
+  const frames: FrameScore[] = [];
+  let cumulative = 0;
+  const avg = totalScore / 10;
+  for (let i = 0; i < 10; i++) {
+    const pins = i < 9 ? Math.round(avg) : totalScore - cumulative;
+    cumulative += Math.max(0, Math.min(10, pins));
+    frames.push({ roll1: String(Math.max(0, Math.min(10, pins))), roll2: "-", cumulative: Math.min(cumulative, totalScore) });
   }
   if (frames.length > 0) frames[frames.length - 1].cumulative = totalScore;
   return frames;
 };
 
-const ScoreDisplay = ({ playerName, score, gameId }: { playerName: string; score: number; gameId: string }) => {
-  const frames = generateFrames(score, gameId);
+const ScoreDisplay = ({ playerName, score, gameId, frameData }: { playerName: string; score: number; gameId: string; frameData?: FrameData[] | null }) => {
+  const frames = frameData && frameData.length === 10 ? frameDataToDisplay(frameData) : generateFallbackFrames(score);
   return (
     <div className="border border-border bg-card overflow-x-auto">
       <div className="bg-muted px-2 py-1 border-b border-border">
