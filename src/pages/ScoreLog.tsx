@@ -243,6 +243,7 @@ const ScoreLog = () => {
       oil_condition: oil,
       notes: notes || null,
       image_url: imageUrl,
+      frame_data: currentFrameData || null,
     };
 
     if (!isOnline()) {
@@ -322,13 +323,13 @@ const ScoreLog = () => {
           ) : entryMode === "frame" ? (
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Enter each roll:</label>
-              <FrameByFrameInput onScoreChange={(total) => { setFrameScore(total); setScore(String(total)); }} />
+              <FrameByFrameInput onScoreChange={(total, frames) => { setFrameScore(total); setScore(String(total)); setCurrentFrameData(frames); }} />
               <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
             </div>
           ) : (
             <div>
               <label className="text-xs text-muted-foreground block mb-1">Tap pins to score:</label>
-              <PinModeInput onScoreChange={(total) => { setFrameScore(total); setScore(String(total)); }} />
+              <PinModeInput onScoreChange={(total, frames) => { setFrameScore(total); setScore(String(total)); setCurrentFrameData(frames); }} />
               <p className="text-xs text-primary mt-1 font-bold">Calculated Score: {frameScore}</p>
             </div>
           )}
@@ -442,6 +443,7 @@ const ScoreLog = () => {
                   playerName={`${(Array.isArray(games[selectedGame].alleys) ? games[selectedGame].alleys[0] : games[selectedGame].alleys)?.name?.toUpperCase() || "UNKNOWN"}`}
                   score={games[selectedGame].score}
                   gameId={games[selectedGame].id}
+                  frameData={games[selectedGame].frame_data as FrameData[] | null}
                 />
                 <div className="border border-border bg-card p-2 text-xs space-y-1">
                   <p><span className="text-muted-foreground">Alley:</span> <span className="text-foreground">{(Array.isArray(games[selectedGame].alleys) ? games[selectedGame].alleys[0] : games[selectedGame].alleys)?.name}</span></p>
