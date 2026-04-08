@@ -1,0 +1,1 @@
+ALTER TABLE public.games ADD COLUMN frame_data jsonb DEFAULT NULL;
