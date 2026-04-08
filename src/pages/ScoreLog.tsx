@@ -159,6 +159,7 @@ const ScoreLog = () => {
   const [saving, setSaving] = useState(false);
   const [entryMode, setEntryMode] = useState<"total" | "frame" | "pin">("total");
   const [frameScore, setFrameScore] = useState<number>(0);
+  const [currentFrameData, setCurrentFrameData] = useState<FrameData[] | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [alleySearch, setAlleySearch] = useState("");
