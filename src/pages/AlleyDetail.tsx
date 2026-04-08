@@ -271,6 +271,8 @@ const AlleyDetail = () => {
             </div>
         ))}
       </div>
+
+      <AlleySeoSection alley={alley} />
     </div>
   );
 };
