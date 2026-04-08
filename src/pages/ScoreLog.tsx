@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isOnline, onConnectivityChange, addToOfflineQueue, syncOfflineGames, getOfflineQueue, type OfflineGame } from "@/lib/offlineSync";
