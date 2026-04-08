@@ -243,7 +243,7 @@ const ScoreLog = () => {
       oil_condition: oil,
       notes: notes || null,
       image_url: imageUrl,
-      frame_data: currentFrameData || null,
+      frame_data: currentFrameData ? JSON.parse(JSON.stringify(currentFrameData)) : null,
     };
 
     if (!isOnline()) {
