@@ -9,7 +9,7 @@ const BottomNav = () => {
     { path: "/", label: "Feed" },
     { path: "/alleys", label: "Alleys" },
     { path: "/log", label: "Log" },
-    { path: "/league", label: "Group Play" },
+    { path: "/leagues", label: "Leagues" },
     { path: "/leaderboard", label: "Board" },
     { path: user ? `/bowler/${user.id}` : "/auth", label: "My Profile" },
   ];

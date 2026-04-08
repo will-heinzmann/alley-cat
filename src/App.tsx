@@ -14,6 +14,8 @@ import BowlerProfile from "./pages/BowlerProfile";
 import AuthPage from "./pages/AuthPage";
 import AlleyUpdates from "./pages/AlleyUpdates";
 import LeagueNight from "./pages/LeagueNight";
+import Leagues from "./pages/Leagues";
+import LeagueDetail from "./pages/LeagueDetail";
 import BlogIndex from "./pages/BlogIndex";
 import BlogPost from "./pages/BlogPost";
 import NotFound from "./pages/NotFound";
@@ -40,6 +42,8 @@ const App = () => (
             <Route path="/bowler/:userId" element={<BowlerProfile />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/league" element={<LeagueNight />} />
+            <Route path="/leagues" element={<Leagues />} />
+            <Route path="/leagues/:id" element={<LeagueDetail />} />
             <Route path="/admin/alley-updates" element={<AlleyUpdates />} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
