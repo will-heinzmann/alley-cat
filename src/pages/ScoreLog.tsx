@@ -227,29 +227,83 @@ const ScoreDisplay = ({ playerName, score, gameId, frameData }: { playerName: st
   );
 };
 
+const DRAFT_KEY = "alleycat_score_draft";
+
+interface ScoreDraft {
+  score: string;
+  alleyId: string;
+  alleySearch: string;
+  date: string;
+  oil: string;
+  notes: string;
+  entryMode: "total" | "frame" | "pin";
+  frameScore: number;
+  currentFrameData: FrameData[] | null;
+  showForm: boolean;
+  savedAt: number;
+}
+
+const saveDraft = (draft: Partial<ScoreDraft>) => {
+  try {
+    const existing = loadDraft();
+    const merged = { ...existing, ...draft, savedAt: Date.now() };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(merged));
+  } catch {}
+};
+
+const loadDraft = (): ScoreDraft | null => {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as ScoreDraft;
+    // Expire drafts older than 24 hours
+    if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(DRAFT_KEY);
+      return null;
+    }
+    return draft;
+  } catch {
+    return null;
+  }
+};
+
+const clearDraft = () => {
+  localStorage.removeItem(DRAFT_KEY);
+};
+
 const ScoreLog = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [games, setGames] = useState<any[]>([]);
   const [alleys, setAlleys] = useState<any[]>([]);
-  const [showForm, setShowForm] = useState(false);
   const [searchParams] = useSearchParams();
-  const [score, setScore] = useState("");
-  const [alleyId, setAlleyId] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [oil, setOil] = useState("House");
-  const [notes, setNotes] = useState("");
+
+  // Load draft from localStorage on mount
+  const draft = loadDraft();
+  const [showForm, setShowForm] = useState(draft?.showForm ?? false);
+  const [score, setScore] = useState(draft?.score ?? "");
+  const [alleyId, setAlleyId] = useState(draft?.alleyId ?? "");
+  const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
+  const [oil, setOil] = useState(draft?.oil ?? "House");
+  const [notes, setNotes] = useState(draft?.notes ?? "");
   const [selectedGame, setSelectedGame] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [entryMode, setEntryMode] = useState<"total" | "frame" | "pin">("total");
-  const [frameScore, setFrameScore] = useState<number>(0);
-  const [currentFrameData, setCurrentFrameData] = useState<FrameData[] | null>(null);
+  const [entryMode, setEntryMode] = useState<"total" | "frame" | "pin">(draft?.entryMode ?? "total");
+  const [frameScore, setFrameScore] = useState<number>(draft?.frameScore ?? 0);
+  const [currentFrameData, setCurrentFrameData] = useState<FrameData[] | null>(draft?.currentFrameData ?? null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [alleySearch, setAlleySearch] = useState("");
+  const [alleySearch, setAlleySearch] = useState(draft?.alleySearch ?? "");
   const [online, setOnline] = useState(isOnline());
   const [pendingCount, setPendingCount] = useState(getOfflineQueue().length);
+
+  // Auto-save draft whenever form state changes
+  useEffect(() => {
+    if (showForm) {
+      saveDraft({ score, alleyId, alleySearch, date, oil, notes, entryMode, frameScore, currentFrameData, showForm });
+    }
+  }, [score, alleyId, alleySearch, date, oil, notes, entryMode, frameScore, currentFrameData, showForm]);
 
   // Pre-select alley from query param
   useEffect(() => {
