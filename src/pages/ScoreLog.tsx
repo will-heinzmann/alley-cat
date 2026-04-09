@@ -503,22 +503,52 @@ const ScoreLog = () => {
 
           <div className="relative">
             <label className="text-xs text-muted-foreground block mb-1">Alley:</label>
-            <input type="text" placeholder="Type to search alleys..." value={alleySearch}
-              onChange={(e) => { setAlleySearch(e.target.value); setAlleyId(""); }}
-              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" />
-            {alleyId && <p className="text-xs text-primary mt-1">✓ {alleys.find((a) => a.id === alleyId)?.name}</p>}
-            {alleySearch && !alleyId && (
-              <div className="absolute z-10 w-full border border-border bg-card max-h-40 overflow-y-auto mt-0.5">
-                {alleys.filter((a) => `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase())).slice(0, 50).map((a) => (
-                  <button key={a.id} type="button" onClick={() => { setAlleyId(a.id); setAlleySearch(a.name); }}
-                    className="w-full text-left px-2 py-1 text-xs text-foreground hover:bg-muted border-b border-border last:border-0">
-                    {a.name} — {a.city}, {a.state}
-                  </button>
-                ))}
-                {alleys.filter((a) => `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase())).length === 0 && (
-                  <p className="px-2 py-1 text-xs text-muted-foreground">No alleys found</p>
-                )}
+            {useCustomAlley ? (
+              <div>
+                <input type="text" placeholder="Enter location name (optional)..." value={customAlleyName}
+                  onChange={(e) => setCustomAlleyName(e.target.value)}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" />
+                <p className="text-xs text-primary mt-1">✓ Private / Unlisted Alley</p>
+                <button type="button" onClick={() => { setUseCustomAlley(false); setCustomAlleyName(""); }}
+                  className="text-xs text-muted-foreground underline mt-1">Search database instead</button>
               </div>
+            ) : (
+              <>
+                <input type="text" placeholder="Type to search alleys..." value={alleySearch}
+                  onChange={(e) => { setAlleySearch(e.target.value); setAlleyId(""); }}
+                  className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none" />
+                {alleyId && <p className="text-xs text-primary mt-1">✓ {alleys.find((a) => a.id === alleyId)?.name}</p>}
+                {alleySearch && !alleyId && (
+                  <div className="absolute z-10 w-full border border-border bg-card max-h-40 overflow-y-auto mt-0.5">
+                    {alleys
+                      .filter((a) => {
+                        const nameL = a.name.toLowerCase();
+                        if (nameL.includes("pro shop") || nameL.includes("bowling supply") || nameL.includes("pro-shop")) return false;
+                        return `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase());
+                      })
+                      .slice(0, 50)
+                      .map((a) => (
+                        <button key={a.id} type="button" onClick={() => { setAlleyId(a.id); setAlleySearch(a.name); }}
+                          className="w-full text-left px-2 py-1 text-xs text-foreground hover:bg-muted border-b border-border last:border-0">
+                          {a.name} — {a.city}, {a.state}
+                        </button>
+                      ))}
+                    {alleys.filter((a) => {
+                      const nameL = a.name.toLowerCase();
+                      if (nameL.includes("pro shop") || nameL.includes("bowling supply") || nameL.includes("pro-shop")) return false;
+                      return `${a.name} ${a.city} ${a.state}`.toLowerCase().includes(alleySearch.toLowerCase());
+                    }).length === 0 && (
+                      <p className="px-2 py-1 text-xs text-muted-foreground">No alleys found</p>
+                    )}
+                    <button type="button" onClick={() => { setUseCustomAlley(true); setAlleyId(""); setAlleySearch(""); }}
+                      className="w-full text-left px-2 py-1 text-xs text-primary hover:bg-muted border-t border-primary font-bold">
+                      🏠 Alley Not Listed / Private Lane
+                    </button>
+                  </div>
+                )}
+                <button type="button" onClick={() => { setUseCustomAlley(true); setAlleyId(""); setAlleySearch(""); }}
+                  className="text-xs text-muted-foreground underline mt-1">Alley not listed?</button>
+              </>
             )}
           </div>
 
