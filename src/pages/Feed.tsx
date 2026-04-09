@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import FeedLeaderboard from "@/components/FeedLeaderboard";
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface FeedGame {
   id: string;
@@ -27,6 +28,7 @@ const Feed = () => {
   const { user } = useAuth();
   const [games, setGames] = useState<FeedGame[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   const fetchFeed = async () => {
     if (!user) {
@@ -163,7 +165,12 @@ const Feed = () => {
                       <span className="text-muted-foreground">{game.date}</span>
                     </div>
                     {game.image_url && (
-                      <img src={game.image_url} alt="Game photo" className="mt-2 max-h-48 border border-border w-full object-cover" />
+                      <img
+                        src={game.image_url}
+                        alt="Game photo"
+                        className="mt-2 max-h-48 border border-border w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setLightbox({ images: [game.image_url!], index: 0 })}
+                      />
                     )}
                     {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
                     <div className="border-t border-border mt-2 pt-2">
@@ -235,6 +242,15 @@ const Feed = () => {
         <p className="text-xs text-muted-foreground">⚡ Alley Cat © {new Date().getFullYear()}</p>
       </div>
     </div>
+
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          currentIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+          onNavigate={(i) => setLightbox((prev) => prev ? { ...prev, index: i } : null)}
+        />
+      )}
     </>
   );
 };
