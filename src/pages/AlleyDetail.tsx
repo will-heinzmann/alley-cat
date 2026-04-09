@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
 import AlleyLeaderboard from "@/components/AlleyLeaderboard";
 import AlleySeoSection from "@/components/AlleySeoSection";
+import AlleyMap from "@/components/AlleyMap";
 import { generateAlleyDescription } from "@/lib/alleyDescription";
 
 const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
@@ -407,6 +408,10 @@ const AlleyDetail = () => {
             <p className="text-xs text-muted-foreground">Oil: {review.oil_rating}/5 · Beer: {review.beer_rating}/5</p>
           </div>
         ))}
+
+        {alley.lat !== 0 && alley.lng !== 0 && (
+          <AlleyMap name={alley.name} lat={alley.lat} lng={alley.lng} />
+        )}
       </div>
 
       <noscript>

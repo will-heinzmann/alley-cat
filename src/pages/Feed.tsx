@@ -17,7 +17,7 @@ interface FeedGame {
   created_at: string;
   user_id: string;
   profiles: { username: string; full_name: string | null; avatar_url: string | null } | null;
-  alleys: { name: string; city: string; state: string } | null;
+  alleys: { name: string; slug: string; city: string; state: string } | null;
   likes_count: number;
   is_liked: boolean;
   is_own: boolean;
@@ -43,7 +43,7 @@ const Feed = () => {
     const { data } = await supabase
       .from("games")
       .select(`id, score, date, oil_condition, notes, image_url, created_at, user_id,
-        alleys!games_alley_id_fkey(name, city, state)`)
+        alleys!games_alley_id_fkey(name, slug, city, state)`)
       .in("user_id", userAndFollowing)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -157,7 +157,7 @@ const Feed = () => {
                     </p>
                     {game.alleys && (
                       <p className="text-xs text-muted-foreground">
-                        📍 {game.alleys.name} — {game.alleys.city}, {game.alleys.state}
+                        📍 <Link to={`/alley/${game.alleys.slug}`} className="text-primary hover:underline">{game.alleys.name}</Link> — {game.alleys.city}, {game.alleys.state}
                       </p>
                     )}
                     <div className="flex items-center gap-3 mt-2 text-xs">
