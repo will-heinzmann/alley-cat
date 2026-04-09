@@ -422,19 +422,50 @@ const ScoreLog = () => {
   const sessionTypeLabel = (t: SessionType) =>
     t === "practice" ? "🎳 Practice" : t === "league" ? "🏆 League" : "⭐ Tournament";
 
-  // Group history games by session_id
-  const groupedSessions = games.reduce<Record<string, any[]>>((acc, g) => {
-    const sid = g.session_id || g.id; // ungrouped games use their own id
-    if (!acc[sid]) acc[sid] = [];
-    acc[sid].push(g);
-    return acc;
-  }, {});
-  const sessionList = Object.entries(groupedSessions).map(([sid, sessionGames]) => {
-    const sorted = [...sessionGames].sort((a, b) => (a.game_number || 1) - (b.game_number || 1));
-    const total = sorted.reduce((s, g) => s + g.score, 0);
-    const avg = Math.round(total / sorted.length);
-    return { sid, games: sorted, total, avg, date: sorted[0]?.date, type: sorted[0]?.session_type || "practice", alley: Array.isArray(sorted[0]?.alleys) ? sorted[0]?.alleys[0] : sorted[0]?.alleys };
-  });
+  // Group history games by alley → then by date
+  const alleyGroups = (() => {
+    // First group by session_id so multi-game sessions stay together
+    const bySession = games.reduce<Record<string, any[]>>((acc, g) => {
+      const sid = g.session_id || g.id;
+      if (!acc[sid]) acc[sid] = [];
+      acc[sid].push(g);
+      return acc;
+    }, {});
+
+    const sessions = Object.entries(bySession).map(([sid, sessionGames]) => {
+      const sorted = [...sessionGames].sort((a, b) => (a.game_number || 1) - (b.game_number || 1));
+      const alley = Array.isArray(sorted[0]?.alleys) ? sorted[0]?.alleys[0] : sorted[0]?.alleys;
+      const alleyKey = alley?.name || (sorted[0]?.notes?.match(/^\[(.+?)\]/)?.[1]) || "Other";
+      return {
+        sid, games: sorted,
+        total: sorted.reduce((s, g) => s + g.score, 0),
+        avg: Math.round(sorted.reduce((s, g) => s + g.score, 0) / sorted.length),
+        date: sorted[0]?.date,
+        type: sorted[0]?.session_type || "practice",
+        alley,
+        alleyKey,
+      };
+    });
+
+    // Group sessions by alley name
+    const byAlley: Record<string, { alley: any; alleyKey: string; dates: Record<string, typeof sessions> }> = {};
+    for (const s of sessions) {
+      if (!byAlley[s.alleyKey]) byAlley[s.alleyKey] = { alley: s.alley, alleyKey: s.alleyKey, dates: {} };
+      if (!byAlley[s.alleyKey].dates[s.date]) byAlley[s.alleyKey].dates[s.date] = [];
+      byAlley[s.alleyKey].dates[s.date].push(s);
+    }
+
+    // Convert to sorted array: alleys sorted by most recent date, dates newest first
+    return Object.values(byAlley)
+      .map(group => {
+        const dateEntries = Object.entries(group.dates)
+          .sort(([a], [b]) => b.localeCompare(a)) // newest date first
+          .map(([date, dateSessions]) => ({ date, sessions: dateSessions }));
+        const latestDate = dateEntries[0]?.date || "";
+        return { ...group, dateEntries, latestDate };
+      })
+      .sort((a, b) => b.latestDate.localeCompare(a.latestDate));
+  })();
 
   return (
     <>
