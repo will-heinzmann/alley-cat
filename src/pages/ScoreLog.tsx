@@ -250,6 +250,8 @@ const ScoreLog = () => {
   // Per-game state
   const [score, setScore] = useState(draft?.score ?? "");
   const [alleyId, setAlleyId] = useState(draft?.alleyId ?? "");
+  const [useCustomAlley, setUseCustomAlley] = useState(false);
+  const [customAlleyName, setCustomAlleyName] = useState("");
   const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
   const [oil, setOil] = useState(draft?.oil ?? "House");
   const [notes, setNotes] = useState(draft?.notes ?? "");
