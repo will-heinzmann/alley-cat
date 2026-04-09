@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import FeedLeaderboard from "@/components/FeedLeaderboard";
+import ImageLightbox from "@/components/ImageLightbox";
 
 interface FeedGame {
   id: string;
