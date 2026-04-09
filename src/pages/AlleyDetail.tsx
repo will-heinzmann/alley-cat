@@ -407,6 +407,32 @@ const AlleyDetail = () => {
       </div>
 
       <AlleySeoSection alley={alley} relatedAlleys={relatedAlleys} />
+
+      <noscript>
+        <div>
+          <h2>{alley.name}</h2>
+          <p>{alley.city}, {alley.state}</p>
+          <p>
+            {alley.name} is a prominent bowling destination located in {alley.city}, {alley.state}.
+            As one of the key spots for bowling in the {alley.city} area, it offers a welcoming
+            environment for both casual bowlers and dedicated league players looking to sharpen their skills.
+            Equipped with approximately {alley.lane_count > 0 ? alley.lane_count : "multiple"} lanes,
+            {alley.name} provides the necessary infrastructure for a great session on the hardwood.
+            With a community rating of {alley.alley_rating > 0 ? `${alley.alley_rating} stars` : "N/A"},
+            it remains a highly-regarded venue for locals searching for bowling near {alley.city}.
+            If you're visiting {alley.name} soon, make sure to use Alley Cat to track your scores.
+          </p>
+          <p>Address: {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}</p>
+          {alley.phone && <p>Phone: {alley.phone}</p>}
+          {relatedAlleys.length > 0 && (
+            <ul>
+              {relatedAlleys.map((a) => (
+                <li key={a.slug}>{a.name} — {a.city}, {alley.state}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </noscript>
     </div>
   );
 };
