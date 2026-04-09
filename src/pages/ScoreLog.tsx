@@ -363,9 +363,10 @@ const ScoreLog = () => {
 
     const gameData: any = {
       user_id: user.id,
-      alley_id: alleyId,
+      alley_id: useCustomAlley ? null : alleyId,
       score: parseInt(score),
       date,
+      notes: useCustomAlley && customAlleyName ? (notes ? `[${customAlleyName}] ${notes}` : `[${customAlleyName}]`) : (notes || null),
       oil_condition: oil,
       notes: notes || null,
       image_url: imageUrl,
