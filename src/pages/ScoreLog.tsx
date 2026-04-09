@@ -368,7 +368,6 @@ const ScoreLog = () => {
       date,
       notes: useCustomAlley && customAlleyName ? (notes ? `[${customAlleyName}] ${notes}` : `[${customAlleyName}]`) : (notes || null),
       oil_condition: oil,
-      notes: notes || null,
       image_url: imageUrl,
       frame_data: currentFrameData ? JSON.parse(JSON.stringify(currentFrameData)) : null,
       session_id: sessionId,
