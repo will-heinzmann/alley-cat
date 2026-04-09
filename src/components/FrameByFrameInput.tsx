@@ -381,11 +381,31 @@ const FrameByFrameInput = ({ onScoreChange }: FrameByFrameInputProps) => {
           </tr>
         </tbody>
       </table>
+      {/* Quick action buttons */}
+      <div className="flex gap-2 flex-wrap mt-2">
+        <button type="button" onClick={quickStrike}
+          className="border border-primary bg-primary/20 text-primary px-3 py-2 text-sm font-bold hover:bg-primary/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+        >🎳 X</button>
+        {activeRoll > 0 && (
+          <button type="button" onClick={quickSpare}
+            className="border border-secondary bg-secondary/20 text-secondary px-3 py-2 text-sm font-bold hover:bg-secondary/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+          >/ Spare</button>
+        )}
+        <button type="button" onClick={quickMiss}
+          className="border border-border bg-muted text-muted-foreground px-3 py-2 text-sm font-bold hover:bg-muted/80 active:scale-95 transition-transform flex-1 min-w-[60px]"
+        >— Miss</button>
+        <button type="button" onClick={quickMiss}
+          className="border border-destructive bg-destructive/20 text-destructive px-3 py-2 text-sm font-bold hover:bg-destructive/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+        >F Foul</button>
+      </div>
+      <div className="text-[10px] text-muted-foreground text-center mt-1">
+        Frame {activeFrame + 1} — Roll {activeRoll + 1}
+      </div>
       <div className="mt-1 flex gap-2 text-[10px] text-muted-foreground">
         <span>X = Strike</span>
         <span>/ = Spare</span>
         <span>- = Gutter</span>
-        <span>Tap each box to enter pins</span>
+        <span>Tap buttons or boxes to enter pins</span>
       </div>
     </div>
   );
