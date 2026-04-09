@@ -341,7 +341,7 @@ const ScoreLog = () => {
 
   const saveCurrentGame = async () => {
     if (!user) return;
-    if (!alleyId) { toast({ title: "Please select an alley" }); return; }
+    if (!alleyId && !useCustomAlley) { toast({ title: "Please select an alley" }); return; }
     if (!score || parseInt(score) < 0) { toast({ title: "Please enter a score" }); return; }
     setSaving(true);
 
