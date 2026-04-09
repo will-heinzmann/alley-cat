@@ -792,10 +792,11 @@ const ScoreLog = () => {
                                         <p className="text-[10px] text-muted-foreground mb-1">Game {game.game_number || gi + 1}</p>
                                       )}
                                       <ScoreDisplay
-                                        playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : (type === "league" ? "🏆 LEAGUE" : type === "tournament" ? "⭐ TOURNAMENT" : "🎳 GAME")}
+                                        playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : ""}
                                         score={game.score}
                                         gameId={game.id}
                                         frameData={game.frame_data as FrameData[] | null}
+                                        hideHeader
                                       />
                                       {game.notes && <p className="text-[10px] text-muted-foreground italic mt-1">"{game.notes}"</p>}
                                     </div>
