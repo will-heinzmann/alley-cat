@@ -440,6 +440,103 @@ const PinModeInput = ({ onScoreChange }: PinModeInputProps) => {
             </button>
           </div>
 
+          {/* Quick action buttons */}
+          <div className="flex gap-2 mb-2 flex-wrap">
+            <button type="button" onClick={() => {
+              setHit(standing.map(Boolean));
+              setTimeout(() => {
+                const allHit = standing.map(Boolean);
+                const pinsDown = allHit.filter(Boolean).length;
+                const newFrames = frames.map(f => ({ ...f }));
+                if (currentFrame < 9) {
+                  if (currentRoll === 0) {
+                    newFrames[currentFrame].roll1 = pinsDown;
+                    if (pinsDown === 10) {
+                      newFrames[currentFrame].roll2 = null;
+                      setFrames(newFrames);
+                      onScoreChange(calculateScore(newFrames), newFrames);
+                      if (editingFrame !== null) {
+                        setEditingFrame(null);
+                        const next = newFrames.findIndex((f, i) => f.roll1 === null);
+                        if (next === -1) setGameComplete(true);
+                        else { setCurrentFrame(next); setCurrentRoll(0); }
+                      } else {
+                        setCurrentFrame(currentFrame + 1);
+                        setCurrentRoll(0);
+                      }
+                      setStanding(allStanding());
+                      setHit(noHits());
+                      setSpareAttempt(false);
+                      return;
+                    }
+                  } else {
+                    newFrames[currentFrame].roll2 = pinsDown;
+                    setFrames(newFrames);
+                    onScoreChange(calculateScore(newFrames), newFrames);
+                    if (editingFrame !== null) {
+                      setEditingFrame(null);
+                      const next = newFrames.findIndex((f, i) => f.roll1 === null);
+                      if (next === -1) setGameComplete(true);
+                      else { setCurrentFrame(next); setCurrentRoll(0); }
+                    } else {
+                      setCurrentFrame(currentFrame + 1);
+                      setCurrentRoll(0);
+                    }
+                    setStanding(allStanding());
+                    setHit(noHits());
+                    setSpareAttempt(false);
+                    return;
+                  }
+                }
+                // For non-instant cases, just set pins and let user confirm
+              }, 0);
+              // For 10th frame or partial, just mark all pins hit
+            }}
+              className="border border-primary bg-primary/20 text-primary px-3 py-2 text-sm font-bold hover:bg-primary/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+              title="Strike — all pins down"
+            >
+              🎳 X
+            </button>
+            {currentRoll > 0 && (
+              <button type="button" onClick={() => {
+                setHit(standing.map(Boolean));
+              }}
+                className="border border-secondary bg-secondary/20 text-secondary px-3 py-2 text-sm font-bold hover:bg-secondary/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+                title="Spare — knock remaining pins"
+              >
+                / Spare
+              </button>
+            )}
+            <button type="button" onClick={() => {
+              setHit(noHits());
+              setTimeout(confirmRoll, 0);
+            }}
+              className="border border-border bg-muted text-muted-foreground px-3 py-2 text-sm font-bold hover:bg-muted/80 active:scale-95 transition-transform flex-1 min-w-[60px]"
+              title="Miss — gutter ball"
+            >
+              — Miss
+            </button>
+            <button type="button" onClick={() => {
+              setHit(noHits());
+              setTimeout(confirmRoll, 0);
+            }}
+              className="border border-destructive bg-destructive/20 text-destructive px-3 py-2 text-sm font-bold hover:bg-destructive/30 active:scale-95 transition-transform flex-1 min-w-[60px]"
+              title="Foul — counts as 0"
+            >
+              F Foul
+            </button>
+            <button type="button" onClick={() => {
+              setStanding(allStanding());
+              setHit(noHits());
+              setSpareAttempt(false);
+            }}
+              className="border border-border bg-card text-foreground px-3 py-2 text-sm hover:bg-muted active:scale-95 transition-transform flex-1 min-w-[60px]"
+              title="Reset all pins to standing"
+            >
+              ↺ Reset
+            </button>
+          </div>
+
           {/* Spare suggestion tip */}
           {spareTip && (
             <div className="bg-secondary/10 border border-secondary/30 px-2 py-1 mb-2 text-[10px] text-secondary text-center">
