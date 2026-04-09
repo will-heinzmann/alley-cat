@@ -183,7 +183,7 @@ const AlleyDetail = () => {
     );
   }
 
-  const canonicalUrl = `https://alley-cat.lovable.app/alley/${alley.slug}`;
+  const canonicalUrl = `https://alleycat-bowling.com/alley/${alley.slug}`;
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${alley.name} ${alley.address} ${alley.city} ${alley.state}`)}`;
   const editLabel = isAdmin ? "[Edit]" : "[Suggest Edit]";
 

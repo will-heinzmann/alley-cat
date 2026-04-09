@@ -23,7 +23,7 @@ const Leaderboard = () => {
     <Helmet>
       <title>Bowling Leaderboard — Top Bowlers Ranked | Alley Cat</title>
       <meta name="description" content="See the top-ranked bowlers on Alley Cat. Compare scores, averages, and total points on the global bowling leaderboard." />
-      <link rel="canonical" href="https://alley-cat.lovable.app/leaderboard" />
+      <link rel="canonical" href="https://alleycat-bowling.com/leaderboard" />
     </Helmet>
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4">

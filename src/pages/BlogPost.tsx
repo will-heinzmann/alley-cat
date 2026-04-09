@@ -22,9 +22,9 @@ const BlogPost = () => {
     publisher: {
       "@type": "Organization",
       name: "Alley Cat",
-      url: "https://alley-cat.lovable.app",
+      url: "https://alleycat-bowling.com",
     },
-    mainEntityOfPage: `https://alley-cat.lovable.app/blog/${post.slug}`,
+    mainEntityOfPage: `https://alleycat-bowling.com/blog/${post.slug}`,
   };
 
   return (
@@ -33,11 +33,11 @@ const BlogPost = () => {
         <title>{post.title}</title>
         <meta name="description" content={post.metaDescription} />
         <meta name="keywords" content={post.keyword} />
-        <link rel="canonical" href={`https://alley-cat.lovable.app/blog/${post.slug}`} />
+        <link rel="canonical" href={`https://alleycat-bowling.com/blog/${post.slug}`} />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.metaDescription} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://alley-cat.lovable.app/blog/${post.slug}`} />
+        <meta property="og:url" content={`https://alleycat-bowling.com/blog/${post.slug}`} />
         <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       </Helmet>
 

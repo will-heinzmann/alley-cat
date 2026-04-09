@@ -480,7 +480,7 @@ const GroupPlay = () => {
 
   const handleShareResults = async () => {
     const lines = players.map(p => `${p.name}: ${calculateScore(p.frames)}`).join("\n");
-    const text = `🎳 Alley Cat Group Play!\n\n${lines}\n\nTrack your games at alley-cat.lovable.app`;
+    const text = `🎳 Alley Cat Group Play!\n\n${lines}\n\nTrack your games at alleycat-bowling.com`;
     if (navigator.share) {
       try {
         await navigator.share({ title: "Alley Cat Group Play", text });
@@ -497,7 +497,7 @@ const GroupPlay = () => {
         <Helmet>
           <title>Group Play — Bowl With Friends | Alley Cat</title>
           <meta name="description" content="Start a group bowling session with friends. Track scores for multiple players frame-by-frame with Alley Cat's Group Play mode." />
-          <link rel="canonical" href="https://alley-cat.lovable.app/league" />
+          <link rel="canonical" href="https://alleycat-bowling.com/league" />
         </Helmet>
         <header className="border-b border-border pb-4 mb-4">
           <Link to="/" className="text-primary text-xs">← Back</Link>
