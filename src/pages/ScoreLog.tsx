@@ -568,7 +568,7 @@ const ScoreLog = () => {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={startSession} disabled={!alleyId}
+            <button onClick={startSession} disabled={!alleyId && !useCustomAlley}
               className="flex-1 border border-border bg-primary text-primary-foreground py-2 text-sm hover:opacity-80 disabled:opacity-50">
               Start {sessionTypeLabel(sessionType)} ({totalGames} game{totalGames > 1 ? "s" : ""})
             </button>
