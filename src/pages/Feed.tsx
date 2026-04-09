@@ -101,7 +101,7 @@ const Feed = () => {
       <Helmet>
         <title>Alley Cat — Track Bowling Scores, Find Alleys & Compete</title>
         <meta name="description" content="Alley Cat is the ultimate bowling companion. Track your scores frame-by-frame, discover 1,600+ bowling alleys, compare stats with friends, and climb the leaderboard." />
-        <link rel="canonical" href="https://alley-cat.lovable.app/" />
+        <link rel="canonical" href="https://alleycat-bowling.com/" />
       </Helmet>
     <div className="min-h-screen pb-20">
       {/* Dashboard grid: single column mobile, two columns on lg+ */}

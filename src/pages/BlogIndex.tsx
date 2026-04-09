@@ -7,7 +7,7 @@ const BlogIndex = () => (
     <Helmet>
       <title>Bowling Tips & Guides — Alley Cat Blog</title>
       <meta name="description" content="Bowling tips, guides, and resources from Alley Cat. Learn about handicaps, score tracking, finding alleys near you, and more." />
-      <link rel="canonical" href="https://alley-cat.lovable.app/blog" />
+      <link rel="canonical" href="https://alleycat-bowling.com/blog" />
     </Helmet>
 
     <div className="min-h-screen pb-20">

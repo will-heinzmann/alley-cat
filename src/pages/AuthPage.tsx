@@ -89,7 +89,7 @@ const AuthPage = () => {
     <Helmet>
       <title>{isLogin ? "Sign In" : "Create Account"} — Alley Cat Bowling Tracker</title>
       <meta name="description" content="Sign in or create a free Alley Cat account to track your bowling scores, find alleys, and compete on the leaderboard." />
-      <link rel="canonical" href="https://alley-cat.lovable.app/auth" />
+      <link rel="canonical" href="https://alleycat-bowling.com/auth" />
     </Helmet>
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-sm">

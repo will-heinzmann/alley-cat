@@ -58,7 +58,7 @@ const SeriesSummary = ({ games }: SeriesSummaryProps) => {
       `🏆 High: ${stats.high} | Avg: ${stats.avg}\n` +
       `🔥 200+ Rate: ${stats.cleanPct}%\n` +
       `📌 Total Pins: ${stats.total.toLocaleString()}\n\n` +
-      `Track your bowling at alley-cat.lovable.app`;
+      `Track your bowling at alleycat-bowling.com`;
 
     if (navigator.share) {
       try {
