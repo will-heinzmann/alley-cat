@@ -422,19 +422,50 @@ const ScoreLog = () => {
   const sessionTypeLabel = (t: SessionType) =>
     t === "practice" ? "🎳 Practice" : t === "league" ? "🏆 League" : "⭐ Tournament";
 
-  // Group history games by session_id
-  const groupedSessions = games.reduce<Record<string, any[]>>((acc, g) => {
-    const sid = g.session_id || g.id; // ungrouped games use their own id
-    if (!acc[sid]) acc[sid] = [];
-    acc[sid].push(g);
-    return acc;
-  }, {});
-  const sessionList = Object.entries(groupedSessions).map(([sid, sessionGames]) => {
-    const sorted = [...sessionGames].sort((a, b) => (a.game_number || 1) - (b.game_number || 1));
-    const total = sorted.reduce((s, g) => s + g.score, 0);
-    const avg = Math.round(total / sorted.length);
-    return { sid, games: sorted, total, avg, date: sorted[0]?.date, type: sorted[0]?.session_type || "practice", alley: Array.isArray(sorted[0]?.alleys) ? sorted[0]?.alleys[0] : sorted[0]?.alleys };
-  });
+  // Group history games by alley → then by date
+  const alleyGroups = (() => {
+    // First group by session_id so multi-game sessions stay together
+    const bySession = games.reduce<Record<string, any[]>>((acc, g) => {
+      const sid = g.session_id || g.id;
+      if (!acc[sid]) acc[sid] = [];
+      acc[sid].push(g);
+      return acc;
+    }, {});
+
+    const sessions = Object.entries(bySession).map(([sid, sessionGames]) => {
+      const sorted = [...sessionGames].sort((a, b) => (a.game_number || 1) - (b.game_number || 1));
+      const alley = Array.isArray(sorted[0]?.alleys) ? sorted[0]?.alleys[0] : sorted[0]?.alleys;
+      const alleyKey = alley?.name || (sorted[0]?.notes?.match(/^\[(.+?)\]/)?.[1]) || "Other";
+      return {
+        sid, games: sorted,
+        total: sorted.reduce((s, g) => s + g.score, 0),
+        avg: Math.round(sorted.reduce((s, g) => s + g.score, 0) / sorted.length),
+        date: sorted[0]?.date,
+        type: sorted[0]?.session_type || "practice",
+        alley,
+        alleyKey,
+      };
+    });
+
+    // Group sessions by alley name
+    const byAlley: Record<string, { alley: any; alleyKey: string; dates: Record<string, typeof sessions> }> = {};
+    for (const s of sessions) {
+      if (!byAlley[s.alleyKey]) byAlley[s.alleyKey] = { alley: s.alley, alleyKey: s.alleyKey, dates: {} };
+      if (!byAlley[s.alleyKey].dates[s.date]) byAlley[s.alleyKey].dates[s.date] = [];
+      byAlley[s.alleyKey].dates[s.date].push(s);
+    }
+
+    // Convert to sorted array: alleys sorted by most recent date, dates newest first
+    return Object.values(byAlley)
+      .map(group => {
+        const dateEntries = Object.entries(group.dates)
+          .sort(([a], [b]) => b.localeCompare(a)) // newest date first
+          .map(([date, dateSessions]) => ({ date, sessions: dateSessions }));
+        const latestDate = dateEntries[0]?.date || "";
+        return { ...group, dateEntries, latestDate };
+      })
+      .sort((a, b) => b.latestDate.localeCompare(a.latestDate));
+  })();
 
   return (
     <>
@@ -716,37 +747,64 @@ const ScoreLog = () => {
         ) : games.length > 0 && (
           <>
             <h2 className="text-sm text-muted-foreground mb-2">Session History:</h2>
-            <div className="space-y-3">
-              {sessionList.map(({ sid, games: sGames, total, avg, date: sDate, type, alley }) => (
-                <div key={sid} className="border border-border bg-card">
-                  <div className="bg-muted px-2 py-1.5 border-b border-border flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-primary font-bold">
-                        {type === "league" ? "🏆" : type === "tournament" ? "⭐" : "🎳"} {alley?.name?.toUpperCase() || "UNKNOWN"}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground">{sDate}</span>
-                    </div>
-                    {sGames.length > 1 && (
-                      <span className="text-xs text-secondary font-bold">
-                        {total} pins · {avg} avg
-                      </span>
-                    )}
+            <div className="space-y-6">
+              {alleyGroups.map(({ alleyKey, alley, dateEntries }) => (
+                <div key={alleyKey}>
+                  {/* Alley header */}
+                  <div className="bg-muted border border-border px-3 py-2 mb-1">
+                    <h3 className="text-sm text-primary font-bold">📍 {alleyKey.toUpperCase()}</h3>
+                    {alley?.city && <p className="text-[10px] text-muted-foreground">{alley.city}, {alley.state}</p>}
                   </div>
-                  <div className="p-2 space-y-2">
-                    {sGames.map((game, gi) => (
-                      <div key={game.id}>
-                        {sGames.length > 1 && (
-                          <p className="text-[10px] text-muted-foreground mb-1">Game {game.game_number || gi + 1}</p>
-                        )}
-                        <ScoreDisplay
-                          playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : (alley?.name?.toUpperCase() || "GAME")}
-                          score={game.score}
-                          gameId={game.id}
-                          frameData={game.frame_data as FrameData[] | null}
-                        />
-                        {game.notes && <p className="text-[10px] text-muted-foreground italic mt-1">"{game.notes}"</p>}
-                      </div>
-                    ))}
+
+                  <div className="space-y-3 ml-2 border-l-2 border-border pl-3">
+                    {dateEntries.map(({ date: sessionDate, sessions: dateSessions }) => {
+                      const formatted = new Date(sessionDate + "T12:00:00").toLocaleDateString("en-US", {
+                        month: "long", day: "numeric", year: "numeric",
+                      });
+                      return (
+                        <div key={sessionDate}>
+                          {/* Date sub-header */}
+                          <p className="text-xs text-secondary font-bold mb-1.5">📅 {formatted}</p>
+
+                          <div className="space-y-2">
+                            {dateSessions.map(({ sid, games: sGames, total, avg, type }) => (
+                              <div key={sid} className="border border-border bg-card">
+                                {/* Session header (only if multi-game or has type) */}
+                                {(sGames.length > 1 || type !== "practice") && (
+                                  <div className="bg-muted/50 px-2 py-1 border-b border-border flex items-center justify-between">
+                                    <span className="text-[10px] text-muted-foreground">
+                                      {type === "league" ? "🏆 League" : type === "tournament" ? "⭐ Tournament" : "🎳 Practice"}
+                                      {sGames.length > 1 && ` · ${sGames.length} games`}
+                                    </span>
+                                    {sGames.length > 1 && (
+                                      <span className="text-xs text-secondary font-bold">
+                                        {total} pins · {avg} avg
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                                <div className="p-2 space-y-2">
+                                  {sGames.map((game, gi) => (
+                                    <div key={game.id}>
+                                      {sGames.length > 1 && (
+                                        <p className="text-[10px] text-muted-foreground mb-1">Game {game.game_number || gi + 1}</p>
+                                      )}
+                                      <ScoreDisplay
+                                        playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : (type === "league" ? "🏆 LEAGUE" : type === "tournament" ? "⭐ TOURNAMENT" : "🎳 GAME")}
+                                        score={game.score}
+                                        gameId={game.id}
+                                        frameData={game.frame_data as FrameData[] | null}
+                                      />
+                                      {game.notes && <p className="text-[10px] text-muted-foreground italic mt-1">"{game.notes}"</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
