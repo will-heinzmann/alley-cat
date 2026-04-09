@@ -56,6 +56,8 @@ const initFrames = (): FrameData[] =>
 
 const FrameByFrameInput = ({ onScoreChange }: FrameByFrameInputProps) => {
   const [frames, setFrames] = useState<FrameData[]>(initFrames);
+  const [activeFrame, setActiveFrame] = useState(0);
+  const [activeRoll, setActiveRoll] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const getMaxPins = (frameIdx: number, rollIdx: number, currentFrames: FrameData[]): number => {
