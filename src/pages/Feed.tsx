@@ -242,6 +242,15 @@ const Feed = () => {
         <p className="text-xs text-muted-foreground">⚡ Alley Cat © {new Date().getFullYear()}</p>
       </div>
     </div>
+
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          currentIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+          onNavigate={(i) => setLightbox((prev) => prev ? { ...prev, index: i } : null)}
+        />
+      )}
     </>
   );
 };
