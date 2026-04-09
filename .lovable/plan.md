@@ -1,48 +1,31 @@
 
 
-## Problem
+## Update Canonical URLs to Custom Domain
 
-The screenshot confirms it: **View Page Source** on `alleycat-bowling.com/alley/1-7-10-sports-center-augusta` shows the generic SPA shell — just `<div id="root"></div>` with home page meta tags. No alley name, no address, no description.
+### What's changing
+Replace all occurrences of `https://alley-cat.lovable.app` with `https://alleycat-bowling.com` across the entire project. One page (`Leagues.tsx`) already uses the correct domain.
 
-**Root cause**: Lovable's hosting has a built-in SPA fallback. It serves the root `index.html` for every route, ignoring the static HTML files the Vite prerender plugin generates in `dist/alley/<slug>/index.html`. The prerendered files exist in the build output but never reach the browser or bots.
+### Files to update
 
-This cannot be fixed at the hosting layer — Lovable hosting always serves the SPA shell for deep links. The Vite prerender plugin approach is a dead end.
+**Client-side pages (canonical + OG URLs):**
+1. `src/pages/Feed.tsx` — canonical `/`
+2. `src/pages/Index.tsx` — canonical `/alleys`
+3. `src/pages/AlleyDetail.tsx` — canonical `/alley/{slug}`
+4. `src/pages/ScoreLog.tsx` — canonical `/log`
+5. `src/pages/Leaderboard.tsx` — canonical `/leaderboard`
+6. `src/pages/AuthPage.tsx` — canonical `/auth`
+7. `src/pages/LeagueNight.tsx` — canonical `/league`
+8. `src/pages/BlogIndex.tsx` — canonical `/blog`
+9. `src/pages/BlogPost.tsx` — canonical + OG URL + JSON-LD `url` and `mainEntityOfPage`
 
-## Solution: Route Bots Through Edge Functions
+**Edge Function:**
+10. `supabase/functions/prerender/index.ts` — the `SITE` constant at the top
 
-The `prerender` and `seo-proxy` Edge Functions already exist and work. The missing piece is connecting bots to them. Since we can't change hosting behavior, we route bots via the **sitemap** and **robots.txt**.
+**Share text (not canonical but still references the old domain):**
+11. `src/pages/LeagueNight.tsx` — share text string
+12. `src/components/SeriesSummary.tsx` — share text string
 
-### Steps
-
-1. **Update `prerender/index.ts`** — Change the `SITE` constant from `alley-cat.lovable.app` to `alleycat-bowling.com` so canonical URLs point to the custom domain.
-
-2. **Update `seo-proxy/index.ts`** — Change the `SITE` constant to `alleycat-bowling.com`. Remove the bot-detection gate — serve prerendered HTML to ALL visitors (only bots follow sitemap URLs to this endpoint anyway). This ensures Ubersuggest, Google, etc. always get full HTML.
-
-3. **Update `sitemap/index.ts`** — Point all `<loc>` URLs to the seo-proxy Edge Function (e.g., `https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/seo-proxy?path=/alley/slug`). The prerendered HTML inside contains `<link rel="canonical" href="https://alleycat-bowling.com/alley/slug">`, so Google indexes under the clean custom domain URL.
-
-4. **Update `public/robots.txt`** — Point sitemap to the dynamic Edge Function sitemap: `Sitemap: https://iwtaccnyzfxxlohskkal.supabase.co/functions/v1/sitemap`
-
-5. **Remove `vite-plugin-prerender.ts` and `scripts/prerender-static.mjs`** — These generate static files that Lovable hosting ignores. Remove the plugin from `vite.config.ts` and the script from `package.json`. Eliminates build complexity and a ~2,000-file generation step that does nothing.
-
-### How It Works
-
-```text
-Bot visits sitemap
-  → Sees: .../seo-proxy?path=/alley/slug
-  → Fetches that URL
-  → Gets full HTML with alley name, address, About section, JSON-LD
-  → Sees <link rel="canonical" href="https://alleycat-bowling.com/alley/slug">
-  → Indexes content under the clean canonical URL
-
-Human visits alleycat-bowling.com/alley/slug
-  → Gets SPA shell (unchanged)
-  → React app loads and renders normally
-```
-
-### Technical Details
-
-- The `prerender` Edge Function already handles all routes: home, alleys, blog, leaderboard, and 2,000+ individual alley pages
-- Each prerendered page includes JSON-LD structured data, meta tags, full text content, and related alleys
-- Canonical tags ensure Google attributes content to `alleycat-bowling.com` URLs
-- No hosting configuration changes needed — everything works through Edge Functions
+### How
+- Simple find-and-replace: `https://alley-cat.lovable.app` → `https://alleycat-bowling.com` in all files listed above
+- No logic changes, no new files
 
