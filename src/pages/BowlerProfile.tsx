@@ -40,7 +40,7 @@ const BowlerProfile = () => {
   const fetchData = async () => {
     const [profileRes, gamesRes, followersRes, followingRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("user_id", userId!).single(),
-      supabase.from("games").select("*, alleys!games_alley_id_fkey(name, city, state)").eq("user_id", userId!).order("date", { ascending: false }).limit(20),
+      supabase.from("games").select("*, alleys!games_alley_id_fkey(name, slug, city, state)").eq("user_id", userId!).order("date", { ascending: false }).limit(20),
       supabase.from("follows").select("id").eq("following_id", userId!),
       supabase.from("follows").select("id").eq("follower_id", userId!),
     ]);
@@ -310,7 +310,9 @@ const BowlerProfile = () => {
                   const alley = Array.isArray(game.alleys) ? game.alleys[0] : game.alleys;
                   return (
                     <tr key={game.id} className={i % 2 === 0 ? "bg-card" : "bg-muted/30"}>
-                      <td className="border border-border p-2 text-foreground">{alley?.name || "Unknown"}</td>
+                      <td className="border border-border p-2 text-foreground">
+                        {alley?.slug ? <Link to={`/alley/${alley.slug}`} className="text-primary hover:underline">{alley.name}</Link> : (alley?.name || "Unknown")}
+                      </td>
                       <td className="border border-border p-2 text-center text-muted-foreground text-xs">{game.date?.slice(5)}</td>
                       <td className="border border-border p-2 text-center text-muted-foreground text-xs">{game.oil_condition?.slice(0, 3)}</td>
                       <td className="border border-border p-2 text-right text-primary font-bold">{game.score}</td>
