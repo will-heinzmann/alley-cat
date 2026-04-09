@@ -143,13 +143,15 @@ const generateFallbackFrames = (totalScore: number): FrameScore[] => {
   return frames;
 };
 
-const ScoreDisplay = ({ playerName, score, gameId, frameData }: { playerName: string; score: number; gameId: string; frameData?: FrameData[] | null }) => {
+const ScoreDisplay = ({ playerName, score, gameId, frameData, hideHeader }: { playerName: string; score: number; gameId: string; frameData?: FrameData[] | null; hideHeader?: boolean }) => {
   const frames = frameData && frameData.length === 10 ? frameDataToDisplay(frameData) : generateFallbackFrames(score);
   return (
     <div className="border border-border bg-card overflow-x-auto">
-      <div className="bg-muted px-2 py-1 border-b border-border">
-        <span className="text-xs text-primary font-bold">{playerName}</span>
-      </div>
+      {!hideHeader && (
+        <div className="bg-muted px-2 py-1 border-b border-border">
+          <span className="text-xs text-primary font-bold">{playerName}</span>
+        </div>
+      )}
       <table className="w-full border-collapse text-xs min-w-[360px]">
         <thead>
           <tr>
@@ -790,10 +792,11 @@ const ScoreLog = () => {
                                         <p className="text-[10px] text-muted-foreground mb-1">Game {game.game_number || gi + 1}</p>
                                       )}
                                       <ScoreDisplay
-                                        playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : (type === "league" ? "🏆 LEAGUE" : type === "tournament" ? "⭐ TOURNAMENT" : "🎳 GAME")}
+                                        playerName={sGames.length > 1 ? `GAME ${game.game_number || gi + 1}` : ""}
                                         score={game.score}
                                         gameId={game.id}
                                         frameData={game.frame_data as FrameData[] | null}
+                                        hideHeader
                                       />
                                       {game.notes && <p className="text-[10px] text-muted-foreground italic mt-1">"{game.notes}"</p>}
                                     </div>
