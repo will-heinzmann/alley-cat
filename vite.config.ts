@@ -1,9 +1,12 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-import vitePrerender from "vite-plugin-prerender";
+import { createRequire } from "node:module";
 import { componentTagger } from "lovable-tagger";
 import { getPrerenderRoutes } from "./prerender/routes";
+
+const require = createRequire(import.meta.url);
+const vitePrerender = require("vite-plugin-prerender");
 
 // https://vitejs.dev/config/
 export default defineConfig(async ({ mode }) => {
