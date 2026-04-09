@@ -116,6 +116,30 @@ const FrameByFrameInput = ({ onScoreChange }: FrameByFrameInputProps) => {
     }
   }, []);
 
+  const advanceCursor = useCallback((frameIdx: number, rollIdx: number, currentFrames: FrameData[]) => {
+    const f = currentFrames[frameIdx];
+    if (frameIdx < 9) {
+      if (rollIdx === 0 && f.roll1 === 10) {
+        setActiveFrame(frameIdx + 1);
+        setActiveRoll(0);
+      } else if (rollIdx === 0) {
+        setActiveRoll(1);
+      } else {
+        if (frameIdx < 9) {
+          setActiveFrame(frameIdx + 1);
+          setActiveRoll(0);
+        }
+      }
+    } else {
+      if (rollIdx === 0) {
+        setActiveRoll(1);
+      } else if (rollIdx === 1) {
+        const needs3 = f.roll1 === 10 || (f.roll1 ?? 0) + (f.roll2 ?? 0) >= 10;
+        if (needs3) setActiveRoll(2);
+      }
+    }
+  }, []);
+
   const handleChange = (frameIdx: number, rollIdx: number, value: string) => {
     const newFrames = frames.map((f, i) => (i === frameIdx ? { ...f } : { ...f }));
     const key = rollIdx === 0 ? "roll1" : rollIdx === 1 ? "roll2" : "roll3";
@@ -136,12 +160,66 @@ const FrameByFrameInput = ({ onScoreChange }: FrameByFrameInputProps) => {
     }
 
     setFrames(newFrames);
+    setActiveFrame(frameIdx);
+    setActiveRoll(rollIdx);
     const total = calculateBowlingScore(newFrames);
     onScoreChange(total, newFrames);
 
     if (value !== "" && value !== null && value !== "1") {
-      setTimeout(() => focusNext(frameIdx, rollIdx, newFrames), 50);
+      setTimeout(() => {
+        focusNext(frameIdx, rollIdx, newFrames);
+        advanceCursor(frameIdx, rollIdx, newFrames);
+      }, 50);
     }
+  };
+
+  // Quick action: Strike
+  const quickStrike = () => {
+    const f = activeFrame;
+    const r = activeRoll;
+    const newFrames = frames.map(fr => ({ ...fr }));
+    if (f < 9 && r === 0) {
+      newFrames[f].roll1 = 10;
+      newFrames[f].roll2 = null;
+      setFrames(newFrames);
+      onScoreChange(calculateBowlingScore(newFrames), newFrames);
+      setActiveFrame(f + 1);
+      setActiveRoll(0);
+      setTimeout(() => inputRefs.current[getRefIndex(f + 1, 0)]?.focus(), 50);
+    } else if (f === 9) {
+      const key = r === 0 ? "roll1" : r === 1 ? "roll2" : "roll3";
+      (newFrames[9] as any)[key] = 10;
+      setFrames(newFrames);
+      onScoreChange(calculateBowlingScore(newFrames), newFrames);
+      if (r < 2) {
+        setActiveRoll(r + 1);
+      }
+    }
+  };
+
+  // Quick action: Spare (fill remaining pins)
+  const quickSpare = () => {
+    const f = activeFrame;
+    const r = activeRoll;
+    if (r === 0) return; // can't spare on first roll
+    const newFrames = frames.map(fr => ({ ...fr }));
+    const remaining = getMaxPins(f, r, newFrames);
+    const key = r === 1 ? "roll2" : "roll3";
+    (newFrames[f] as any)[key] = remaining;
+    setFrames(newFrames);
+    onScoreChange(calculateBowlingScore(newFrames), newFrames);
+    if (f < 9) {
+      setActiveFrame(f + 1);
+      setActiveRoll(0);
+      setTimeout(() => inputRefs.current[getRefIndex(f + 1, 0)]?.focus(), 50);
+    } else if (r === 1) {
+      setActiveRoll(2);
+    }
+  };
+
+  // Quick action: Miss/Gutter (0 pins)
+  const quickMiss = () => {
+    handleChange(activeFrame, activeRoll, "0");
   };
 
   const displayValue = (val: number | null | undefined): string => {
