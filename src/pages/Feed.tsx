@@ -165,7 +165,12 @@ const Feed = () => {
                       <span className="text-muted-foreground">{game.date}</span>
                     </div>
                     {game.image_url && (
-                      <img src={game.image_url} alt="Game photo" className="mt-2 max-h-48 border border-border w-full object-cover" />
+                      <img
+                        src={game.image_url}
+                        alt="Game photo"
+                        className="mt-2 max-h-48 border border-border w-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setLightbox({ images: [game.image_url!], index: 0 })}
+                      />
                     )}
                     {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
                     <div className="border-t border-border mt-2 pt-2">
