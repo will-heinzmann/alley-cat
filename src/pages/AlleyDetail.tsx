@@ -40,14 +40,15 @@ const AlleyDetail = () => {
   const isFavorited = alley ? favoriteIds.has(alley.id) : false;
 
   useEffect(() => {
-    if (slug) fetchData();
+    if (!slug) return;
+    void fetchData();
   }, [slug]);
 
   useEffect(() => {
-    if (!loading && alley) {
+    if (!loading) {
       document.dispatchEvent(new Event("alleycat:prerender-ready"));
     }
-  }, [loading, alley, relatedAlleys]);
+  }, [loading]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -59,6 +60,9 @@ const AlleyDetail = () => {
       .single();
 
     if (!alleyData) {
+      setAlley(null);
+      setReviews([]);
+      setRelatedAlleys([]);
       setLoading(false);
       return;
     }
@@ -79,7 +83,7 @@ const AlleyDetail = () => {
         .limit(5),
     ]);
 
-    const userIds = [...new Set((reviewsData || []).map((r: any) => r.user_id))];
+    const userIds = [...new Set((reviewsData || []).map((review: any) => review.user_id))];
     let profileMap = new Map<string, string>();
 
     if (userIds.length > 0) {
@@ -87,12 +91,13 @@ const AlleyDetail = () => {
         .from("profiles")
         .select("user_id, username")
         .in("user_id", userIds);
-      profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p.username]));
+
+      profileMap = new Map((profiles || []).map((profile: any) => [profile.user_id, profile.username]));
     }
 
-    const reviewsWithUsernames = (reviewsData || []).map((r: any) => ({
-      ...r,
-      reviewer_username: profileMap.get(r.user_id) || "Unknown",
+    const reviewsWithUsernames = (reviewsData || []).map((review: any) => ({
+      ...review,
+      reviewer_username: profileMap.get(review.user_id) || "Unknown",
     }));
 
     setAlley(alleyData);
@@ -103,10 +108,14 @@ const AlleyDetail = () => {
     setLoading(false);
   };
 
-  const saveField = async (field: "lane_count" | "phone", value: any) => {
+  const saveField = async (field: "lane_count" | "phone", value: number | string | null) => {
     if (isAdmin) {
-      const updateData = field === "lane_count" ? { lane_count: value as number } : { phone: value as string | null };
+      const updateData = field === "lane_count"
+        ? { lane_count: value as number }
+        : { phone: value as string | null };
+
       const { error } = await supabase.from("alleys").update(updateData).eq("id", alley.id);
+
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
@@ -123,6 +132,7 @@ const AlleyDetail = () => {
         old_value: oldValue,
         new_value: newValue,
       });
+
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
@@ -153,16 +163,24 @@ const AlleyDetail = () => {
       toast({ title: "Review posted!", description: "+20 AlleyPoints" });
       setShowReviewForm(false);
       setComment("");
-      fetchData();
+      void fetchData();
     }
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Loading...</p></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
   }
 
   if (!alley) {
-    return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Alley not found.</p></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Alley not found.</p>
+      </div>
+    );
   }
 
   const canonicalUrl = `https://alley-cat.lovable.app/alley/${alley.slug}`;
@@ -173,7 +191,10 @@ const AlleyDetail = () => {
     <div className="min-h-screen pb-20">
       <Helmet>
         <title>{alley.name} in {alley.city}, {alley.state} | Lanes &amp; Leaderboard | Alley Cat</title>
-        <meta name="description" content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}. Track your bowling stats and join the ${alley.city} leaderboard on Alley Cat.`} />
+        <meta
+          name="description"
+          content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}. Track your bowling stats and join the ${alley.city} leaderboard on Alley Cat.`}
+        />
         <link rel="canonical" href={canonicalUrl} />
         <meta property="og:title" content={`${alley.name} in ${alley.city}, ${alley.state} | Alley Cat`} />
         <meta property="og:description" content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}.`} />
@@ -183,28 +204,30 @@ const AlleyDetail = () => {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content={`${alley.name} in ${alley.city}, ${alley.state} | Alley Cat`} />
         <meta name="twitter:description" content={`Find lanes, reviews, and top scores for ${alley.name} in ${alley.city}.`} />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "BowlingAlley",
-          name: alley.name,
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: alley.address,
-            addressLocality: alley.city,
-            addressRegion: alley.state,
-            ...(alley.zip_code && { postalCode: alley.zip_code }),
-          },
-          ...(alley.phone && { telephone: alley.phone }),
-          ...(alley.website && { url: alley.website }),
-          ...(alley.alley_rating > 0 && {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: alley.alley_rating,
-              bestRating: 5,
-              reviewCount: reviews.length || 1,
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BowlingAlley",
+            name: alley.name,
+            address: {
+              "@type": "PostalAddress",
+              streetAddress: alley.address,
+              addressLocality: alley.city,
+              addressRegion: alley.state,
+              ...(alley.zip_code && { postalCode: alley.zip_code }),
             },
-          }),
-        })}</script>
+            ...(alley.phone && { telephone: alley.phone }),
+            ...(alley.website && { url: alley.website }),
+            ...(alley.alley_rating > 0 && {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: alley.alley_rating,
+                bestRating: 5,
+                reviewCount: reviews.length || 1,
+              },
+            }),
+          })}
+        </script>
       </Helmet>
 
       <header className="border-b border-border p-4">
@@ -212,7 +235,11 @@ const AlleyDetail = () => {
         <div className="flex items-center justify-between mt-1">
           <h1 className="text-lg text-primary">🎳 {alley.name.toUpperCase()}</h1>
           {user && (
-            <button onClick={() => toggleFavorite(alley.id)} className="text-lg hover:opacity-80" title={isFavorited ? "Remove from favorites" : "Add to favorites"}>
+            <button
+              onClick={() => toggleFavorite(alley.id)}
+              className="text-lg hover:opacity-80"
+              title={isFavorited ? "Remove from favorites" : "Add to favorites"}
+            >
               {isFavorited ? "❤️" : "🤍"}
             </button>
           )}
@@ -222,7 +249,7 @@ const AlleyDetail = () => {
 
       <div className="p-4 space-y-4">
         <button
-          onClick={() => user ? navigate(`/log?alley=${alley.id}`) : navigate("/auth")}
+          onClick={() => (user ? navigate(`/log?alley=${alley.id}`) : navigate("/auth"))}
           className="w-full border border-border bg-secondary text-secondary-foreground py-2 text-xs hover:opacity-80"
         >
           [🎳 Log Game at {alley.name}]
@@ -264,7 +291,9 @@ const AlleyDetail = () => {
               <tr>
                 <td className="border border-border p-2 text-muted-foreground bg-muted">Website</td>
                 <td className="border border-border p-2">
-                  <a href={alley.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">{alley.website}</a>
+                  <a href={alley.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    {alley.website}
+                  </a>
                 </td>
               </tr>
             )}
@@ -298,4 +327,88 @@ const AlleyDetail = () => {
             <tr>
               <td className="border border-border p-2 text-muted-foreground bg-muted">Alley Rating</td>
               <td className="border border-border p-2 text-primary">
-                {alley.alley_rating === 0 ? <span className="text-muted-foreground italic">No Reviews</span> : <>{
+                {alley.alley_rating === 0 ? (
+                  <span className="text-muted-foreground italic">No Reviews</span>
+                ) : (
+                  <>{"⭐".repeat(alley.alley_rating)} ({alley.alley_rating}/5)</>
+                )}
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-border p-2 text-muted-foreground bg-muted">
+                Beer Rating <span className="inline-block ml-1 cursor-help" title="Rate the beer selection, quality, and pricing at this alley.">ℹ️</span>
+              </td>
+              <td className="border border-border p-2 text-secondary">
+                {alley.beer_rating === 0 ? (
+                  <span className="text-muted-foreground italic">No Reviews — be the first!</span>
+                ) : (
+                  <>{" 🍺".repeat(alley.beer_rating)} ({alley.beer_rating}/5)</>
+                )}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <AlleyLeaderboard alleyId={alley.id} alleyName={alley.name} />
+
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm text-secondary font-bold">📝 Reviews ({reviews.length})</h2>
+          {user && (
+            <button onClick={() => setShowReviewForm(!showReviewForm)} className="text-primary text-xs hover:underline">[+ Write Review]</button>
+          )}
+        </div>
+
+        {showReviewForm && (
+          <form onSubmit={submitReview} className="border border-border bg-card p-3 space-y-2">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: "Overall", val: rating, set: setRating },
+                { label: "Oil", val: oilRating, set: setOilRating },
+                { label: "Beer", val: beerRating, set: setBeerRating },
+              ].map((item) => (
+                <div key={item.label}>
+                  <label className="text-xs text-muted-foreground block mb-1">{item.label}:</label>
+                  <select
+                    value={item.val}
+                    onChange={(e) => item.set(Number(e.target.value))}
+                    className="w-full border border-border bg-input px-2 py-1 text-foreground text-xs outline-none"
+                  >
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>{n}/5</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={2}
+              className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none resize-none"
+              placeholder="Your review..."
+              required
+            />
+            <button type="submit" className="w-full border border-border bg-primary text-primary-foreground py-1.5 text-xs hover:opacity-80">
+              Post Review (+20 pts)
+            </button>
+          </form>
+        )}
+
+        {reviews.map((review) => (
+          <div key={review.id} className="border border-border bg-card p-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm text-primary font-bold">{review.reviewer_username}</span>
+              <span className="text-xs text-secondary">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</span>
+            </div>
+            <p className="text-sm text-foreground mb-1">{review.comment}</p>
+            <p className="text-xs text-muted-foreground">Oil: {review.oil_rating}/5 · Beer: {review.beer_rating}/5</p>
+          </div>
+        ))}
+      </div>
+
+      <AlleySeoSection alley={alley} relatedAlleys={relatedAlleys} />
+    </div>
+  );
+};
+
+export default AlleyDetail;
