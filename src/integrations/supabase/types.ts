@@ -202,7 +202,7 @@ export type Database = {
       }
       games: {
         Row: {
-          alley_id: string
+          alley_id: string | null
           created_at: string
           date: string
           frame_data: Json | null
@@ -217,7 +217,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          alley_id: string
+          alley_id?: string | null
           created_at?: string
           date?: string
           frame_data?: Json | null
@@ -232,7 +232,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          alley_id?: string
+          alley_id?: string | null
           created_at?: string
           date?: string
           frame_data?: Json | null
