@@ -196,19 +196,20 @@ async function renderAlley(slug: string): Promise<Response | null> {
     .map((a: any) => `<li><a href="${SITE}/alley/${encodeURIComponent(a.slug)}">🎳 ${escapeHtml(a.name)}</a> — ${escapeHtml(a.city)}, ${safeState}</li>`)
     .join("\n");
 
+  const seoDescription = escapeHtml(generateAlleyDescription(alley.name, alley.city, alley.state, alley.lane_count, alley.alley_rating));
+
   const bodyHtml = `
   <main>
     <article>
-      <h1>${safeName}</h1>
+      <h1>${safeName} – ${safeCity}, ${safeState}</h1>
+      <h2>About ${safeName}</h2>
+      <p>${seoDescription}</p>
       <p>${safeAddress}</p>
       ${alley.phone ? `<p>Phone: ${safePhone}</p>` : ""}
       <p>Lanes: ${safeLaneText}</p>
       <p>Rating: ${safeRatingText}/5</p>
       <p>Oil Pattern: ${safeOilPattern}</p>
       ${safeWebsite ? `<p>Website: <a href="${escapeHtml(safeWebsite)}">${safeWebsiteLabel}</a></p>` : ""}
-      <h2>About ${safeName}</h2>
-      <p>${safeName} is a bowling destination in ${safeCity}, ${safeState}. With approximately ${safeLaneText} lanes, it offers space for casual games, league nights, and practice sessions for bowlers working on consistency.</p>
-      <p>If you're planning a trip to ${safeName}, use Alley Cat to log every frame, track spare conversions, and compare your performance with other bowlers on the ${safeCity} leaderboard.</p>
     </article>
   </main>
   ${relatedAlleys && relatedAlleys.length > 0 ? `<h2>Other Alleys in ${alley.state}</h2><ul>${relatedHtml}</ul>` : ""}`;
