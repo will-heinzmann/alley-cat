@@ -1,0 +1,1 @@
+ALTER TABLE public.games ALTER COLUMN alley_id DROP NOT NULL;
