@@ -123,6 +123,8 @@ const HomePage = () => {
   }, [search, stateFilter, cityFilter, minRating, showFavorites]);
 
   const filtered = useMemo(() => alleys.filter((a) => {
+    const nameL = a.name.toLowerCase();
+    if (nameL.includes("pro shop") || nameL.includes("bowling supply") || nameL.includes("pro-shop")) return false;
     if (showFavorites && !favoriteIds.has(a.id)) return false;
     const matchesSearch =
       !search ||
