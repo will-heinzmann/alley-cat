@@ -28,6 +28,7 @@ const Feed = () => {
   const { user } = useAuth();
   const [games, setGames] = useState<FeedGame[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   const fetchFeed = async () => {
     if (!user) {
