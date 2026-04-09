@@ -206,11 +206,14 @@ export type Database = {
           created_at: string
           date: string
           frame_data: Json | null
+          game_number: number | null
           id: string
           image_url: string | null
           notes: string | null
           oil_condition: string
           score: number
+          session_id: string | null
+          session_type: string | null
           user_id: string
         }
         Insert: {
@@ -218,11 +221,14 @@ export type Database = {
           created_at?: string
           date?: string
           frame_data?: Json | null
+          game_number?: number | null
           id?: string
           image_url?: string | null
           notes?: string | null
           oil_condition?: string
           score: number
+          session_id?: string | null
+          session_type?: string | null
           user_id: string
         }
         Update: {
@@ -230,11 +236,14 @@ export type Database = {
           created_at?: string
           date?: string
           frame_data?: Json | null
+          game_number?: number | null
           id?: string
           image_url?: string | null
           notes?: string | null
           oil_condition?: string
           score?: number
+          session_id?: string | null
+          session_type?: string | null
           user_id?: string
         }
         Relationships: [
