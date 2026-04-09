@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const SITE = "https://alleycat-bowling.com";
+
 const corsHeaders = {
   "Content-Type": "application/xml; charset=utf-8",
   "Cache-Control": "public, max-age=3600, s-maxage=3600",
@@ -11,17 +13,16 @@ Deno.serve(async () => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const proxyBase = `${Deno.env.get("SUPABASE_URL")!}/functions/v1/seo-proxy`;
-
-  // Static pages
   const staticPages = [
     { path: "/", priority: "1.0", changefreq: "daily" },
     { path: "/alleys", priority: "0.9", changefreq: "daily" },
     { path: "/leaderboard", priority: "0.7", changefreq: "daily" },
     { path: "/blog", priority: "0.8", changefreq: "weekly" },
+    { path: "/auth", priority: "0.3", changefreq: "monthly" },
+    { path: "/log", priority: "0.5", changefreq: "daily" },
+    { path: "/leagues", priority: "0.7", changefreq: "weekly" },
   ];
 
-  // Blog posts
   const blogSlugs = [
     "how-to-calculate-bowling-handicap",
     "alley-cat-bowling",
@@ -54,11 +55,9 @@ Deno.serve(async () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 `;
 
-  // Static pages → seo-proxy URLs
   for (const page of staticPages) {
-    const loc = `${proxyBase}?path=${encodeURIComponent(page.path)}`;
     xml += `  <url>
-    <loc>${loc}</loc>
+    <loc>${SITE}${page.path}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
@@ -66,11 +65,9 @@ Deno.serve(async () => {
 `;
   }
 
-  // Blog posts → seo-proxy URLs
   for (const blogSlug of blogSlugs) {
-    const loc = `${proxyBase}?path=${encodeURIComponent(`/blog/${blogSlug}`)}`;
     xml += `  <url>
-    <loc>${loc}</loc>
+    <loc>${SITE}/blog/${blogSlug}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -78,12 +75,10 @@ Deno.serve(async () => {
 `;
   }
 
-  // Alley pages → seo-proxy URLs
   for (const alley of allSlugs) {
     const lastmod = alley.updated_at ? alley.updated_at.split("T")[0] : today;
-    const loc = `${proxyBase}?path=${encodeURIComponent(`/alley/${alley.slug}`)}`;
     xml += `  <url>
-    <loc>${loc}</loc>
+    <loc>${SITE}/alley/${alley.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
