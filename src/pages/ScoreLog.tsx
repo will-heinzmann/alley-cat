@@ -393,7 +393,7 @@ const ScoreLog = () => {
       });
       toast({ title: "Saved offline! 📴", description: "Will sync when you're back online." });
       setPendingCount(getOfflineQueue().length);
-      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null);
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); clearDraft();
     } else {
       const { error } = await supabase.from("games").insert(gameData);
       if (error) {
@@ -407,7 +407,7 @@ const ScoreLog = () => {
       } else {
         toast({ title: "Game logged!", description: "+50 AlleyPoints" });
       }
-      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); setCurrentFrameData(null); fetchData();
+      setShowForm(false); setScore(""); setAlleyId(""); setNotes(""); setImageFile(null); setImagePreview(null); setCurrentFrameData(null); clearDraft(); fetchData();
     }
     setSaving(false);
   };
