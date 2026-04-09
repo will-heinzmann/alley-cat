@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 
 interface AlleySeoSectionProps {
   alley: {
@@ -12,26 +10,10 @@ interface AlleySeoSectionProps {
     alley_rating: number;
     slug: string;
   };
+  relatedAlleys: { name: string; slug: string; city: string }[];
 }
 
-const AlleySeoSection = ({ alley }: AlleySeoSectionProps) => {
-  const [relatedAlleys, setRelatedAlleys] = useState<{ name: string; slug: string; city: string }[]>([]);
-
-  useEffect(() => {
-    const fetchRelated = async () => {
-      const { data } = await supabase
-        .from("alleys")
-        .select("name, slug, city")
-        .eq("state", alley.state)
-        .neq("id", alley.id)
-        .not("name", "ilike", "%test%")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      setRelatedAlleys(data || []);
-    };
-    fetchRelated();
-  }, [alley.id, alley.state]);
-
+const AlleySeoSection = ({ alley, relatedAlleys }: AlleySeoSectionProps) => {
   const ratingText = alley.alley_rating > 0 ? `${alley.alley_rating}` : "N/A";
   const laneText = alley.lane_count > 0 ? String(alley.lane_count) : "multiple";
 
