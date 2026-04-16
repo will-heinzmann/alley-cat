@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import FeedLeaderboard from "@/components/FeedLeaderboard";
+import NearestAlleys from "@/components/NearestAlleys";
 import ImageLightbox from "@/components/ImageLightbox";
 
 interface FeedGame {
@@ -197,6 +198,7 @@ const Feed = () => {
 
           {/* Sidebar Column - stacks below on mobile */}
           <div className="space-y-6">
+            <NearestAlleys />
             <FeedLeaderboard />
 
             {user && (
