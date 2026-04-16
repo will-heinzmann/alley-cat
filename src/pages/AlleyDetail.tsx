@@ -250,6 +250,18 @@ const AlleyDetail = () => {
       </header>
 
       <div className="p-4 space-y-4">
+        {/* Highlight Cards */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="border-2 border-primary bg-muted p-4 text-center">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Lanes</p>
+            <p className="text-2xl text-primary font-bold">{alley.lane_count || "—"}</p>
+          </div>
+          <div className="border-2 border-primary bg-muted p-4 text-center">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Pinsetter</p>
+            <p className="text-2xl text-primary font-bold">{(alley as any).pinsetter_type || "Unknown"}</p>
+          </div>
+        </div>
+
         <button
           onClick={() => (user ? navigate(`/log?alley=${alley.id}`) : navigate("/auth"))}
           className="w-full border border-border bg-secondary text-secondary-foreground py-2 text-xs hover:opacity-80"

@@ -1,0 +1,1 @@
+ALTER TABLE public.alleys ADD COLUMN pinsetter_type text NOT NULL DEFAULT 'Unknown';
