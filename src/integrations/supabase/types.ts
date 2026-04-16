@@ -75,6 +75,7 @@ export type Database = {
           name: string
           oil_pattern: string
           phone: string | null
+          pinsetter_type: string
           slug: string
           state: string
           updated_at: string
@@ -94,6 +95,7 @@ export type Database = {
           name: string
           oil_pattern?: string
           phone?: string | null
+          pinsetter_type?: string
           slug: string
           state: string
           updated_at?: string
@@ -113,6 +115,7 @@ export type Database = {
           name?: string
           oil_pattern?: string
           phone?: string | null
+          pinsetter_type?: string
           slug?: string
           state?: string
           updated_at?: string
