@@ -33,14 +33,14 @@ Deno.serve(async () => {
     "bowling-scoreboard-online",
   ];
 
-  // Fetch all alley slugs
-  let allSlugs: { slug: string; updated_at: string }[] = [];
+  // Fetch all alley slugs + city/state for city pages
+  let allSlugs: { slug: string; updated_at: string; city: string; state: string }[] = [];
   let from = 0;
   const batchSize = 1000;
   while (true) {
     const { data } = await supabase
       .from("alleys")
-      .select("slug, updated_at")
+      .select("slug, updated_at, city, state")
       .order("name")
       .range(from, from + batchSize - 1);
     if (!data || data.length === 0) break;
@@ -50,6 +50,15 @@ Deno.serve(async () => {
   }
 
   const today = new Date().toISOString().split("T")[0];
+
+  const citySlugify = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+  const citySlugSet = new Set<string>();
+  for (const a of allSlugs) {
+    if (a.city && a.state) {
+      citySlugSet.add(`${citySlugify(a.city)}-${a.state.toLowerCase()}`);
+    }
+  }
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -71,6 +80,16 @@ Deno.serve(async () => {
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+`;
+  }
+
+  for (const citySlug of citySlugSet) {
+    xml += `  <url>
+    <loc>${SITE}/city/${citySlug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
 `;
   }
