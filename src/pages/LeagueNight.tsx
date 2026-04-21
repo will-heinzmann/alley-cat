@@ -203,6 +203,19 @@ const GroupPlay = () => {
   const [loadingPast, setLoadingPast] = useState(true);
 
   const scoreboardRef = useRef<HTMLDivElement>(null);
+  const frameInputRef = useRef<HTMLInputElement>(null);
+
+  // Keep the score input focused so users can rapid-fire entries
+  useEffect(() => {
+    if (phase === "playing" && scoringMode === "frame" && showPinModal) {
+      // Defer to ensure DOM is settled after state updates
+      const t = setTimeout(() => {
+        frameInputRef.current?.focus();
+        frameInputRef.current?.select();
+      }, 0);
+      return () => clearTimeout(t);
+    }
+  }, [phase, scoringMode, showPinModal, activePlayerIdx, currentRoll, players]);
 
   const fetchPastGames = async () => {
     if (!user) { setLoadingPast(false); return; }
