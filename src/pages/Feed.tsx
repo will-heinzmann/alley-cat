@@ -68,9 +68,20 @@ const Feed = () => {
       const profileMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
 
       const gameIds = data.map((g) => g.id);
-      const { data: likesData } = gameIds.length > 0
-        ? await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
-        : { data: [] };
+      const [likesRes, commentsRes] = await Promise.all([
+        gameIds.length > 0
+          ? supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
+          : Promise.resolve({ data: [] }),
+        gameIds.length > 0
+          ? supabase.from("game_comments").select("game_id").in("game_id", gameIds)
+          : Promise.resolve({ data: [] }),
+      ]);
+      const likesData = likesRes.data || [];
+      const commentTallies: Record<string, number> = {};
+      for (const c of (commentsRes.data || []) as { game_id: string }[]) {
+        commentTallies[c.game_id] = (commentTallies[c.game_id] || 0) + 1;
+      }
+      setCommentCounts(commentTallies);
 
       const followingSet = new Set(followingIds);
 
