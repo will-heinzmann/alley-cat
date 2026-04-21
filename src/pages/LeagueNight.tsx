@@ -178,22 +178,24 @@ const GroupPlay = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<"setup" | "playing" | "summary">("setup");
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [playerNames, setPlayerNames] = useState<string[]>(["", ""]);
-  const [activePlayerIdx, setActivePlayerIdx] = useState(0);
+  const draft = loadGroupDraft();
+
+  const [phase, setPhase] = useState<"setup" | "playing" | "summary">(draft?.phase ?? "setup");
+  const [players, setPlayers] = useState<Player[]>(draft?.players ?? []);
+  const [playerNames, setPlayerNames] = useState<string[]>(draft?.playerNames ?? ["", ""]);
+  const [activePlayerIdx, setActivePlayerIdx] = useState(draft?.activePlayerIdx ?? 0);
 
   const [standing, setStanding] = useState<boolean[]>(allStanding);
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [currentRoll, setCurrentRoll] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [scoringMode, setScoringMode] = useState<"frame" | "pin">("frame");
+  const [scoringMode, setScoringMode] = useState<"frame" | "pin">(draft?.scoringMode ?? "frame");
   const [frameInput, setFrameInput] = useState("");
 
   const [alleys, setAlleys] = useState<any[]>([]);
-  const [alleyId, setAlleyId] = useState("");
-  const [alleySearch, setAlleySearch] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [alleyId, setAlleyId] = useState(draft?.alleyId ?? "");
+  const [alleySearch, setAlleySearch] = useState(draft?.alleySearch ?? "");
+  const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState(false);
 
   // Past games
