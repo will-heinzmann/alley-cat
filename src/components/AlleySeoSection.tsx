@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { generateAlleyDescription } from "@/lib/alleyDescription";
+import { buildCitySlug } from "@/lib/citySlug";
 
 interface AlleySeoSectionProps {
   alley: {
@@ -16,11 +17,20 @@ interface AlleySeoSectionProps {
 
 const AlleySeoSection = ({ alley, relatedAlleys }: AlleySeoSectionProps) => {
   const description = generateAlleyDescription(alley);
+  const citySlug = buildCitySlug(alley.city, alley.state);
 
   return (
     <section className="border-t border-border bg-muted/40 px-4 py-5 text-sm text-muted-foreground leading-relaxed space-y-4">
       <h2 className="text-base text-secondary font-bold">About {alley.name}</h2>
       <p>{description}</p>
+
+      <p>
+        See more bowling alleys in{" "}
+        <Link to={`/city/${citySlug}`} className="text-primary hover:underline">
+          {alley.city}, {alley.state}
+        </Link>
+        .
+      </p>
 
       {relatedAlleys.length > 0 && (
         <div className="pt-2 border-t border-border">
@@ -42,3 +52,4 @@ const AlleySeoSection = ({ alley, relatedAlleys }: AlleySeoSectionProps) => {
 };
 
 export default AlleySeoSection;
+
