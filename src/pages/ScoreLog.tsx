@@ -324,6 +324,17 @@ const ScoreLog = () => {
     setGames(gamesRes.data || []);
     setAlleys(allAlleys);
     setPendingCount(getOfflineQueue().length);
+
+    if (user) {
+      const { data: ballsData } = await supabase
+        .from("bowling_balls")
+        .select("id, name, weight")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+      setUserBalls(ballsData || []);
+    } else {
+      setUserBalls([]);
+    }
   };
 
   const startSession = () => {
@@ -377,6 +388,7 @@ const ScoreLog = () => {
       session_id: sessionId,
       session_type: sessionType,
       game_number: currentGameNumber,
+      ball_id: ballId || null,
     };
 
     if (!isOnline()) {
