@@ -214,14 +214,22 @@ const Feed = () => {
                       />
                     )}
                     {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
-                    <div className="border-t border-border mt-2 pt-2">
+                    <div className="border-t border-border mt-2 pt-2 flex items-center gap-3">
                       <button
                         onClick={() => toggleLike(game.id, game.is_liked)}
                         className={`text-xs transition-colors ${game.is_liked ? "text-secondary font-bold" : "text-muted-foreground hover:text-secondary"}`}
+                        title={game.is_liked ? "Take back high-five" : "High-five this game"}
                       >
-                        {game.is_liked ? "♥" : "♡"} {game.likes_count} likes
+                        {game.is_liked ? "🙏" : "✋"} {game.likes_count} {game.likes_count === 1 ? "high-five" : "high-fives"}
+                      </button>
+                      <button
+                        onClick={() => toggleComments(game.id)}
+                        className="text-xs text-muted-foreground hover:text-primary"
+                      >
+                        💬 {commentCounts[game.id] || 0} {(commentCounts[game.id] || 0) === 1 ? "comment" : "comments"}
                       </button>
                     </div>
+                    {openComments.has(game.id) && <GameComments gameId={game.id} />}
                   </div>
                 ))}
               </div>
