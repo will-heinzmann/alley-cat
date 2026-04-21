@@ -171,18 +171,52 @@ const AlleyDetail = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+  // Derive a friendly fallback name from the slug so crawlers (and humans on
+  // slow connections) see meaningful, unique content immediately on first
+  // paint — before the Supabase query resolves.
+  const slugFallbackName = (slug || "")
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ") || "Bowling Alley";
 
-  if (!alley) {
+  if (loading || !alley) {
+    const fallbackTitle = `${slugFallbackName} | Bowling Alley | Alley Cat`;
+    const fallbackDescription = `Find lanes, reviews, and top scores for ${slugFallbackName}. Track your bowling stats and compete on the leaderboard at Alley Cat.`;
+    const fallbackCanonical = `https://alleycat-bowling.com/alley/${slug ?? ""}`;
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Alley not found.</p>
+      <div className="min-h-screen pb-20">
+        <Helmet>
+          <title>{fallbackTitle}</title>
+          <meta name="description" content={fallbackDescription} />
+          <link rel="canonical" href={fallbackCanonical} />
+          <meta name="robots" content="index,follow" />
+          <meta property="og:title" content={fallbackTitle} />
+          <meta property="og:description" content={fallbackDescription} />
+          <meta property="og:url" content={fallbackCanonical} />
+          <meta property="og:type" content="website" />
+        </Helmet>
+        <header className="border-b border-border p-4">
+          <Link to="/alleys" className="text-primary text-xs">← Back to Directory</Link>
+          <h1 className="text-lg text-primary mt-1">🎳 {slugFallbackName.toUpperCase()}</h1>
+          <hr className="border-primary mt-2" />
+        </header>
+        <article className="p-4 space-y-3">
+          <h2 className="text-sm text-secondary font-bold">About {slugFallbackName}</h2>
+          <p className="text-sm text-foreground">
+            {slugFallbackName} is a bowling alley listed in the Alley Cat directory.
+            View lanes, oil patterns, ratings, reviews, and the local leaderboard.
+            Log your games at {slugFallbackName} to track your average and climb the rankings.
+          </p>
+          {!alley && !loading ? (
+            <p className="text-sm text-muted-foreground italic">Alley details could not be found.</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">Loading the latest alley details…</p>
+          )}
+          <p>
+            <Link to="/alleys" className="text-primary text-xs hover:underline">[Browse all bowling alleys]</Link>
+          </p>
+        </article>
       </div>
     );
   }
@@ -432,21 +466,32 @@ const AlleyDetail = () => {
         )}
       </div>
 
-      <noscript>
-        <div>
-          <h2>{alley.name} – {alley.city}, {alley.state}</h2>
-          <p>{generateAlleyDescription(alley)}</p>
-          <p>Address: {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}</p>
-          {alley.phone && <p>Phone: {alley.phone}</p>}
-          {relatedAlleys.length > 0 && (
+      {/*
+        SEO content block — kept in the rendered DOM (NOT wrapped in <noscript>)
+        so JS-enabled crawlers like Googlebot, Bingbot, and Ubersuggest can
+        index unique alley text immediately. Visually hidden but accessible
+        to screen readers and crawlers.
+      */}
+      <section
+        aria-label={`About ${alley.name}`}
+        className="sr-only"
+      >
+        <h2>{alley.name} – {alley.city}, {alley.state}</h2>
+        <p>{generateAlleyDescription(alley)}</p>
+        <p>Address: {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}</p>
+        {alley.phone && <p>Phone: {alley.phone}</p>}
+        <p>Lanes: {alley.lane_count || "Unknown"}. Oil pattern: {alley.oil_pattern}. Pinsetter: {(alley as any).pinsetter_type || "Unknown"}.</p>
+        {relatedAlleys.length > 0 && (
+          <>
+            <h3>Other bowling alleys in {alley.state}</h3>
             <ul>
               {relatedAlleys.map((a) => (
                 <li key={a.slug}>{a.name} — {a.city}, {alley.state}</li>
               ))}
             </ul>
-          )}
-        </div>
-      </noscript>
+          </>
+        )}
+      </section>
     </div>
   );
 };
