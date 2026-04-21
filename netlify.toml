@@ -1,0 +1,19 @@
+# Netlify configuration for the Alley Cat SPA + dynamic rendering.
+# Build with Vite, serve dist/, and route every request through the
+# seo-rewrite edge function (which proxies bots to seo-proxy and lets
+# humans pass through to the SPA).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback so React Router handles deep links.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Bot-aware dynamic rendering.
+[[edge_functions]]
+  function = "seo-rewrite"
+  path = "/*"
