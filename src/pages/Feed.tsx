@@ -8,6 +8,7 @@ import FeedLeaderboard from "@/components/FeedLeaderboard";
 import NearestAlleys from "@/components/NearestAlleys";
 import ImageLightbox from "@/components/ImageLightbox";
 import PublicActivityFeed from "@/components/PublicActivityFeed";
+import GameComments from "@/components/GameComments";
 
 interface FeedGame {
   id: string;
@@ -31,6 +32,17 @@ const Feed = () => {
   const [games, setGames] = useState<FeedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+
+  const toggleComments = (gameId: string) => {
+    setOpenComments((prev) => {
+      const next = new Set(prev);
+      if (next.has(gameId)) next.delete(gameId);
+      else next.add(gameId);
+      return next;
+    });
+  };
 
   const fetchFeed = async () => {
     if (!user) {
