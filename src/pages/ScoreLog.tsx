@@ -264,6 +264,8 @@ const ScoreLog = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [alleySearch, setAlleySearch] = useState(draft?.alleySearch ?? "");
   const [saving, setSaving] = useState(false);
+  const [ballId, setBallId] = useState<string>("");
+  const [userBalls, setUserBalls] = useState<Array<{ id: string; name: string; weight: number | null }>>([]);
 
   const [selectedGame, setSelectedGame] = useState(0);
   const [online, setOnline] = useState(isOnline());
@@ -322,6 +324,17 @@ const ScoreLog = () => {
     setGames(gamesRes.data || []);
     setAlleys(allAlleys);
     setPendingCount(getOfflineQueue().length);
+
+    if (user) {
+      const { data: ballsData } = await supabase
+        .from("bowling_balls")
+        .select("id, name, weight")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true });
+      setUserBalls(ballsData || []);
+    } else {
+      setUserBalls([]);
+    }
   };
 
   const startSession = () => {
@@ -375,6 +388,7 @@ const ScoreLog = () => {
       session_id: sessionId,
       session_type: sessionType,
       game_number: currentGameNumber,
+      ball_id: ballId || null,
     };
 
     if (!isOnline()) {
@@ -703,6 +717,24 @@ const ScoreLog = () => {
               className="w-full text-xs text-foreground" />
             {imagePreview && <img src={imagePreview} alt="Preview" className="mt-1 max-h-32 border border-border" />}
           </div>
+
+          {userBalls.length > 0 && (
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Ball used (optional):</label>
+              <select
+                value={ballId}
+                onChange={(e) => setBallId(e.target.value)}
+                className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none"
+              >
+                <option value="">— None —</option>
+                {userBalls.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    🎳 {b.name}{b.weight ? ` (${b.weight} lbs)` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <button onClick={saveCurrentGame} disabled={saving || !score}
             className="w-full border border-border bg-primary text-primary-foreground py-2 text-sm hover:opacity-80 disabled:opacity-50">

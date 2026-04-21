@@ -8,6 +8,7 @@ import FeedLeaderboard from "@/components/FeedLeaderboard";
 import NearestAlleys from "@/components/NearestAlleys";
 import ImageLightbox from "@/components/ImageLightbox";
 import PublicActivityFeed from "@/components/PublicActivityFeed";
+import GameComments from "@/components/GameComments";
 
 interface FeedGame {
   id: string;
@@ -31,6 +32,17 @@ const Feed = () => {
   const [games, setGames] = useState<FeedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
+
+  const toggleComments = (gameId: string) => {
+    setOpenComments((prev) => {
+      const next = new Set(prev);
+      if (next.has(gameId)) next.delete(gameId);
+      else next.add(gameId);
+      return next;
+    });
+  };
 
   const fetchFeed = async () => {
     if (!user) {
@@ -56,9 +68,20 @@ const Feed = () => {
       const profileMap = new Map((profilesData || []).map((p) => [p.user_id, p]));
 
       const gameIds = data.map((g) => g.id);
-      const { data: likesData } = gameIds.length > 0
-        ? await supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
-        : { data: [] };
+      const [likesRes, commentsRes] = await Promise.all([
+        gameIds.length > 0
+          ? supabase.from("game_likes").select("game_id, user_id").in("game_id", gameIds)
+          : Promise.resolve({ data: [] }),
+        gameIds.length > 0
+          ? supabase.from("game_comments").select("game_id").in("game_id", gameIds)
+          : Promise.resolve({ data: [] }),
+      ]);
+      const likesData = likesRes.data || [];
+      const commentTallies: Record<string, number> = {};
+      for (const c of (commentsRes.data || []) as { game_id: string }[]) {
+        commentTallies[c.game_id] = (commentTallies[c.game_id] || 0) + 1;
+      }
+      setCommentCounts(commentTallies);
 
       const followingSet = new Set(followingIds);
 
@@ -191,14 +214,22 @@ const Feed = () => {
                       />
                     )}
                     {game.notes && <p className="text-xs text-muted-foreground italic mt-2">"{game.notes}"</p>}
-                    <div className="border-t border-border mt-2 pt-2">
+                    <div className="border-t border-border mt-2 pt-2 flex items-center gap-3">
                       <button
                         onClick={() => toggleLike(game.id, game.is_liked)}
                         className={`text-xs transition-colors ${game.is_liked ? "text-secondary font-bold" : "text-muted-foreground hover:text-secondary"}`}
+                        title={game.is_liked ? "Take back high-five" : "High-five this game"}
                       >
-                        {game.is_liked ? "♥" : "♡"} {game.likes_count} likes
+                        {game.is_liked ? "🙏" : "✋"} {game.likes_count} {game.likes_count === 1 ? "high-five" : "high-fives"}
+                      </button>
+                      <button
+                        onClick={() => toggleComments(game.id)}
+                        className="text-xs text-muted-foreground hover:text-primary"
+                      >
+                        💬 {commentCounts[game.id] || 0} {(commentCounts[game.id] || 0) === 1 ? "comment" : "comments"}
                       </button>
                     </div>
+                    {openComments.has(game.id) && <GameComments gameId={game.id} />}
                   </div>
                 ))}
               </div>

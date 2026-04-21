@@ -9,6 +9,7 @@ import AlleyLeaderboard from "@/components/AlleyLeaderboard";
 import AlleySeoSection from "@/components/AlleySeoSection";
 import AlleyMap from "@/components/AlleyMap";
 import AmenityEditor from "@/components/AmenityEditor";
+import LocalLegends from "@/components/LocalLegends";
 import { generateAlleyDescription } from "@/lib/alleyDescription";
 
 const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
@@ -367,6 +368,8 @@ const AlleyDetail = () => {
         <AmenityEditor alley={alley} onUpdated={fetchData} />
 
         <AlleySeoSection alley={alley} relatedAlleys={relatedAlleys} />
+
+        <LocalLegends alleyId={alley.id} alleyName={alley.name} />
 
         <AlleyLeaderboard alleyId={alley.id} alleyName={alley.name} />
 

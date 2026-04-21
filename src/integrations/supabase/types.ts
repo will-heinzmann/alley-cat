@@ -130,6 +130,45 @@ export type Database = {
         }
         Relationships: []
       }
+      bowling_balls: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: []
+      }
       favorite_alleys: {
         Row: {
           alley_id: string
@@ -180,6 +219,41 @@ export type Database = {
         }
         Relationships: []
       }
+      game_comments: {
+        Row: {
+          body: string
+          created_at: string
+          game_id: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          game_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_comments_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_likes: {
         Row: {
           created_at: string
@@ -212,6 +286,7 @@ export type Database = {
       games: {
         Row: {
           alley_id: string | null
+          ball_id: string | null
           created_at: string
           date: string
           frame_data: Json | null
@@ -227,6 +302,7 @@ export type Database = {
         }
         Insert: {
           alley_id?: string | null
+          ball_id?: string | null
           created_at?: string
           date?: string
           frame_data?: Json | null
@@ -242,6 +318,7 @@ export type Database = {
         }
         Update: {
           alley_id?: string | null
+          ball_id?: string | null
           created_at?: string
           date?: string
           frame_data?: Json | null
@@ -261,6 +338,13 @@ export type Database = {
             columns: ["alley_id"]
             isOneToOne: false
             referencedRelation: "alleys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "games_ball_id_fkey"
+            columns: ["ball_id"]
+            isOneToOne: false
+            referencedRelation: "bowling_balls"
             referencedColumns: ["id"]
           },
         ]
