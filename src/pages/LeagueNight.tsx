@@ -721,8 +721,9 @@ const GroupPlay = () => {
         <h1 className="text-sm text-primary font-bold">🏆 Group Play</h1>
       </header>
 
-      {/* Horizontal scoreboard for all players */}
-      <div className="space-y-1 mb-3 overflow-x-auto">
+      {/* Single-game scoreboard for all players (10 frames, fits the screen) */}
+      <p className="text-[10px] text-muted-foreground mb-1 px-1">One game at a time — start a new game from the summary screen for game 2.</p>
+      <div className="space-y-1 mb-3">
         {players.map((player, pIdx) => {
           const isActive = pIdx === activePlayerIdx;
           const cumuls = getCumulatives(player.frames);
@@ -735,25 +736,25 @@ const GroupPlay = () => {
                 </span>
                 <span className="text-[10px] text-secondary font-bold">{calculateScore(player.frames)}</span>
               </div>
-              <div className="flex overflow-x-auto">
+              <div className="grid w-full" style={{ gridTemplateColumns: "repeat(9, 1fr) 1.5fr" }}>
                 {player.frames.map((_, fi) => {
                   const isStrike = fi < 9 && player.frames[fi].roll1 === 10;
                   return (
-                    <div key={fi} className="flex-shrink-0 border-r border-border last:border-0 text-center" style={{ minWidth: "32px" }}>
-                      <div className="flex border-b border-border text-[9px]">
-                        <span className="flex-1 p-px border-r border-border text-foreground">
+                    <div key={fi} className="border-r border-border last:border-0 text-center min-w-0">
+                      <div className="flex border-b border-border text-[9px] min-h-[14px]">
+                        <span className="flex-1 p-px border-r border-border text-foreground truncate">
                           {getRollDisplay(player.frames, fi, 0)}
                         </span>
-                        <span className="flex-1 p-px text-foreground">
+                        <span className="flex-1 p-px text-foreground truncate">
                           {isStrike ? "" : getRollDisplay(player.frames, fi, 1)}
                         </span>
                         {fi === 9 && (
-                          <span className="flex-1 p-px border-l border-border text-foreground">
+                          <span className="flex-1 p-px border-l border-border text-foreground truncate">
                             {getRollDisplay(player.frames, fi, 2)}
                           </span>
                         )}
                       </div>
-                      <div className="p-px text-primary font-bold text-[9px]">
+                      <div className="p-px text-primary font-bold text-[10px] min-h-[14px]">
                         {cumuls[fi] ?? ""}
                       </div>
                     </div>
