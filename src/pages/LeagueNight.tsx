@@ -885,12 +885,21 @@ const GroupPlay = () => {
           ) : (
             <div className="text-center">
               <input
+                ref={frameInputRef}
                 type="number"
+                inputMode="numeric"
                 min="0"
                 max="10"
                 value={frameInput}
                 onChange={(e) => setFrameInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); confirmFrameInput(); } }}
+                onBlur={(e) => {
+                  // Refocus unless user clicked outside the scoring panel
+                  const next = e.relatedTarget as HTMLElement | null;
+                  if (!next || next.tagName === "BUTTON") {
+                    setTimeout(() => frameInputRef.current?.focus(), 0);
+                  }
+                }}
                 className="border border-border bg-input px-3 py-2 text-foreground text-lg text-center outline-none w-24"
                 placeholder="0-10"
                 autoFocus
