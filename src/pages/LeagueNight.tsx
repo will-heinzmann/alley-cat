@@ -138,27 +138,64 @@ const getCurrentFrameIndex = (frames: FrameData[]): number => {
   return 10;
 };
 
+const GROUP_DRAFT_KEY = "alleycat_group_play_draft";
+
+interface GroupDraft {
+  phase: "setup" | "playing";
+  players: Player[];
+  playerNames: string[];
+  activePlayerIdx: number;
+  scoringMode: "frame" | "pin";
+  alleyId: string;
+  alleySearch: string;
+  date: string;
+  savedAt: number;
+}
+
+const saveGroupDraft = (draft: Omit<GroupDraft, "savedAt">) => {
+  try {
+    localStorage.setItem(GROUP_DRAFT_KEY, JSON.stringify({ ...draft, savedAt: Date.now() }));
+  } catch {}
+};
+
+const loadGroupDraft = (): GroupDraft | null => {
+  try {
+    const raw = localStorage.getItem(GROUP_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as GroupDraft;
+    if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(GROUP_DRAFT_KEY);
+      return null;
+    }
+    return draft;
+  } catch { return null; }
+};
+
+const clearGroupDraft = () => { localStorage.removeItem(GROUP_DRAFT_KEY); };
+
 const GroupPlay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [phase, setPhase] = useState<"setup" | "playing" | "summary">("setup");
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [playerNames, setPlayerNames] = useState<string[]>(["", ""]);
-  const [activePlayerIdx, setActivePlayerIdx] = useState(0);
+  const draft = loadGroupDraft();
+
+  const [phase, setPhase] = useState<"setup" | "playing" | "summary">(draft?.phase ?? "setup");
+  const [players, setPlayers] = useState<Player[]>(draft?.players ?? []);
+  const [playerNames, setPlayerNames] = useState<string[]>(draft?.playerNames ?? ["", ""]);
+  const [activePlayerIdx, setActivePlayerIdx] = useState(draft?.activePlayerIdx ?? 0);
 
   const [standing, setStanding] = useState<boolean[]>(allStanding);
   const [hit, setHit] = useState<boolean[]>(noHits);
   const [currentRoll, setCurrentRoll] = useState(0);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [scoringMode, setScoringMode] = useState<"frame" | "pin">("frame");
+  const [scoringMode, setScoringMode] = useState<"frame" | "pin">(draft?.scoringMode ?? "frame");
   const [frameInput, setFrameInput] = useState("");
 
   const [alleys, setAlleys] = useState<any[]>([]);
-  const [alleyId, setAlleyId] = useState("");
-  const [alleySearch, setAlleySearch] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [alleyId, setAlleyId] = useState(draft?.alleyId ?? "");
+  const [alleySearch, setAlleySearch] = useState(draft?.alleySearch ?? "");
+  const [date, setDate] = useState(draft?.date ?? new Date().toISOString().split("T")[0]);
   const [saving, setSaving] = useState(false);
 
   // Past games
@@ -211,6 +248,29 @@ const GroupPlay = () => {
     fetchAlleys();
     fetchPastGames();
   }, [user]);
+
+  // Auto-save draft while in setup or playing
+  useEffect(() => {
+    if (phase === "setup" || phase === "playing") {
+      saveGroupDraft({ phase, players, playerNames, activePlayerIdx, scoringMode, alleyId, alleySearch, date });
+    }
+  }, [phase, players, playerNames, activePlayerIdx, scoringMode, alleyId, alleySearch, date]);
+
+  // Resume: re-open scoring input on mount if we restored a playing session
+  useEffect(() => {
+    if (phase === "playing" && players.length > 0) {
+      const idx = getCurrentFrameIndex(players[activePlayerIdx].frames);
+      if (idx < 10) {
+        if (scoringMode === "pin") {
+          openPinSelector(players, activePlayerIdx);
+        } else {
+          setShowPinModal(true);
+          setFrameInput("");
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addPlayerSlot = () => {
     if (playerNames.length >= 6) return;
@@ -475,6 +535,7 @@ const GroupPlay = () => {
       toast({ title: "Group game saved!", description: "+50 AlleyPoints for your score" });
     }
     setSaving(false);
+    clearGroupDraft();
     fetchPastGames();
   };
 
@@ -700,7 +761,7 @@ const GroupPlay = () => {
               [Share Results]
             </button>
           </div>
-          <button onClick={() => { setPhase("setup"); setPlayers([]); fetchPastGames(); }}
+          <button onClick={() => { clearGroupDraft(); setPhase("setup"); setPlayers([]); setPlayerNames(["", ""]); setActivePlayerIdx(0); fetchPastGames(); }}
             className="w-full border border-border bg-muted text-foreground py-1.5 text-xs hover:opacity-80">
             [New Game]
           </button>
