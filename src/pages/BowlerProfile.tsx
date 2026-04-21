@@ -4,6 +4,8 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import ConsistencyCard from "@/components/ConsistencyCard";
+import BowlingBag from "@/components/BowlingBag";
 
 const getAvatarUrl = (path: string | null) => {
   if (!path) return null;
@@ -290,7 +292,12 @@ const BowlerProfile = () => {
           </table>
         </div>
 
-        {/* Game History */}
+        {/* Consistency + Bag */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <ConsistencyCard scores={games.map((g: any) => g.score)} />
+          <BowlingBag ownerId={userId!} />
+        </div>
+
         <div>
           <h2 className="text-sm text-primary font-bold mb-2">🎳 Game History</h2>
           {games.length === 0 ? (

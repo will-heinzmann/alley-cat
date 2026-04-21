@@ -369,6 +369,8 @@ const AlleyDetail = () => {
 
         <AlleySeoSection alley={alley} relatedAlleys={relatedAlleys} />
 
+        <LocalLegends alleyId={alley.id} alleyName={alley.name} />
+
         <AlleyLeaderboard alleyId={alley.id} alleyName={alley.name} />
 
         <div className="flex items-center justify-between">
