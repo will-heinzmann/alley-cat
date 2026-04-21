@@ -53,14 +53,22 @@ async function fetchAlleySlugs(supabaseUrl: string, anonKey: string, limit?: num
 export async function getPrerenderRoutes(env: BuildEnv) {
   const supabaseUrl = env.VITE_SUPABASE_URL ?? env.SUPABASE_URL;
   const anonKey = env.VITE_SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_ANON_KEY;
-  const limit = env.PRERENDER_ROUTE_LIMIT ? Number(env.PRERENDER_ROUTE_LIMIT) : undefined;
+  const limitEnv = env.PRERENDER_ROUTE_LIMIT ? Number(env.PRERENDER_ROUTE_LIMIT) : 0;
+  const limit = Number.isFinite(limitEnv) ? limitEnv : 0;
 
-  if (!supabaseUrl || !anonKey) {
-    console.warn("[prerender] Missing backend env vars; skipping alley prerendering.");
+  // Build-time prerendering of every alley exceeds the build timeout.
+  // The seo-proxy edge function serves prerendered HTML on-demand to bots,
+  // so only prerender alley routes when explicitly opted in via PRERENDER_ROUTE_LIMIT.
+  if (!supabaseUrl || !anonKey || limit <= 0) {
+    if (!supabaseUrl || !anonKey) {
+      console.warn("[prerender] Missing backend env vars; skipping alley prerendering.");
+    } else {
+      console.log("[prerender] Skipping alley prerendering (set PRERENDER_ROUTE_LIMIT to enable).");
+    }
     return [];
   }
 
-  const alleyRoutes = await fetchAlleySlugs(supabaseUrl, anonKey, Number.isFinite(limit) ? limit : undefined);
+  const alleyRoutes = await fetchAlleySlugs(supabaseUrl, anonKey, limit);
   console.log(`[prerender] Preparing ${alleyRoutes.length} alley routes.`);
   return alleyRoutes;
 }
