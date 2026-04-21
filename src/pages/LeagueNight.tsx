@@ -203,6 +203,19 @@ const GroupPlay = () => {
   const [loadingPast, setLoadingPast] = useState(true);
 
   const scoreboardRef = useRef<HTMLDivElement>(null);
+  const frameInputRef = useRef<HTMLInputElement>(null);
+
+  // Keep the score input focused so users can rapid-fire entries
+  useEffect(() => {
+    if (phase === "playing" && scoringMode === "frame" && showPinModal) {
+      // Defer to ensure DOM is settled after state updates
+      const t = setTimeout(() => {
+        frameInputRef.current?.focus();
+        frameInputRef.current?.select();
+      }, 0);
+      return () => clearTimeout(t);
+    }
+  }, [phase, scoringMode, showPinModal, activePlayerIdx, currentRoll, players]);
 
   const fetchPastGames = async () => {
     if (!user) { setLoadingPast(false); return; }
@@ -872,12 +885,21 @@ const GroupPlay = () => {
           ) : (
             <div className="text-center">
               <input
+                ref={frameInputRef}
                 type="number"
+                inputMode="numeric"
                 min="0"
                 max="10"
                 value={frameInput}
                 onChange={(e) => setFrameInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); confirmFrameInput(); } }}
+                onBlur={(e) => {
+                  // Refocus unless user clicked outside the scoring panel
+                  const next = e.relatedTarget as HTMLElement | null;
+                  if (!next || next.tagName === "BUTTON") {
+                    setTimeout(() => frameInputRef.current?.focus(), 0);
+                  }
+                }}
                 className="border border-border bg-input px-3 py-2 text-foreground text-lg text-center outline-none w-24"
                 placeholder="0-10"
                 autoFocus
