@@ -777,45 +777,54 @@ const GroupPlay = () => {
   const rollLabel = currentRoll === 0 ? "Roll 1" : currentRoll === 1 ? "Roll 2" : "Roll 3";
 
   return (
-    <div className="min-h-screen pb-20 p-2">
-      <header className="border-b border-border pb-2 mb-2">
+    <div className="min-h-screen pb-20 p-2 max-w-5xl mx-auto">
+      <header className="border-b border-border pb-2 mb-2 flex items-center justify-between">
+        <Link to="/leagues" className="text-primary text-xs hover:underline">← Back to Leagues</Link>
         <h1 className="text-sm text-primary font-bold">🏆 Group Play</h1>
+        <span className="text-[10px] text-muted-foreground">draft auto-saved</span>
       </header>
 
       {/* Single-game scoreboard for all players (10 frames, fits the screen) */}
       <p className="text-[10px] text-muted-foreground mb-1 px-1">One game at a time — start a new game from the summary screen for game 2.</p>
-      <div className="space-y-1 mb-3">
+      <div className="space-y-2 mb-3">
         {players.map((player, pIdx) => {
           const isActive = pIdx === activePlayerIdx;
           const cumuls = getCumulatives(player.frames);
           const done = getCurrentFrameIndex(player.frames) >= 10;
+          const playerActiveFrame = isActive ? getCurrentFrameIndex(player.frames) : -1;
           return (
-            <div key={pIdx} className={`border ${isActive ? "border-primary" : "border-border"} bg-card`}>
-              <div className={`px-2 py-0.5 border-b border-border flex justify-between ${isActive ? "bg-primary/10" : "bg-muted"}`}>
-                <span className={`text-[10px] font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+            <div key={pIdx} className={`border-2 ${isActive ? "border-primary shadow-[0_0_0_2px_hsl(var(--primary)/0.2)]" : "border-border"} bg-card`}>
+              <div className={`px-2 py-1 border-b border-border flex justify-between items-center ${isActive ? "bg-primary/15" : "bg-muted"}`}>
+                <span className={`text-sm font-bold ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                   {isActive && "▶ "}{player.name}{done && " ✓"}
                 </span>
-                <span className="text-[10px] text-secondary font-bold">{calculateScore(player.frames)}</span>
+                <span className="text-base text-secondary font-bold">{calculateScore(player.frames)}</span>
               </div>
               <div className="grid w-full" style={{ gridTemplateColumns: "repeat(9, 1fr) 1.5fr" }}>
                 {player.frames.map((_, fi) => {
                   const isStrike = fi < 9 && player.frames[fi].roll1 === 10;
+                  const isActiveFrame = fi === playerActiveFrame;
                   return (
-                    <div key={fi} className="border-r border-border last:border-0 text-center min-w-0">
-                      <div className="flex border-b border-border text-[9px] min-h-[14px]">
-                        <span className="flex-1 p-px border-r border-border text-foreground truncate">
+                    <div
+                      key={fi}
+                      className={`border-r border-border last:border-0 text-center min-w-0 ${
+                        isActiveFrame ? "bg-primary/25 ring-2 ring-inset ring-primary" : ""
+                      }`}
+                    >
+                      <div className="flex border-b border-border text-sm sm:text-base min-h-[28px] sm:min-h-[34px] items-center">
+                        <span className="flex-1 p-1 border-r border-border text-foreground truncate font-semibold">
                           {getRollDisplay(player.frames, fi, 0)}
                         </span>
-                        <span className="flex-1 p-px text-foreground truncate">
+                        <span className="flex-1 p-1 text-foreground truncate font-semibold">
                           {isStrike ? "" : getRollDisplay(player.frames, fi, 1)}
                         </span>
                         {fi === 9 && (
-                          <span className="flex-1 p-px border-l border-border text-foreground truncate">
+                          <span className="flex-1 p-1 border-l border-border text-foreground truncate font-semibold">
                             {getRollDisplay(player.frames, fi, 2)}
                           </span>
                         )}
                       </div>
-                      <div className="p-px text-primary font-bold text-[10px] min-h-[14px]">
+                      <div className="p-1 text-primary font-bold text-xs sm:text-sm min-h-[20px]">
                         {cumuls[fi] ?? ""}
                       </div>
                     </div>
