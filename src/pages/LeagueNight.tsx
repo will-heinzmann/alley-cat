@@ -249,6 +249,29 @@ const GroupPlay = () => {
     fetchPastGames();
   }, [user]);
 
+  // Auto-save draft while in setup or playing
+  useEffect(() => {
+    if (phase === "setup" || phase === "playing") {
+      saveGroupDraft({ phase, players, playerNames, activePlayerIdx, scoringMode, alleyId, alleySearch, date });
+    }
+  }, [phase, players, playerNames, activePlayerIdx, scoringMode, alleyId, alleySearch, date]);
+
+  // Resume: re-open scoring input on mount if we restored a playing session
+  useEffect(() => {
+    if (phase === "playing" && players.length > 0) {
+      const idx = getCurrentFrameIndex(players[activePlayerIdx].frames);
+      if (idx < 10) {
+        if (scoringMode === "pin") {
+          openPinSelector(players, activePlayerIdx);
+        } else {
+          setShowPinModal(true);
+          setFrameInput("");
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const addPlayerSlot = () => {
     if (playerNames.length >= 6) return;
     setPlayerNames(prev => [...prev, ""]);
