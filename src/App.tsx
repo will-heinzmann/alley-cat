@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Feed from "./pages/Feed";
 import Index from "./pages/Index";
 import AlleyDetail from "./pages/AlleyDetail";
+import CityPage from "./pages/CityPage";
 import ScoreLog from "./pages/ScoreLog";
 import Leaderboard from "./pages/Leaderboard";
 import BowlerProfile from "./pages/BowlerProfile";
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/" element={<Feed />} />
             <Route path="/alleys" element={<Index />} />
             <Route path="/alley/:slug" element={<AlleyDetail />} />
+            <Route path="/city/:citySlug" element={<CityPage />} />
             <Route path="/log" element={<ScoreLog />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/bowler/:userId" element={<BowlerProfile />} />
