@@ -65,11 +65,13 @@ export type Database = {
         Row: {
           address: string
           alley_rating: number
+          amenities: string[]
           beer_rating: number
           city: string
           created_at: string
           id: string
           lane_count: number
+          lane_surface: string
           lat: number
           lng: number
           name: string
@@ -85,11 +87,13 @@ export type Database = {
         Insert: {
           address: string
           alley_rating?: number
+          amenities?: string[]
           beer_rating?: number
           city: string
           created_at?: string
           id?: string
           lane_count?: number
+          lane_surface?: string
           lat?: number
           lng?: number
           name: string
@@ -105,11 +109,13 @@ export type Database = {
         Update: {
           address?: string
           alley_rating?: number
+          amenities?: string[]
           beer_rating?: number
           city?: string
           created_at?: string
           id?: string
           lane_count?: number
+          lane_surface?: string
           lat?: number
           lng?: number
           name?: string
