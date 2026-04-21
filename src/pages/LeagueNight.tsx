@@ -138,6 +138,41 @@ const getCurrentFrameIndex = (frames: FrameData[]): number => {
   return 10;
 };
 
+const GROUP_DRAFT_KEY = "alleycat_group_play_draft";
+
+interface GroupDraft {
+  phase: "setup" | "playing";
+  players: Player[];
+  playerNames: string[];
+  activePlayerIdx: number;
+  scoringMode: "frame" | "pin";
+  alleyId: string;
+  alleySearch: string;
+  date: string;
+  savedAt: number;
+}
+
+const saveGroupDraft = (draft: Omit<GroupDraft, "savedAt">) => {
+  try {
+    localStorage.setItem(GROUP_DRAFT_KEY, JSON.stringify({ ...draft, savedAt: Date.now() }));
+  } catch {}
+};
+
+const loadGroupDraft = (): GroupDraft | null => {
+  try {
+    const raw = localStorage.getItem(GROUP_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as GroupDraft;
+    if (Date.now() - draft.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(GROUP_DRAFT_KEY);
+      return null;
+    }
+    return draft;
+  } catch { return null; }
+};
+
+const clearGroupDraft = () => { localStorage.removeItem(GROUP_DRAFT_KEY); };
+
 const GroupPlay = () => {
   const { user } = useAuth();
   const { toast } = useToast();
