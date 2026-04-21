@@ -718,6 +718,24 @@ const ScoreLog = () => {
             {imagePreview && <img src={imagePreview} alt="Preview" className="mt-1 max-h-32 border border-border" />}
           </div>
 
+          {userBalls.length > 0 && (
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Ball used (optional):</label>
+              <select
+                value={ballId}
+                onChange={(e) => setBallId(e.target.value)}
+                className="w-full border border-border bg-input px-2 py-1 text-foreground text-sm outline-none"
+              >
+                <option value="">— None —</option>
+                {userBalls.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    🎳 {b.name}{b.weight ? ` (${b.weight} lbs)` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button onClick={saveCurrentGame} disabled={saving || !score}
             className="w-full border border-border bg-primary text-primary-foreground py-2 text-sm hover:opacity-80 disabled:opacity-50">
             {saving ? "Saving..." : currentGameNumber < totalGames
