@@ -535,6 +535,7 @@ const GroupPlay = () => {
       toast({ title: "Group game saved!", description: "+50 AlleyPoints for your score" });
     }
     setSaving(false);
+    clearGroupDraft();
     fetchPastGames();
   };
 
@@ -760,7 +761,7 @@ const GroupPlay = () => {
               [Share Results]
             </button>
           </div>
-          <button onClick={() => { setPhase("setup"); setPlayers([]); fetchPastGames(); }}
+          <button onClick={() => { clearGroupDraft(); setPhase("setup"); setPlayers([]); setPlayerNames(["", ""]); setActivePlayerIdx(0); fetchPastGames(); }}
             className="w-full border border-border bg-muted text-foreground py-1.5 text-xs hover:opacity-80">
             [New Game]
           </button>
