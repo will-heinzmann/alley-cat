@@ -179,6 +179,7 @@ export function buildAlleyHtml(shell: string, alley: AlleyRow): string {
         "@type": "AggregateRating",
         ratingValue: alley.alley_rating,
         bestRating: 5,
+        reviewCount: 1,
       },
     }),
   };
