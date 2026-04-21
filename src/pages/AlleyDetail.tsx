@@ -466,21 +466,32 @@ const AlleyDetail = () => {
         )}
       </div>
 
-      <noscript>
-        <div>
-          <h2>{alley.name} – {alley.city}, {alley.state}</h2>
-          <p>{generateAlleyDescription(alley)}</p>
-          <p>Address: {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}</p>
-          {alley.phone && <p>Phone: {alley.phone}</p>}
-          {relatedAlleys.length > 0 && (
+      {/*
+        SEO content block — kept in the rendered DOM (NOT wrapped in <noscript>)
+        so JS-enabled crawlers like Googlebot, Bingbot, and Ubersuggest can
+        index unique alley text immediately. Visually hidden but accessible
+        to screen readers and crawlers.
+      */}
+      <section
+        aria-label={`About ${alley.name}`}
+        className="sr-only"
+      >
+        <h2>{alley.name} – {alley.city}, {alley.state}</h2>
+        <p>{generateAlleyDescription(alley)}</p>
+        <p>Address: {alley.address}, {alley.city}, {alley.state} {alley.zip_code || ""}</p>
+        {alley.phone && <p>Phone: {alley.phone}</p>}
+        <p>Lanes: {alley.lane_count || "Unknown"}. Oil pattern: {alley.oil_pattern}. Pinsetter: {(alley as any).pinsetter_type || "Unknown"}.</p>
+        {relatedAlleys.length > 0 && (
+          <>
+            <h3>Other bowling alleys in {alley.state}</h3>
             <ul>
               {relatedAlleys.map((a) => (
                 <li key={a.slug}>{a.name} — {a.city}, {alley.state}</li>
               ))}
             </ul>
-          )}
-        </div>
-      </noscript>
+          </>
+        )}
+      </section>
     </div>
   );
 };
