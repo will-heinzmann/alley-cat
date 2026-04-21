@@ -264,6 +264,8 @@ const ScoreLog = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [alleySearch, setAlleySearch] = useState(draft?.alleySearch ?? "");
   const [saving, setSaving] = useState(false);
+  const [ballId, setBallId] = useState<string>("");
+  const [userBalls, setUserBalls] = useState<Array<{ id: string; name: string; weight: number | null }>>([]);
 
   const [selectedGame, setSelectedGame] = useState(0);
   const [online, setOnline] = useState(isOnline());
