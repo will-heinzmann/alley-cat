@@ -248,6 +248,7 @@ const Feed = () => {
                   <Link to="/log" className="block text-xs text-foreground hover:text-primary">[📝 Log a Game]</Link>
                   <Link to="/alleys" className="block text-xs text-foreground hover:text-primary">[🎳 Browse Alleys]</Link>
                   <Link to="/league" className="block text-xs text-foreground hover:text-primary">[👥 Group Play]</Link>
+                  <Link to="/tools/bowling-score-calculator" className="block text-xs text-foreground hover:text-primary md:hidden">[🧮 Score Calculator]</Link>
                 </div>
               </div>
             )}
