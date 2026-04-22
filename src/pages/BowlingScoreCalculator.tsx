@@ -1,3 +1,4 @@
+// Bowling Score Calculator — SEO landing tool
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import FrameByFrameInput from "@/components/FrameByFrameInput";
