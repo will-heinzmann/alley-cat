@@ -24,6 +24,7 @@ Deno.serve(async () => {
   ];
 
   const blogSlugs = [
+    "best-bowling-tracker-apps",
     "how-to-calculate-bowling-handicap",
     "alley-cat-bowling",
     "bowling-stat-tracker",
