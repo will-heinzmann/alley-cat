@@ -76,11 +76,35 @@ const BlogPost = () => {
               <h2 className="text-sm text-primary border-b border-border pb-1 mb-2">
                 {section.heading}
               </h2>
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
-                {section.content}
-              </p>
+              <p
+                className="text-sm text-foreground leading-relaxed whitespace-pre-line"
+                dangerouslySetInnerHTML={{
+                  __html: section.content.replace(
+                    /\*\*(.+?)\*\*/g,
+                    '<strong class="text-primary">$1</strong>'
+                  ),
+                }}
+              />
             </section>
           ))}
+
+          {post.faqs && post.faqs.length > 0 && (
+            <section>
+              <h2 className="text-sm text-primary border-b border-border pb-1 mb-2">
+                Frequently Asked Questions
+              </h2>
+              <dl className="space-y-3">
+                {post.faqs.map((faq, i) => (
+                  <div key={i} className="border border-border p-3">
+                    <dt className="text-sm text-primary mb-1">{faq.question}</dt>
+                    <dd className="text-sm text-foreground leading-relaxed">
+                      {faq.answer}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
 
           <div className="border border-primary p-4 text-center bg-muted mt-8">
             <p className="text-sm text-foreground mb-3">{post.cta}</p>
