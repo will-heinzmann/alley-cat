@@ -25,7 +25,6 @@ import BottomNav from "./components/BottomNav";
 import Header from "./components/Header";
 import QuickAddFab from "./components/QuickAddFab";
 
-// Routes include /tools/bowling-score-calculator
 const queryClient = new QueryClient();
 
 const App = () => (
