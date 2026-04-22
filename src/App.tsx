@@ -19,6 +19,7 @@ import Leagues from "./pages/Leagues";
 import LeagueDetail from "./pages/LeagueDetail";
 import BlogIndex from "./pages/BlogIndex";
 import BlogPost from "./pages/BlogPost";
+import BowlingScoreCalculator from "./pages/BowlingScoreCalculator";
 import NotFound from "./pages/NotFound";
 import BottomNav from "./components/BottomNav";
 import Header from "./components/Header";
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/admin/alley-updates" element={<AlleyUpdates />} />
             <Route path="/blog" element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/tools/bowling-score-calculator" element={<BowlingScoreCalculator />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <QuickAddFab />
