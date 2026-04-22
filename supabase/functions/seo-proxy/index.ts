@@ -26,6 +26,7 @@ function normalizePath(rawPath: string | null, slug: string | null) {
     normalized === "/blog" ||
     normalized === "/alleys" ||
     normalized === "/leaderboard" ||
+    normalized === "/tools/bowling-score-calculator" ||
     /^\/alley\/[^/]+$/.test(normalized) ||
     /^\/blog\/[^/]+$/.test(normalized)
   ) {

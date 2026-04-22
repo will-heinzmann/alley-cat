@@ -19,7 +19,7 @@ const BOT_REGEX =
   /(googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|slackbot|discordbot|whatsapp|telegrambot|applebot|petalbot|semrushbot|ahrefsbot|mj12bot|dotbot|rogerbot|sitebulb|screaming\s?frog|ubersuggest|bingpreview|chrome-lighthouse|crawler|spider|bot)/i;
 
 const PRERENDERABLE_PATH =
-  /^\/(|alleys|leaderboard|blog|blog\/[^/]+|alley\/[^/]+)$/;
+  /^\/(|alleys|leaderboard|blog|blog\/[^/]+|alley\/[^/]+|tools\/bowling-score-calculator)$/;
 
 export const config = {
   matcher: [
@@ -29,6 +29,7 @@ export const config = {
     "/blog",
     "/blog/:slug",
     "/alley/:slug",
+    "/tools/bowling-score-calculator",
   ],
 };
 

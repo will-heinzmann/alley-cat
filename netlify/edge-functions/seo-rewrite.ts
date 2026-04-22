@@ -17,7 +17,7 @@ const BOT_REGEX =
   /(googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot|embedly|pinterest|slackbot|discordbot|whatsapp|telegrambot|applebot|petalbot|semrushbot|ahrefsbot|mj12bot|dotbot|rogerbot|sitebulb|screaming\s?frog|ubersuggest|bingpreview|chrome-lighthouse|crawler|spider|bot)/i;
 
 const PRERENDERABLE_PATH =
-  /^\/(|alleys|leaderboard|blog|blog\/[^/]+|alley\/[^/]+)$/;
+  /^\/(|alleys|leaderboard|blog|blog\/[^/]+|alley\/[^/]+|tools\/bowling-score-calculator)$/;
 
 export default async (request: Request, context: Context) => {
   const url = new URL(request.url);
