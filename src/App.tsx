@@ -30,37 +30,37 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <HelmetProvider>
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Header />
-          <Routes>
-            <Route path="/" element={<Feed />} />
-            <Route path="/alleys" element={<Index />} />
-            <Route path="/alley/:slug" element={<AlleyDetail />} />
-            <Route path="/city/:citySlug" element={<CityPage />} />
-            <Route path="/log" element={<ScoreLog />} />
-            <Route path="/leaderboard" element={<Leaderboard />} />
-            <Route path="/bowler/:userId" element={<BowlerProfile />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/league" element={<LeagueNight />} />
-            <Route path="/leagues" element={<Leagues />} />
-            <Route path="/leagues/:id" element={<LeagueDetail />} />
-            <Route path="/admin/alley-updates" element={<AlleyUpdates />} />
-            <Route path="/blog" element={<BlogIndex />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/tools/bowling-score-calculator" element={<BowlingScoreCalculator />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <QuickAddFab />
-          <BottomNav />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Header />
+            <Routes>
+              <Route path="/" element={<Feed />} />
+              <Route path="/alleys" element={<Index />} />
+              <Route path="/alley/:slug" element={<AlleyDetail />} />
+              <Route path="/city/:citySlug" element={<CityPage />} />
+              <Route path="/log" element={<ScoreLog />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/bowler/:userId" element={<BowlerProfile />} />
+              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/league" element={<LeagueNight />} />
+              <Route path="/leagues" element={<Leagues />} />
+              <Route path="/leagues/:id" element={<LeagueDetail />} />
+              <Route path="/admin/alley-updates" element={<AlleyUpdates />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/tools/bowling-score-calculator" element={<BowlingScoreCalculator />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <QuickAddFab />
+            <BottomNav />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   </HelmetProvider>
 );
 
