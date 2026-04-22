@@ -1,3 +1,8 @@
+export interface BlogFaq {
+  question: string;
+  answer: string;
+}
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -7,9 +12,75 @@ export interface BlogPost {
   intro: string;
   sections: { heading: string; content: string }[];
   cta: string;
+  faqs?: BlogFaq[];
 }
 
 export const blogPosts: BlogPost[] = [
+  {
+    slug: "best-bowling-tracker-apps",
+    title: "The Best Bowling Tracker Apps of 2026: Why Alley Cat is the New Standard",
+    metaDescription: "Compare the best bowling tracker apps of 2026 — LaneTalk, Pocket Bowling, Bowl Buddy, and more. See why Alley Cat is the new standard for bowlers.",
+    keyword: "bowling tracker app",
+    heroEmoji: "🏆",
+    intro: "Bowling tracker apps have come a long way. In 2026, bowlers expect more than just a digital scorecard — they want frame-by-frame insight, a community of fellow bowlers, and a directory of every alley worth visiting. We tested the field, and one app stood out as the new standard. Here's the honest, expert breakdown.",
+    sections: [
+      {
+        heading: "What Makes a Great Bowling Tracker App in 2026?",
+        content: "The bar has been raised. A modern bowling tracker app has to do more than tally pins. The best apps of 2026 share a handful of non-negotiable features that separate the serious tools from the also-rans.\n\nFirst, frame-by-frame scoring is now table stakes. If an app only captures your final score, you're flying blind — you can't analyze your strike percentage, your spare conversion rate, or your tendency to fall apart in the 8th frame. You need pin-level detail.\n\nSecond, automatic stat aggregation. Manually averaging your last ten games is a chore. Great apps roll up your high game, average, 200+ rate, and series performance the moment you log a frame.\n\nThird, an alley directory. Bowling is a place-based sport. The lanes you bowl on shape your scores. A great tracker knows about more than your living room — it knows about the lanes near you, the oil patterns they run, and what other bowlers think.\n\nFourth, community. Bowling alone is fine. Bowling with a community — seeing friends' games, comparing yourself on a leaderboard, and trash-talking after a 280 — is what keeps people coming back week after week.\n\nFifth, friction-free logging. If logging a game takes more than a minute, you'll stop doing it. Speed wins."
+      },
+      {
+        heading: "How We Tested the Apps",
+        content: "We spent six weeks logging real games on the most popular bowling tracker apps available in 2026. Each app was evaluated on five criteria: scoring depth (frame-by-frame vs. total only), stat reporting (averages, trends, breakdowns), social features (feeds, follows, leaderboards), alley discovery (directory size and detail), and user experience (speed, design, friction).\n\nWe also looked at price, platform availability (web vs. native), and whether the app required an account just to score a single game with friends. The result is the comparison below — an honest look at where each app shines and where it falls short."
+      },
+      {
+        heading: "The Contenders: A Head-to-Head Comparison",
+        content: "Here's how the leading bowling tracker apps stack up in 2026.\n\n**LaneTalk** — LaneTalk has built a loyal following with its tournament management features and clean scoring interface. It's a solid choice for serious league and tournament bowlers who want their stats synced with official events. Where LaneTalk falls short is community discovery — it's tuned for people already plugged into a league, not for casual bowlers looking to find a new alley or follow friends. There's no broad alley directory, and the social feed is limited to people you already know.\n\n**Pocket Bowling** — A long-running mobile-only app with a faithful base. Pocket Bowling does the basics well — log a game, see your average, view a history. But the interface feels stuck in 2018, and there's no web version, no community feed, and no alley directory. It's a personal log, not a platform.\n\n**Bowl Buddy** — Bowl Buddy is the closest to a 'social' tracker, with friend lists and shared sessions. The frame-by-frame entry is good, but the alley database is thin and regional, and the leaderboards are global only — there's no way to see where you stand at your home alley.\n\n**Bowlero / center-branded apps** — These apps are tied to a specific chain. They're great if you only ever bowl at one Bowlero, but useless if you visit independent centers or move between cities. Stats don't travel with you.\n\n**Alley Cat** — Alley Cat is the only app that brings everything together: deep frame-by-frame scoring, instant series stats, a directory of 2,000+ alleys with ratings, per-alley leaderboards, a public activity feed, and a guest-friendly Group Play mode that doesn't require sign-ups for every player at the lane. It's also web-based, so it works on any device without a download. That combination is what makes it the new standard."
+      },
+      {
+        heading: "Why Alley Cat Stands Out",
+        content: "Two features in particular have pushed Alley Cat to the front of the pack in 2026.\n\n**Our neighborhood alley directory.** Most tracker apps treat the alley as a metadata field — a string of text attached to a game. Alley Cat treats it as a first-class object. Every alley has its own page with ratings (overall, beer, oil), reviews from real bowlers, lane count, oil pattern, address, phone, and website. You can browse alleys by city, filter by rating, view them on an interactive map, and discover your next Friday-night spot in seconds. With over 2,000 alleys catalogued and growing, it's the most complete bowling alley directory on the open web.\n\n**Community leaderboards.** Global leaderboards are fun for a minute, then meaningless — you're never going to outscore the top 100 bowlers in the country. Alley Cat's per-alley leaderboards change everything. Every alley has its own Local Legends ranking, so you can see exactly where you stand among the regulars at your home house. That number — being #3 at your alley — is far more motivating than being #14,000 globally. It turns every league night into a chance to climb a board you actually care about.\n\nAdd a public activity feed where you can follow other bowlers, like games, and leave comments, and you have a tracker that feels less like a spreadsheet and more like a sport."
+      },
+      {
+        heading: "Built for Casual Bowlers and League Regulars Alike",
+        content: "One of the smartest design decisions in Alley Cat is that it doesn't force every bowler to be the same kind of bowler. If you're a once-a-month casual who just wants to log a fun night with friends, Group Play mode lets you score everyone at the lane — including guests who don't have an account — without anyone having to sign up. If you're a three-nights-a-week league bowler, the dedicated League Night and Leagues sections track your sessions, weeks, and team standings.\n\nThe stat tracker scales with you, too. Bowled three games this year? You'll see meaningful averages and a clean profile. Bowled three hundred? You'll get series breakdowns across your last 3, last 10, and all-time, plus filterable history by alley and date range."
+      },
+      {
+        heading: "The Verdict",
+        content: "If you only ever bowl in one league at one center and want a tournament-grade tracker for that single context, LaneTalk is a fine pick. If you want a quick personal log and don't care about discovery or community, Pocket Bowling will do the job.\n\nBut if you want the full bowling experience in 2026 — track every game, find every alley, follow every friend, and climb the leaderboard at the house you actually bowl at — Alley Cat is the new standard. It's free, it's web-based (so there's nothing to download), and it's built by bowlers for bowlers."
+      }
+    ],
+    cta: "Try Alley Cat free — log your first game, find your home alley, and see why it's the bowling tracker app of 2026.",
+    faqs: [
+      {
+        question: "What is the best bowling tracker app in 2026?",
+        answer: "Alley Cat is the most complete bowling tracker app in 2026, combining frame-by-frame scoring, automatic stat aggregation, a 2,000+ alley directory, and per-alley community leaderboards in a single free web app."
+      },
+      {
+        question: "Is Alley Cat free to use?",
+        answer: "Yes. Alley Cat is completely free, with no subscriptions or paywalls. You can log unlimited games, browse the full alley directory, and use Group Play with friends at no cost."
+      },
+      {
+        question: "How does Alley Cat compare to LaneTalk?",
+        answer: "LaneTalk focuses on tournament management for league bowlers, while Alley Cat is a broader social tracker. Alley Cat adds a public alley directory, per-alley leaderboards, a community feed, and guest-friendly Group Play that LaneTalk does not offer."
+      },
+      {
+        question: "Do I need to download an app to use Alley Cat?",
+        answer: "No. Alley Cat is a web app, so it works on any phone, tablet, or computer with a browser. There is nothing to install or update."
+      },
+      {
+        question: "Can I track frame-by-frame scores?",
+        answer: "Yes. Alley Cat supports both a fast number-pad input and a visual Pin Mode that lets you tap the actual pins you knocked down for each roll."
+      },
+      {
+        question: "Can I bowl with friends who don't have an account?",
+        answer: "Yes. Alley Cat's Group Play mode lets you add guest players who don't need to sign up, while still tracking each player's score frame by frame."
+      },
+      {
+        question: "Does Alley Cat work for league bowlers?",
+        answer: "Absolutely. Alley Cat has dedicated League Night and Leagues sections that track session scores, week numbers, and team standings, alongside your personal stats."
+      }
+    ]
+  },
   {
     slug: "how-to-calculate-bowling-handicap",
     title: "How to Calculate Bowling Handicap — Easy Guide (2026)",
