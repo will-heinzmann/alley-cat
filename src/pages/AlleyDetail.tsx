@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { useFavoriteAlleys } from "@/hooks/useFavoriteAlleys";
 import AlleyLeaderboard from "@/components/AlleyLeaderboard";
@@ -11,8 +12,6 @@ import AlleyMap from "@/components/AlleyMap";
 import AmenityEditor from "@/components/AmenityEditor";
 import LocalLegends from "@/components/LocalLegends";
 import { generateAlleyDescription } from "@/lib/alleyDescription";
-
-const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
 
 type RelatedAlley = {
   name: string;

@@ -74,10 +74,10 @@ const AlleyUpdates = () => {
     }
   };
 
-  if (!user) {
+  if (!user || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">Sign in to view this page.</p>
+        <p className="text-sm text-muted-foreground">{adminLoading ? "Loading..." : "Sign in to view this page."}</p>
       </div>
     );
   }
