@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
-const ADMIN_ID = "094958ab-cf6a-4ab2-a771-ff8697b4e65f";
-
 const AlleyUpdates = () => {
   const { user } = useAuth();
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const { toast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const isAdmin = user?.id === ADMIN_ID;
 
   useEffect(() => {
     fetchRequests();
