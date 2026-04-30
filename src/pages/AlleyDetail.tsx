@@ -39,7 +39,7 @@ const AlleyDetail = () => {
   const [editLaneCount, setEditLaneCount] = useState(0);
   const [editPhone, setEditPhone] = useState("");
 
-  const isAdmin = user?.id === ADMIN_ID;
+  const { isAdmin } = useIsAdmin();
   const isFavorited = alley ? favoriteIds.has(alley.id) : false;
 
   useEffect(() => {
