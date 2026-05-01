@@ -126,6 +126,14 @@ function htmlShell(title: string, description: string, canonicalPath: string, bo
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta property="og:image" content="https://alleycat-bowling.com/og-logo.png">
+  <meta name="twitter:image" content="https://alleycat-bowling.com/og-logo.png">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
