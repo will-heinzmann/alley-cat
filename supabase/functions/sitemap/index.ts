@@ -21,6 +21,7 @@ Deno.serve(async () => {
     { path: "/auth", priority: "0.3", changefreq: "monthly" },
     { path: "/log", priority: "0.5", changefreq: "daily" },
     { path: "/leagues", priority: "0.7", changefreq: "weekly" },
+    { path: "/league", priority: "0.6", changefreq: "weekly" },
   ];
 
   const blogSlugs = [
