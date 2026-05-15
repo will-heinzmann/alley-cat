@@ -1,0 +1,28 @@
+# Alley Cat
+
+> Social bowling tracker and local alley directory. Log games frame-by-frame, review and discover bowling alleys near you, and climb community leaderboards.
+
+Alley Cat is a free Strava-style platform for bowlers. Track your scores, share games with friends, and explore a directory of 1,600+ bowling alleys across the United States with reviews, photos, and amenities.
+
+## Pages
+
+- [Home Feed](/): Public activity feed of recent games, reviews, and high-fives.
+- [Bowling Alley Directory](/alleys): Browse and search 1,600+ bowling alleys nationwide.
+- [Leaderboard](/leaderboard): Top bowlers ranked by average, high game, and consistency.
+- [Log a Game](/log): Frame-by-frame score entry with strikes, spares, and splits.
+- [Leagues](/leagues): Browse and join bowling leagues.
+- [League Night](/league): Live league night scoring.
+- [Bowling Score Calculator](/tools/bowling-score-calculator): Free frame-by-frame bowling score calculator.
+- [Blog](/blog): Bowling tips, guides, and app comparisons.
+- [Sign Up / Log In](/auth): Create an account or sign in.
+
+## Blog
+
+- [Best Bowling Tracker Apps of 2026](/blog/best-bowling-tracker-apps): Comparison of top bowling tracker apps including Alley Cat and LaneTalk.
+- [How to Calculate Bowling Handicap](/blog/how-to-calculate-bowling-handicap): Step-by-step handicap formula and examples.
+- [Bowling Stat Tracker Guide](/blog/bowling-stat-tracker): What to track and why it improves your game.
+- [Bowling Scorecard App](/blog/bowling-scorecard-app): Digital scorecards explained.
+- [Bowling Alleys Near Me](/blog/bowling-alleys-near-me): How to find quality lanes locally.
+- [Bowling Score Tracker](/blog/bowling-score-tracker): Tracking averages and trends over time.
+- [Bowling Scoreboard Online](/blog/bowling-scoreboard-online): Online scoreboards for casual play.
+- [Alley Cat Bowling](/blog/alley-cat-bowling): About the Alley Cat platform.
