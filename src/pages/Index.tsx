@@ -151,7 +151,13 @@ const HomePage = () => {
     <Helmet>
       <title>Find Bowling Alleys Near You — 1,600+ Venues | Alley Cat</title>
       <meta name="description" content="Browse and search over 1,600 bowling alleys across the US. Filter by state, city, and rating to find the perfect lanes near you." />
-      <link rel="canonical" href="https://alleycat-bowling.com/alleys" />
+      <link rel="canonical" href="https://alley-cat.lovable.app/alleys" />
+      <meta property="og:title" content="Bowling Alley Directory — 1,600+ Venues Across the US" />
+      <meta property="og:description" content="Search 1,600+ bowling alleys by state, city, and rating. Reviews, photos, lane counts, and amenities for every venue." />
+      <meta property="og:url" content="https://alley-cat.lovable.app/alleys" />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:title" content="Bowling Alley Directory — 1,600+ Venues Across the US" />
+      <meta name="twitter:description" content="Search 1,600+ bowling alleys by state, city, and rating. Reviews, photos, lane counts, and amenities for every venue." />
     </Helmet>
     <div className="min-h-screen pb-20">
       <header className="border-b border-border p-4 text-center">
