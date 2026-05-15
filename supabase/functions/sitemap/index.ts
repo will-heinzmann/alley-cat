@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SITE = "https://alleycat-bowling.com";
+const SITE = "https://alley-cat.lovable.app";
 
 const corsHeaders = {
   "Content-Type": "application/xml; charset=utf-8",
@@ -21,6 +21,7 @@ Deno.serve(async () => {
     { path: "/auth", priority: "0.3", changefreq: "monthly" },
     { path: "/log", priority: "0.5", changefreq: "daily" },
     { path: "/leagues", priority: "0.7", changefreq: "weekly" },
+    { path: "/league", priority: "0.6", changefreq: "weekly" },
   ];
 
   const blogSlugs = [

@@ -9,18 +9,18 @@ const BowlingScoreCalculator = () => {
   return (
     <>
       <Helmet>
-        <title>Bowling Score Calculator — Free Frame-by-Frame Tool | Alley Cat</title>
+        <title>Free Bowling Score Calculator | Alley Cat</title>
         <meta
           name="description"
           content="Free bowling score calculator. Enter strikes, spares, and pin counts frame by frame and watch your score update in real time. Learn how to keep score in bowling."
         />
-        <link rel="canonical" href="https://alleycat-bowling.com/tools/bowling-score-calculator" />
-        <meta property="og:title" content="Bowling Score Calculator — Free Frame-by-Frame Tool" />
+        <link rel="canonical" href="https://alley-cat.lovable.app/tools/bowling-score-calculator" />
+        <meta property="og:title" content="Free Bowling Score Calculator" />
         <meta
           property="og:description"
           content="Free bowling score calculator. Enter strikes, spares, and pin counts frame by frame and watch your score update in real time."
         />
-        <meta property="og:url" content="https://alleycat-bowling.com/tools/bowling-score-calculator" />
+        <meta property="og:url" content="https://alley-cat.lovable.app/tools/bowling-score-calculator" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",

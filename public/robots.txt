@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://alleycat-bowling.com/sitemap.xml
+Sitemap: https://alley-cat.lovable.app/sitemap.xml
