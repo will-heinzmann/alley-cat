@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SITE = "https://alleycat-bowling.com";
+const SITE = "https://alley-cat.lovable.app";
 
 const corsHeaders = {
   "Content-Type": "application/xml; charset=utf-8",
