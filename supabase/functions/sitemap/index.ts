@@ -33,6 +33,9 @@ Deno.serve(async () => {
     "bowling-alleys-near-me",
     "bowling-score-tracker",
     "bowling-scoreboard-online",
+    "top-100-bowling-alleys-in-the-us",
+    "top-100-beers-for-bowling-alleys",
+    "best-bowling-alley-food-in-the-us",
   ];
 
   // Fetch all alley slugs + city/state for city pages
