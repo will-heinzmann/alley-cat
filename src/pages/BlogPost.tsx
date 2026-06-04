@@ -78,12 +78,7 @@ const BlogPost = () => {
               </h2>
               <p
                 className="text-sm text-foreground leading-relaxed whitespace-pre-line"
-                dangerouslySetInnerHTML={{
-                  __html: section.content.replace(
-                    /\*\*(.+?)\*\*/g,
-                    '<strong class="text-primary">$1</strong>'
-                  ),
-                }}
+                dangerouslySetInnerHTML={{ __html: renderRichText(section.content) }}
               />
             </section>
           ))}
