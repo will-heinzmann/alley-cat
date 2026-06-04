@@ -2,6 +2,24 @@ import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { blogPosts } from "@/data/blogPosts";
 
+const escapeAttr = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Renders a small subset of markdown used in blog content: links then bold.
+const renderRichText = (text: string): string => {
+  let html = text.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_m, label: string, url: string) => {
+    const safeUrl = escapeAttr(url.trim());
+    const isInternal = safeUrl.startsWith("/");
+    const attrs = isInternal
+      ? ""
+      : ' target="_blank" rel="noopener noreferrer nofollow"';
+    return `<a href="${safeUrl}"${attrs} class="text-secondary underline underline-offset-2 hover:text-primary">${label}</a>`;
+  });
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="text-primary">$1</strong>');
+  return html;
+};
+
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = blogPosts.find((p) => p.slug === slug);
