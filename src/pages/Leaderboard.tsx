@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 
 type TimePeriod = "last3" | "last10" | "all";
+type Scope = "global" | "local" | "friends";
 
 interface BoardEntry {
   user_id: string;
@@ -17,6 +18,7 @@ interface BoardEntry {
 const Leaderboard = () => {
   const { user } = useAuth();
   const [period, setPeriod] = useState<TimePeriod>("all");
+  const [scope, setScope] = useState<Scope>("global");
   const [allGames, setAllGames] = useState<{ user_id: string; score: number; created_at: string }[]>([]);
   const [profilesMap, setProfilesMap] = useState<Map<string, { username: string; hometown: string | null }>>(new Map());
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
@@ -53,6 +55,11 @@ const Leaderboard = () => {
     fetchData();
   }, [user]);
 
+  const myHometown = useMemo(() => {
+    if (!user) return null;
+    return profilesMap.get(user.id)?.hometown?.trim().toLowerCase() || null;
+  }, [user, profilesMap]);
+
   const computeBoard = useMemo(() => {
     const byUser = new Map<string, { score: number; created_at: string }[]>();
     for (const g of allGames) {
@@ -80,14 +87,21 @@ const Leaderboard = () => {
     return entries;
   }, [allGames, profilesMap, period]);
 
-  const circleBoard = useMemo(() => {
-    if (!user) return [];
-    const circleIds = new Set([user.id, ...followingIds]);
-    return computeBoard.filter((e) => circleIds.has(e.user_id));
-  }, [computeBoard, user, followingIds]);
+  const scopedBoard = useMemo(() => {
+    if (scope === "friends") {
+      if (!user) return [];
+      const circleIds = new Set([user.id, ...followingIds]);
+      return computeBoard.filter((e) => circleIds.has(e.user_id));
+    }
+    if (scope === "local") {
+      if (!myHometown) return [];
+      return computeBoard.filter((e) => (e.hometown || "").trim().toLowerCase() === myHometown);
+    }
+    return computeBoard.slice(0, 50);
+  }, [computeBoard, scope, user, followingIds, myHometown]);
 
   const renderTable = (entries: BoardEntry[]) => (
-    <table className="w-full border-collapse border border-border text-sm">
+    <table className="w-full border-collapse border border-border text-sm rounded-lg overflow-hidden">
       <thead>
         <tr className="bg-muted">
           <th className="border border-border p-2 text-left text-xs text-muted-foreground w-10">#</th>
@@ -114,13 +128,31 @@ const Leaderboard = () => {
     </table>
   );
 
+  const scopes: { key: Scope; label: string; emoji: string }[] = [
+    { key: "global", label: "Global", emoji: "🌎" },
+    { key: "local", label: "Local", emoji: "📍" },
+    { key: "friends", label: "Friends", emoji: "👥" },
+  ];
+
+  const emptyMessage = () => {
+    if (scope === "friends") {
+      return user ? "Follow bowlers to see them ranked here." : "Sign in and follow bowlers to build your friends board.";
+    }
+    if (scope === "local") {
+      return myHometown
+        ? "No bowlers from your hometown yet. Be the first to log a game!"
+        : "Add a hometown to your profile to see your local rankings.";
+    }
+    return "No bowlers yet. Sign up and log games!";
+  };
+
   if (loading) return <div className="min-h-screen flex items-center justify-center"><p className="text-sm text-muted-foreground">Loading...</p></div>;
 
   return (
     <>
       <Helmet>
         <title>Bowling Leaderboard — Top Averages | Alley Cat</title>
-        <meta name="description" content="See the top-ranked bowlers on Alley Cat by bowling average. Filter by last 3 games, last 10 games, or all-time." />
+        <meta name="description" content="See the top-ranked bowlers on Alley Cat by bowling average. Compare global, local, and friends boards across all-time, last 10, or last 3 games." />
         <link rel="canonical" href="https://alleycat-bowling.com/leaderboard" />
       </Helmet>
       <div className="min-h-screen pb-20">
@@ -131,8 +163,25 @@ const Leaderboard = () => {
         </header>
 
         <div className="p-4 space-y-4">
+          {/* Scope Toggle */}
+          <div className="flex gap-2">
+            {scopes.map((s) => (
+              <button
+                key={s.key}
+                onClick={() => setScope(s.key)}
+                className={`flex-1 text-sm py-2 rounded-lg border transition-colors ${
+                  scope === s.key
+                    ? "bg-primary text-primary-foreground border-primary font-bold shadow-sm"
+                    : "bg-card text-muted-foreground border-border hover:text-foreground"
+                }`}
+              >
+                {s.emoji} {s.label}
+              </button>
+            ))}
+          </div>
+
           {/* Time Period Toggle */}
-          <div className="flex border border-border">
+          <div className="flex border border-border rounded-lg overflow-hidden">
             {(["last3", "last10", "all"] as TimePeriod[]).map((p) => (
               <button
                 key={p}
@@ -148,26 +197,24 @@ const Leaderboard = () => {
             ))}
           </div>
 
-          {/* Your Circle */}
-          {user && (
-            <div>
-              <h2 className="text-sm text-primary font-bold border-b border-border pb-1 mb-2">👥 YOUR CIRCLE</h2>
-              {circleBoard.length === 0 ? (
-                <div className="border border-border p-4 text-center">
-                  <p className="text-xs text-muted-foreground">Follow bowlers to see them here.</p>
-                </div>
-              ) : renderTable(circleBoard)}
-            </div>
-          )}
-
-          {/* Global */}
+          {/* Board */}
           <div>
-            <h2 className="text-sm text-primary font-bold border-b border-border pb-1 mb-2">🌎 GLOBAL ALLEY</h2>
-            {computeBoard.length === 0 ? (
-              <div className="border border-border p-6 text-center">
-                <p className="text-sm text-muted-foreground">No bowlers yet. Sign up and log games!</p>
+            <h2 className="text-sm text-primary font-bold border-b border-border pb-1 mb-2">
+              {scopes.find((s) => s.key === scope)?.emoji}{" "}
+              {scope === "global" ? "GLOBAL ALLEY" : scope === "local" ? "LOCAL LEGENDS" : "YOUR CIRCLE"}
+              {scope === "local" && myHometown && (
+                <span className="text-xs text-muted-foreground font-normal ml-2">
+                  ({profilesMap.get(user!.id)?.hometown})
+                </span>
+              )}
+            </h2>
+            {scopedBoard.length === 0 ? (
+              <div className="border border-border rounded-lg p-6 text-center">
+                <p className="text-sm text-muted-foreground">{emptyMessage()}</p>
               </div>
-            ) : renderTable(computeBoard.slice(0, 50))}
+            ) : (
+              renderTable(scopedBoard)
+            )}
           </div>
         </div>
       </div>
