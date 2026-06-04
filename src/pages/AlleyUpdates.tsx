@@ -38,16 +38,28 @@ const AlleyUpdates = () => {
     setLoading(false);
   };
 
+  // Only these fields can ever be edited via the request flow. This is a
+  // defence-in-depth allowlist; the database also enforces it via a CHECK constraint.
+  const ALLOWED_FIELDS = ["lane_count", "phone"] as const;
+
   const handleReview = async (id: string, action: "approved" | "rejected", request: any) => {
     if (action === "approved") {
+      // Reject any request that targets a field outside the allowlist.
+      if (!ALLOWED_FIELDS.includes(request.field_name)) {
+        toast({
+          title: "Invalid request",
+          description: `This request targets a field that can't be edited (${request.field_name}). It was not applied.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Apply the update to the alley
       const updateData: any = {};
       if (request.field_name === "lane_count") {
         updateData.lane_count = parseInt(request.new_value);
       } else if (request.field_name === "phone") {
         updateData.phone = request.new_value || null;
-      } else {
-        updateData[request.field_name] = request.new_value;
       }
 
       const { error: updateError } = await supabase
