@@ -31,12 +31,24 @@ const BowlingBag = ({ ownerId }: Props) => {
 
   const load = async () => {
     setLoading(true);
-    const { data: ballsData } = await supabase
-      .from("bowling_balls")
-      .select("*")
-      .eq("user_id", ownerId)
-      .order("created_at", { ascending: true });
-    const list = (ballsData || []) as BowlingBall[];
+    // Owners read the full table (incl. private notes). Everyone else reads the
+    // public view which omits the private `notes` column.
+    let list: BowlingBall[];
+    if (isOwner) {
+      const { data: ballsData } = await supabase
+        .from("bowling_balls")
+        .select("*")
+        .eq("user_id", ownerId)
+        .order("created_at", { ascending: true });
+      list = (ballsData || []) as BowlingBall[];
+    } else {
+      const { data: ballsData } = await supabase
+        .from("bowling_balls_public")
+        .select("*")
+        .eq("user_id", ownerId)
+        .order("created_at", { ascending: true });
+      list = ((ballsData || []) as any[]).map((b) => ({ ...b, notes: null })) as BowlingBall[];
+    }
     setBalls(list);
 
     if (list.length > 0) {

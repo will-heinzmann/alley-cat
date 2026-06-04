@@ -336,7 +336,7 @@ const AlleyDetail = () => {
                 )}
               </td>
             </tr>
-            {alley.website && (
+            {alley.website && /^https?:\/\//i.test(alley.website) && (
               <tr>
                 <td className="border border-border p-2 text-muted-foreground bg-muted">Website</td>
                 <td className="border border-border p-2">

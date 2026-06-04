@@ -434,6 +434,13 @@ export type Database = {
             referencedRelation: "bowling_balls"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "games_ball_id_fkey"
+            columns: ["ball_id"]
+            isOneToOne: false
+            referencedRelation: "bowling_balls_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       group_game_players: {
@@ -825,7 +832,39 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      bowling_balls_public: {
+        Row: {
+          brand: string | null
+          color: string | null
+          created_at: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {

@@ -58,6 +58,12 @@ const AddAlleyDialog = ({ onAlleyAdded }: AddAlleyDialogProps) => {
       return;
     }
 
+    if (form.website.trim() && !/^https?:\/\//i.test(form.website.trim())) {
+      toast.error("Website must start with http:// or https://");
+      return;
+    }
+
+
     setSubmitting(true);
 
     // Check for duplicate by name + city + state
