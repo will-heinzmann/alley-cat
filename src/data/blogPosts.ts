@@ -337,7 +337,7 @@ export const blogPosts: BlogPost[] = [
     "sections": [
       {
         "heading": "The Top 2 (Locked In)",
-        "content": "**1. Two Hearted Ale — [Bell's Brewery](https://www.bellsbeer.com/) (American IPA, 7.0%).** America's most celebrated IPA, year after year. Centennial hops burst with grapefruit and pine over a balanced malt backbone — bold enough to celebrate a strike, smooth enough to survive a gutter ball. The undisputed GOAT of bowling-alley beer.\n\n**2. [Guinness](https://www.guinness.com/) Draught — Guinness (Irish Dry Stout, 4.2%).** Creamy nitrogen-poured perfection with roasted coffee and chocolate notes, and a lower ABV than it looks. The ritual of watching it settle is basically its own pregame ceremony."
+        "content": "**1. Two Hearted Ale — [Bell's Brewery](https://www.bellsbeer.com/) (American IPA, 7.0%).** America's most celebrated IPA, year after year. Centennial hops burst with grapefruit and pine over a balanced malt backbone — bold enough to celebrate a strike, smooth enough to survive a gutter ball. The undisputed GOAT of bowling-alley beer.\n\n**2. Guinness Draught — [Guinness](https://www.guinness.com/) (Irish Dry Stout, 4.2%).** Creamy nitrogen-poured perfection with roasted coffee and chocolate notes, and a lower ABV than it looks. The ritual of watching it settle is basically its own pregame ceremony."
       },
       {
         "heading": "The Craft IPA Kings (3–32)",
