@@ -9,6 +9,7 @@ import NearestAlleys from "@/components/NearestAlleys";
 import ImageLightbox from "@/components/ImageLightbox";
 import PublicActivityFeed from "@/components/PublicActivityFeed";
 import GameComments from "@/components/GameComments";
+import TrustHero from "@/components/TrustHero";
 
 interface FeedGame {
   id: string;
