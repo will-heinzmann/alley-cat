@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
       mode === "production" && staticPrerenderPlugin(env),
     ].filter(Boolean),
     optimizeDeps: {
-      exclude: ["react-leaflet", "@react-leaflet/core"],
+      include: ["react", "react-dom", "react-leaflet", "@react-leaflet/core", "leaflet"],
     },
     resolve: {
       alias: {
