@@ -14,9 +14,11 @@ export default {
     },
     extend: {
       fontFamily: {
-        pixel: ['"Arial Black"', 'Impact', 'Arial', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['"Space Grotesk"', 'Inter', 'sans-serif'],
+        pixel: ['"Space Grotesk"', 'Inter', 'sans-serif'],
         mono: ['"Courier New"', 'Courier', 'monospace'],
-        serif: ['"Times New Roman"', 'Times', 'Georgia', 'serif'],
+        serif: ['Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

@@ -9,6 +9,7 @@ import NearestAlleys from "@/components/NearestAlleys";
 import ImageLightbox from "@/components/ImageLightbox";
 import PublicActivityFeed from "@/components/PublicActivityFeed";
 import GameComments from "@/components/GameComments";
+import TrustHero from "@/components/TrustHero";
 
 interface FeedGame {
   id: string;
@@ -149,20 +150,8 @@ const Feed = () => {
             {loading ? (
               <p className="text-center text-sm text-muted-foreground p-8">Loading...</p>
             ) : !user ? (
-              <div className="space-y-3">
-                <div className="border border-border bg-card p-4 text-center space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Welcome to Alley Cat — track your scores, follow friends, and find alleys.
-                  </p>
-                  <div className="flex flex-col items-center gap-2">
-                    <Link to="/auth?mode=signup" className="border border-primary bg-primary text-primary-foreground px-4 py-2 text-sm hover:opacity-80">
-                      🎳 Create Account & Log Your First Game
-                    </Link>
-                    <Link to="/auth" className="text-primary text-xs hover:underline">
-                      Already have an account? Sign in
-                    </Link>
-                  </div>
-                </div>
+              <div className="space-y-5">
+                <TrustHero />
                 <div className="border-b border-secondary pb-1">
                   <h3 className="text-sm text-secondary font-bold">⚡ Recent Activity</h3>
                 </div>
