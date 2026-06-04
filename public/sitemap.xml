@@ -103,6 +103,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://alley-cat.lovable.app/blog/top-100-bowling-alleys-in-the-us</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://alley-cat.lovable.app/blog/top-100-beers-for-bowling-alleys</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://alley-cat.lovable.app/blog/best-bowling-alley-food-in-the-us</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://alley-cat.lovable.app/alley/1-7-10-sports-center-augusta</loc>
     <lastmod>2026-04-07</lastmod>
     <changefreq>weekly</changefreq>
